@@ -6,7 +6,7 @@ const suggestionsSchema = mongoose.Schema({
         required: true
     },
     id: {
-        type: Number,
+        type: String,
         required: true,
     },
     suggestion: {
