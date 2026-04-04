@@ -1,15 +1,24 @@
+const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
+
 module.exports = {
-    name: 'Purge',
-    description: 'Deletes a number of given messages',
-    usage: 'purge <number of messages>',
-    execute: async function (message, client, args) {
-        const deleteCount = parseInt(args[0], 10);
-
-        if (!deleteCount || deleteCount < 2 || deleteCount > 100)
-            return message.reply("Please provide a number between 2 and 100 for the number of messages to delete");
-
-        message.channel.bulkDelete(deleteCount)
-            .then(messages => message.reply(`bulk deleted ${messages.size} messages`))
-            .catch(error => message.reply(`Couldn't delete messages because of: ${error.message}`))
+    data: new SlashCommandBuilder()
+        .setName('purge')
+        .setDescription('Delete a number of messages from this channel')
+        .setDefaultMemberPermissions(PermissionFlagsBits.ManageMessages)
+        .addIntegerOption(opt => opt
+            .setName('count')
+            .setDescription('Number of messages to delete (2-100)')
+            .setRequired(true)
+            .setMinValue(2)
+            .setMaxValue(100)),
+    execute: async function (interaction, client) {
+        await interaction.deferReply({ ephemeral: true });
+        const count = interaction.options.getInteger('count');
+        try {
+            const messages = await interaction.channel.bulkDelete(count, true);
+            await interaction.editReply(`Bulk deleted ${messages.size} messages.`);
+        } catch (error) {
+            await interaction.editReply(`Couldn't delete messages: ${error.message}`);
+        }
     }
 };

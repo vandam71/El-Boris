@@ -1,35 +1,34 @@
 const { User } = require('../../models/user');
-const { EmbedBuilder } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 
 module.exports = {
-    name: 'Private',
-    description: 'Switch Private Mentions',
-    usage: 'private <on/off>',
-    execute: async function (message, client, args) {
-        await User.findOne({ id: message.author.id }).then(async user => {
-            if (args[0] === 'on') {
+    data: new SlashCommandBuilder()
+        .setName('private')
+        .setDescription('Toggle private message visibility')
+        .addStringOption(opt => opt
+            .setName('setting')
+            .setDescription('Turn private mode on or off')
+            .setRequired(true)
+            .addChoices({ name: 'On', value: 'on' }, { name: 'Off', value: 'off' })),
+    execute: async function (interaction, client) {
+        const setting = interaction.options.getString('setting');
+        await User.findOne({ id: interaction.user.id }).then(async user => {
+            if (setting === 'on') {
                 user.private = false;
-                let embed = new EmbedBuilder()
+                const embed = new EmbedBuilder()
                     .setColor(0xACA19D)
-                    .setAuthor({ name: message.author.username, iconURL: message.author.avatarURL() })
+                    .setAuthor({ name: interaction.user.username, iconURL: interaction.user.avatarURL() })
                     .setTitle('You turned private messages on');
-                await message.channel.send({ embeds: [embed] });
-            }
-            if (args[0] === 'off') {
-                user.private = true;
-                let embed = new EmbedBuilder()
-                    .setColor(0xACA19D)
-                    .setAuthor({ name: message.author.username, iconURL: message.author.avatarURL() })
-                    .setTitle('You turned private messages off');
-                await message.channel.send({ embeds: [embed] });
+                await interaction.reply({ embeds: [embed] });
             } else {
-                let embed = new EmbedBuilder()
+                user.private = true;
+                const embed = new EmbedBuilder()
                     .setColor(0xACA19D)
-                    .setTitle('Not a valid option');
-                await message.channel.send({ embeds: [embed] });
+                    .setAuthor({ name: interaction.user.username, iconURL: interaction.user.avatarURL() })
+                    .setTitle('You turned private messages off');
+                await interaction.reply({ embeds: [embed] });
             }
             await user.save();
-
         });
     }
 };

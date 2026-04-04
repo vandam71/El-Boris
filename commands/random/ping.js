@@ -1,14 +1,13 @@
-const { EmbedBuilder } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 
 module.exports = {
-    name: 'Ping',
-    description: 'Returns the Latency from the server and API',
-    usage: 'ping',
-    execute: async function (message, client, args) {
-        let embed = new EmbedBuilder()
-            .setAuthor({ name: message.author.username, iconURL: message.author.avatarURL() })
-            .setDescription(`Pong! Latency is ${Date.now() - message.createdAt}ms. API Latency is ${Math.round(client.ws.ping)}ms`);
-
-        return message.channel.send({ embeds: [embed] });
+    data: new SlashCommandBuilder()
+        .setName('ping')
+        .setDescription('Returns latency from the server and API'),
+    execute: async function (interaction, client) {
+        const embed = new EmbedBuilder()
+            .setAuthor({ name: interaction.user.username, iconURL: interaction.user.avatarURL() })
+            .setDescription(`Pong! Latency is ${Date.now() - interaction.createdTimestamp}ms. API Latency is ${Math.round(client.ws.ping)}ms`);
+        return interaction.reply({ embeds: [embed] });
     },
 };

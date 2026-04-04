@@ -1,4 +1,5 @@
 const fs = require('fs');
+const { Collection } = require('discord.js');
 const logger = require('./logger');
 
 const commands = {};
@@ -14,7 +15,11 @@ for (const outer of defaultCommands) {
         }
     }
 }
-logger.info(`Loaded ${Object.keys(commands).length} Commands`);
+const slashCommands = new Collection();
+for (const cmd of Object.values(commands)) {
+    if (cmd.data) slashCommands.set(cmd.data.name, cmd);
+}
+logger.info(`Loaded ${Object.keys(commands).length} commands (${slashCommands.size} slash)`);
 
 
 async function commandHandler(message, client, prefix) {
@@ -36,4 +41,4 @@ async function commandHandler(message, client, prefix) {
     } //else message.reply(`"${command}" is not a valid command!`);
 }
 
-module.exports = {commandHandler, commands};
+module.exports = { commandHandler, commands, slashCommands };

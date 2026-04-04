@@ -1,8 +1,10 @@
+const { SlashCommandBuilder } = require('discord.js');
+
 module.exports = {
-    name: 'Boris Chill',
-    description: 'Chillin with the hoes',
-    usage: 'borischill',
-    execute: async function (message, client, args) {
-        return message.channel.send('https://i.imgur.com/B6gebu9.png');
+    data: new SlashCommandBuilder()
+        .setName('borischill')
+        .setDescription('Chillin with the hoes'),
+    execute: async function (interaction, client) {
+        return interaction.reply('https://i.imgur.com/B6gebu9.png');
     }
 };

@@ -1,23 +1,23 @@
-module.exports = {
-    name: 'Poke',
-    description: 'Send a private message to the user you want to poke',
-    usage: 'poke <tag>',
-    execute: async function (message, client, args) {
-        // TODO replace with embed
+const { SlashCommandBuilder } = require('discord.js');
 
-        let member_tag = message.mentions.members.first();
+module.exports = {
+    data: new SlashCommandBuilder()
+        .setName('poke')
+        .setDescription('Send a private poke to a user')
+        .addUserOption(opt => opt.setName('user').setDescription('User to poke').setRequired(true)),
+    execute: async function (interaction, client) {
+        const member_tag = interaction.options.getMember('user');
         if (!member_tag)
-            return message.reply("please mention a valid member of this server.");
+            return interaction.reply({ content: 'Please mention a valid member of this server.', ephemeral: true });
 
         if (client.pokedRecently.has(member_tag.id))
-            return message.reply('this user was poked in the last minute.');
+            return interaction.reply({ content: 'This user was poked in the last minute.', ephemeral: true });
         client.pokedRecently.add(member_tag.id);
-        setTimeout(async () => {
-            client.pokedRecently.delete(member_tag.id);
-        }, 60 * 1000);
+        setTimeout(() => { client.pokedRecently.delete(member_tag.id); }, 60 * 1000);
 
         const call_messages = ['is calling you!', 'needs your attention...', 'requests your presence.', 'demands you to join him!'];
 
-        return member_tag.send('<@' + message.author.id + '> ' + call_messages[Math.floor(Math.random() * call_messages.length)]);
+        await member_tag.send(`<@${interaction.user.id}> ${call_messages[Math.floor(Math.random() * call_messages.length)]}`);
+        return interaction.reply({ content: '👋 Poked!', ephemeral: true });
     },
 };

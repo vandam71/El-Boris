@@ -1,10 +1,12 @@
+const { SlashCommandBuilder } = require('discord.js');
+
 module.exports = {
-    name: 'Cat',
-    description: 'Random Cat Picture',
-    usage: 'cat',
-    execute: async function (message, client, args) {
+    data: new SlashCommandBuilder()
+        .setName('cat')
+        .setDescription('Random Cat Picture'),
+    execute: async function (interaction, client) {
         const res = await fetch('https://aws.random.cat/meow');
         const json = await res.json();
-        message.channel.send(json.file);
+        return interaction.reply(json.file);
     }
 };

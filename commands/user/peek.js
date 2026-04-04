@@ -1,22 +1,24 @@
 const { User } = require('../../models/user');
-const { EmbedBuilder } = require("discord.js");
+const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
 
 module.exports = {
-    name: 'Peek',
-    description: 'Look at a user profile',
-    usage: 'peek <user tag>',
-    execute: async function (message, client, args) {
-        let member = message.mentions.members.first();
+    data: new SlashCommandBuilder()
+        .setName('peek')
+        .setDescription("Look at another user's profile")
+        .addUserOption(opt => opt.setName('user').setDescription('User to peek at').setRequired(true)),
+    execute: async function (interaction, client) {
+        const member = interaction.options.getMember('user');
+        if (!member) return interaction.reply({ content: 'Please mention a valid member of this server.', ephemeral: true });
         let user = await User.findOne({ id: member.user.id });
         if (user === null) {
-            return message.reply("This user has no profile!");
+            return interaction.reply({ content: 'This user has no profile!', ephemeral: true });
         }
         const embed = new EmbedBuilder()
             .setColor(0x00AE86)
-            .setAuthor({ name: message.author.username, iconURL: message.author.avatarURL() })
+            .setAuthor({ name: interaction.user.username, iconURL: interaction.user.avatarURL() })
             .setTitle(`${member.user.username} Profile`)
             .addFields({ name: "Stats", value: `**Level: ${user.level}**\nAzia: **${user.azia}**` })
             .setThumbnail(member.user.avatarURL());
-        return message.channel.send({ embeds: [embed] });
+        return interaction.reply({ embeds: [embed] });
     }
 };

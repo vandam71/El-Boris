@@ -1,22 +1,19 @@
 const Guild = require('../../models/guild');
-const { PermissionFlagsBits } = require('discord.js');
+const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
 
 module.exports = {
-    name: 'Prefix',
-    description: 'Change the prefix for the bot in this server',
-    usage: 'prefix <new prefix>',
-    execute: async function (message, client, args) {
-        if (!message.member.permissions.has(PermissionFlagsBits.KickMembers))
-            return message.reply("you don't have permissions to use this!");
+    data: new SlashCommandBuilder()
+        .setName('prefix')
+        .setDescription('Change the bot prefix for this server')
+        .setDefaultMemberPermissions(PermissionFlagsBits.KickMembers)
+        .addStringOption(opt => opt.setName('new_prefix').setDescription('New prefix character').setRequired(true)),
+    execute: async function (interaction, client) {
+        if (!interaction.member.permissions.has(PermissionFlagsBits.KickMembers))
+            return interaction.reply({ content: "You don't have permissions to use this!", ephemeral: true });
 
-        if (!args.length)
-            return message.reply('you need to provide a valid new prefix')
+        const new_prefix = interaction.options.getString('new_prefix');
 
-        let new_prefix = args[0];
-
-        await Guild.findOneAndUpdate({ id: message.guild.id }, { prefix: new_prefix })
-            .then(() => {
-                message.channel.send(`Prefix changed to ${new_prefix}`)
-            });
+        await Guild.findOneAndUpdate({ id: interaction.guild.id }, { prefix: new_prefix });
+        return interaction.reply(`Prefix changed to \`${new_prefix}\``);
     }
 };

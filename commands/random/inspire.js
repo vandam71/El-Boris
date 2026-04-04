@@ -1,15 +1,15 @@
-const { EmbedBuilder } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 
 module.exports = {
-    name: 'Inspire',
-    description: 'If in need of some Inspiration',
-    usage: 'inspire',
-    execute: async function (message, client, args) {
+    data: new SlashCommandBuilder()
+        .setName('inspire')
+        .setDescription('Get an inspirational quote'),
+    execute: async function (interaction, client) {
         const res = await fetch('https://zenquotes.io/api/random');
         const json = await res.json();
-        message.channel.send({
+        await interaction.reply({
             embeds: [new EmbedBuilder()
-                .setAuthor({ name: message.author.username, iconURL: message.author.avatarURL() })
+                .setAuthor({ name: interaction.user.username, iconURL: interaction.user.avatarURL() })
                 .setTitle(json[0].a)
                 .setDescription(json[0].q)]
         });

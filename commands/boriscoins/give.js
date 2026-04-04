@@ -1,28 +1,32 @@
-const { EmbedBuilder } = require("discord.js");
-const { User } = require("../../models/user");
+const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
+const { User } = require('../../models/user');
 const Transaction = require('../../struct/Transaction');
 
 module.exports = {
-    name: 'Give',
-    description: 'Give coins to someone',
-    usage: 'give <user tag> <value>',
-    execute: async function (message, client, args) {
-        let member = message.mentions.members.first();
-        if (member === undefined || member.id === message.author.id || !(await User.exists({ id: member.id }))) return message.channel.send({ embeds: [new EmbedBuilder().setDescription('Not a valid user')] });
-        if (!args[1] || isNaN(args[1])) return message.channel.send({ embeds: [new EmbedBuilder().setDescription('The value you inserted is invalid!')] });
+    data: new SlashCommandBuilder()
+        .setName('give')
+        .setDescription('Give BorisCoins to someone')
+        .addUserOption(opt => opt.setName('user').setDescription('The user to give coins to').setRequired(true))
+        .addIntegerOption(opt => opt.setName('amount').setDescription('Amount to give').setRequired(true).setMinValue(1)),
+    execute: async function (interaction, client) {
+        const member = interaction.options.getMember('user');
+        const give_value = interaction.options.getInteger('amount');
 
-        let give_value = parseInt(args[1]);
-        if (await User.getBalance(message.author.id) < give_value) return message.channel.send({ embeds: [new EmbedBuilder().setDescription('You dont have enough coins to give')] });
+        if (!member || member.id === interaction.user.id || !(await User.exists({ id: member.id })))
+            return interaction.reply({ embeds: [new EmbedBuilder().setDescription('Not a valid user')], ephemeral: true });
 
-        await new Transaction(message.author.id, -give_value, 'Give').process();
+        if (await User.getBalance(interaction.user.id) < give_value)
+            return interaction.reply({ embeds: [new EmbedBuilder().setDescription('You dont have enough coins to give')], ephemeral: true });
+
+        await new Transaction(interaction.user.id, -give_value, 'Give').process();
         await new Transaction(member.id, give_value, 'Give').process();
 
-        return message.channel.send({
+        return interaction.reply({
             embeds: [new EmbedBuilder()
                 .setColor(0xAF873D)
-                .setAuthor({ name: message.author.username, iconURL: message.author.avatarURL() })
+                .setAuthor({ name: interaction.user.username, iconURL: interaction.user.avatarURL() })
                 .setTitle('Give')
                 .setDescription(`You gave ${member.displayName} ${give_value} <:boriscoin:798017751842291732>`)]
         });
     }
-}
+};

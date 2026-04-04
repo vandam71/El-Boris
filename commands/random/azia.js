@@ -1,28 +1,26 @@
-const {User} = require('../../models/user');
+const { User } = require('../../models/user');
+const { SlashCommandBuilder } = require('discord.js');
 const aziaRecently = new Set();
 
 module.exports = {
-    name: 'Azia',
-    description: 'Azia alguém',
-    usage: 'azia <optional: user tag>',
-    execute: async function (message, client, args) {
-        if (aziaRecently.has(message.author.id))
-            return message.reply('Command under cooldown.');
+    data: new SlashCommandBuilder()
+        .setName('azia')
+        .setDescription('Azia someone')
+        .addUserOption(opt => opt.setName('user').setDescription('User to azia (optional)').setRequired(false)),
+    execute: async function (interaction, client) {
+        if (aziaRecently.has(interaction.user.id))
+            return interaction.reply({ content: 'Command under cooldown.', ephemeral: true });
 
-        let member = message.mentions.members.first();
-        if (member === undefined) member = message.author;
-        else member = member.user;
+        const targetMember = interaction.options.getMember('user');
+        const target = targetMember ? targetMember.user : interaction.user;
 
-        aziaRecently.add(message.author.id);
-        setTimeout(() => {
-            aziaRecently.delete(message.author.id);
-        }, (60 * 1000));
+        aziaRecently.add(interaction.user.id);
+        setTimeout(() => { aziaRecently.delete(interaction.user.id); }, 60 * 1000);
 
-        User.findOneAndUpdate({id: member.id}, {$inc: {azia: 1}}).then(user => {
-            if (user === null) {
-                return message.reply("This user hasn't talked in this server yet.");
-            }
-            return message.channel.send(`O <@${(member.id).toString()}> já aziou ${user.azia + 1} vezes.`);
+        User.findOneAndUpdate({ id: target.id }, { $inc: { azia: 1 } }).then(user => {
+            if (user === null)
+                return interaction.reply({ content: "This user hasn't talked in this server yet.", ephemeral: true });
+            return interaction.reply(`O <@${target.id}> já aziou ${user.azia + 1} vezes.`);
         });
     }
 };

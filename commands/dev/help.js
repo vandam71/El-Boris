@@ -1,36 +1,33 @@
-const { EmbedBuilder } = require('discord.js');
-const Guild = require("../../models/guild");
+const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 
 module.exports = {
-    name: 'Help',
-    description: 'Help for the other commands',
-    usage: "help <command>",
-    execute: async function (message, client, args, commands) {
-        if (!args.length) {
-            // TODO replace this with all the commands printed on screen (How? No idea)
-            let commandKeys = Object.keys(commands);
+    data: new SlashCommandBuilder()
+        .setName('help')
+        .setDescription('Show all commands or details on a specific one')
+        .addStringOption(opt => opt.setName('command').setDescription('Command name').setRequired(false)),
+    execute: async function (interaction, client) {
+        // lazy-require to avoid circular dependency at load time
+        const { slashCommands } = require('../../commands');
 
-            let messageEmbed = '';
-            for (let command of commandKeys) {
-                messageEmbed += '`' + command + '`, ';
-            }
+        const commandName = interaction.options.getString('command');
 
-            const prefix = await Guild.getPrefix(message.guild.id);
-            let embed = new EmbedBuilder()
+        if (!commandName) {
+            let commandList = [...slashCommands.keys()].map(k => `\`${k}\``).join(', ');
+            const embed = new EmbedBuilder()
                 .setColor(0xFFFE00)
-                .setAuthor({ name: 'Help command', iconURL: client.user.displayAvatarURL() })
-                .addFields({ name: "All available commands", value: messageEmbed })
-                .setFooter({ text: "Type \'" + prefix + "help <CommandName>\' for details on a command" })
-            return message.channel.send({ embeds: [embed] });
+                .setAuthor({ name: 'Help', iconURL: client.user.displayAvatarURL() })
+                .addFields({ name: 'All available commands', value: commandList })
+                .setFooter({ text: 'Use /help <command> for details on a specific command' });
+            return interaction.reply({ embeds: [embed] });
+        }
 
-        } else if (Object.keys(commands).includes(args[0])) {
-            let { name, description, usage } = commands[args[0]];
-            const prefix = await Guild.getPrefix(message.guild.id);
-            let embed = new EmbedBuilder()
-                .setColor(0xFFFE00)
-                .setAuthor({ name: `Help command: ${name}`, iconURL: client.user.displayAvatarURL() })
-                .addFields({ name: prefix + usage, value: `${description}` });
-            return message.channel.send({ embeds: [embed] });
-        } else return message.reply('This command is not in the command list');
+        const cmd = slashCommands.get(commandName);
+        if (!cmd) return interaction.reply({ content: 'This command is not in the command list.', ephemeral: true });
+
+        const embed = new EmbedBuilder()
+            .setColor(0xFFFE00)
+            .setAuthor({ name: `Help: /${commandName}`, iconURL: client.user.displayAvatarURL() })
+            .addFields({ name: `/${cmd.data.name}`, value: cmd.data.description });
+        return interaction.reply({ embeds: [embed] });
     }
 };

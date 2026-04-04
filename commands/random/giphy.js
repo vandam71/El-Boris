@@ -1,14 +1,16 @@
+const { SlashCommandBuilder } = require('discord.js');
+
 module.exports = {
-    name: 'Giphy',
-    description: 'Finds a random gif',
-    usage: 'giphy <search query>',
-    execute: async function (message, client, args) {
-        if (!args.length) return message.reply('you need to provide a valid search query');
-        const q = encodeURIComponent(args.join(' '));
+    data: new SlashCommandBuilder()
+        .setName('giphy')
+        .setDescription('Find a random GIF')
+        .addStringOption(opt => opt.setName('query').setDescription('Search query').setRequired(true)),
+    execute: async function (interaction, client) {
+        const q = encodeURIComponent(interaction.options.getString('query'));
         const res = await fetch(`https://api.giphy.com/v1/gifs/search?api_key=${process.env.GIPHY_API}&q=${q}&limit=10`);
         const response = await res.json();
-        if (!response.data?.length) return message.reply('No results found.');
+        if (!response.data?.length) return interaction.reply({ content: 'No results found.', ephemeral: true });
         const gif = response.data[Math.floor(Math.random() * response.data.length)];
-        message.reply({ files: [gif.images.fixed_height.url] });
+        return interaction.reply({ files: [gif.images.fixed_height.url] });
     },
 };

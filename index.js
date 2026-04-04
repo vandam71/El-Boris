@@ -1,8 +1,9 @@
 require('dotenv').config();
-const { ActivityType } = require('discord.js');
+const { ActivityType, REST, Routes } = require('discord.js');
+const config = require('./config.json');
 const ElBoris = require("./struct/Client");
 const client = new ElBoris();
-const { commandHandler } = require("./commands");
+const { commandHandler, slashCommands } = require("./commands");
 const { newMessageUser } = require('./models/user');
 const Guild = require('./models/guild');
 const logger = require('./logger');
@@ -15,6 +16,20 @@ client.on('ready', async () => {
         await Guild.syncGuild(guild);
     }
     logger.info('Guild sync complete');
+
+    // Register guild-scoped slash commands (instant propagation)
+    const rest = new REST().setToken(process.env.DISCORD_API);
+    const slashBody = [...slashCommands.values()].map(cmd => cmd.data.toJSON());
+    try {
+        await rest.put(
+            Routes.applicationGuildCommands(client.user.id, config.server_id),
+            { body: slashBody }
+        );
+        logger.info(`Registered ${slashBody.length} slash commands`);
+    } catch (e) {
+        logger.error('Failed to register slash commands: ' + e.message);
+    }
+
     await client.user.setPresence({
         activities: [{
             name: '/help',
@@ -62,6 +77,27 @@ client.on('messageCreate', async message => {
 client.on('guildMemberAdd', async member => {
     logger.info(`New User ${member.user.username} has joined ${member.guild.name}`);
     await member.guild.channels.cache.findOne(c => c.name === "welcome").send(`${member.user.username} has joined this server`);
+});
+
+client.on('interactionCreate', async interaction => {
+    if (!interaction.isChatInputCommand()) return;
+
+    const command = slashCommands.get(interaction.commandName);
+    if (!command) {
+        await interaction.reply({ content: 'Unknown command.', ephemeral: true });
+        return;
+    }
+    try {
+        await command.execute(interaction, client);
+    } catch (e) {
+        logger.error(e.message);
+        const err = { content: e.message, ephemeral: true };
+        if (interaction.replied || interaction.deferred) {
+            await interaction.followUp(err).catch(() => {});
+        } else {
+            await interaction.reply(err).catch(() => {});
+        }
+    }
 });
 
 client.on('error', e => logger.error(e));

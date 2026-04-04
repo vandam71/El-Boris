@@ -1,26 +1,26 @@
-const { PermissionFlagsBits } = require('discord.js');
+const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
 
 module.exports = {
-    name: 'Kick',
-    description: 'Kick someone for the given reason',
-    usage: 'kick <user tag> <\'Reason\'>',
-    execute: async function (message, client, args) {
-        if (!message.member.permissions.has(PermissionFlagsBits.KickMembers))
-            return message.reply("you don't have permissions to use this!");
+    data: new SlashCommandBuilder()
+        .setName('kick')
+        .setDescription('Kick a member from the server')
+        .setDefaultMemberPermissions(PermissionFlagsBits.KickMembers)
+        .addUserOption(opt => opt.setName('user').setDescription('The user to kick').setRequired(true))
+        .addStringOption(opt => opt.setName('reason').setDescription('Reason for kick').setRequired(false)),
+    execute: async function (interaction, client) {
+        if (!interaction.member.permissions.has(PermissionFlagsBits.KickMembers))
+            return interaction.reply({ content: "You don't have permissions to use this!", ephemeral: true });
 
-        let member = message.mentions.members.first();
-
+        const member = interaction.options.getMember('user');
         if (!member)
-            return message.reply("please mention a valid member of this server");
-
+            return interaction.reply({ content: 'Please mention a valid member of this server.', ephemeral: true });
         if (!member.kickable)
-            return message.reply("I cannot kick this user! Do they have a higher role? Do I have kick permissions?");
+            return interaction.reply({ content: 'I cannot kick this user! Do they have a higher role?', ephemeral: true });
 
-        let reason = args.slice(1).join(' ');
-        if (!reason) reason = "No reason provided";
+        const reason = interaction.options.getString('reason') || 'No reason provided';
 
         await member.kick(reason)
-            .then(() => message.reply(`${member.user.tag} has been kicked by ${message.author.tag} because : ${reason}`))
-            .catch(e => message.reply(`I couldn't kick because of : ${e}`));
+            .then(() => interaction.reply(`${member.user.tag} has been kicked by ${interaction.user.tag} because: ${reason}`))
+            .catch(e => interaction.reply({ content: `I couldn't kick because of: ${e}`, ephemeral: true }));
     }
 };

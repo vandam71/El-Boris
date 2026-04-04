@@ -1,26 +1,26 @@
-const { PermissionFlagsBits } = require('discord.js');
+const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
 
 module.exports = {
-    name: 'Ban',
-    description: 'Bans someone for the given reason',
-    usage: 'ban <user tag> <\'Reason\'>',
-    execute: async function (message, client, args) {
-        if (!message.member.permissions.has(PermissionFlagsBits.BanMembers))
-            return message.reply("You don't have permissions to use this!");
+    data: new SlashCommandBuilder()
+        .setName('ban')
+        .setDescription('Ban a member from the server')
+        .setDefaultMemberPermissions(PermissionFlagsBits.BanMembers)
+        .addUserOption(opt => opt.setName('user').setDescription('The user to ban').setRequired(true))
+        .addStringOption(opt => opt.setName('reason').setDescription('Reason for ban').setRequired(false)),
+    execute: async function (interaction, client) {
+        if (!interaction.member.permissions.has(PermissionFlagsBits.BanMembers))
+            return interaction.reply({ content: "You don't have permissions to use this!", ephemeral: true });
 
-        let member = message.mentions.members.first();
-
+        const member = interaction.options.getMember('user');
         if (!member)
-            return message.reply("Please mention a valid member of this server");
+            return interaction.reply({ content: 'Please mention a valid member of this server.', ephemeral: true });
+        if (!member.bannable)
+            return interaction.reply({ content: 'I cannot ban this user! Do they have a higher role?', ephemeral: true });
 
-        if (!member.kickable)
-            return message.reply("I cannot ban this user! Do they have a higher role? Do I have kick permissions?");
-
-        let reason = args.slice(1).join(' ');
-        if (reason.length === 0) reason = "No reason provided";
+        const reason = interaction.options.getString('reason') || 'No reason provided';
 
         await member.ban({ reason })
-            .then(() => message.reply(`${member.user.tag} has been banned by ${message.author.tag} because : ${reason}`))
-            .catch(e => message.reply(`I couldn't ban because of : ${e}`));
+            .then(() => interaction.reply(`${member.user.tag} has been banned by ${interaction.user.tag} because: ${reason}`))
+            .catch(e => interaction.reply({ content: `I couldn't ban because of: ${e}`, ephemeral: true }));
     }
 };

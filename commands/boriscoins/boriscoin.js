@@ -1,8 +1,10 @@
+const { SlashCommandBuilder } = require('discord.js');
+
 module.exports = {
-    name: 'Boris Coin',
-    description: 'What is BorisCoin',
-    usage: 'boriscoin',
-    execute: async function (message, client, args) {
-        await message.channel.send("<:boriscoin:798017751842291732>")
+    data: new SlashCommandBuilder()
+        .setName('boriscoin')
+        .setDescription('What is BorisCoin'),
+    execute: async function (interaction, client) {
+        await interaction.reply('<:boriscoin:798017751842291732>');
     }
 };

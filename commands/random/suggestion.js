@@ -1,20 +1,20 @@
 const Suggestions = require('../../models/suggestions');
-const { EmbedBuilder } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 
 module.exports = {
-    name: 'Suggestion',
-    description: 'Makes a suggestion to the developer',
-    usage: 'suggestion <sentence>',
-    execute: async function (message, client, args) {
-        const sayMessage = args.join(' ');
-        await Suggestions.create({ name: message.author.username, id: message.author.id, suggestion: sayMessage });
-
-        message.channel.send({
+    data: new SlashCommandBuilder()
+        .setName('suggestion')
+        .setDescription('Make a suggestion to the developer')
+        .addStringOption(opt => opt.setName('text').setDescription('Your suggestion').setRequired(true)),
+    execute: async function (interaction, client) {
+        const sayMessage = interaction.options.getString('text');
+        await Suggestions.create({ name: interaction.user.username, id: interaction.user.id, suggestion: sayMessage });
+        return interaction.reply({
             embeds: [new EmbedBuilder()
                 .setColor(0xAAFF00)
-                .setAuthor({ name: message.author.username, iconURL: message.author.avatarURL() })
+                .setAuthor({ name: interaction.user.username, iconURL: interaction.user.avatarURL() })
                 .setTitle('Suggestion')
-                .setDescription(`your suggestion has been recorded!`)]
+                .setDescription('your suggestion has been recorded!')]
         });
     }
 };

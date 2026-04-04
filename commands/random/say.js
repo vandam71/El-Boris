@@ -1,14 +1,16 @@
-const { PermissionFlagsBits } = require('discord.js');
+const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
 
 module.exports = {
-    name: 'Say',
-    description: 'Makes the bot say a sentence',
-    usage: 'say <sentence>',
-    execute: async function (message, client, args) {
-        if (!message.member.permissions.has(PermissionFlagsBits.KickMembers))
-            return message.reply("te fuder, não mandas no bot!");
-        const sayMessage = args.join(' ');
-        message.delete().catch(O_o => { });
-        message.channel.send(sayMessage);
+    data: new SlashCommandBuilder()
+        .setName('say')
+        .setDescription('Makes the bot say a sentence')
+        .setDefaultMemberPermissions(PermissionFlagsBits.KickMembers)
+        .addStringOption(opt => opt.setName('text').setDescription('Text to say').setRequired(true)),
+    execute: async function (interaction, client) {
+        if (!interaction.member.permissions.has(PermissionFlagsBits.KickMembers))
+            return interaction.reply({ content: 'te fuder, não mandas no bot!', ephemeral: true });
+        const sayMessage = interaction.options.getString('text');
+        await interaction.channel.send(sayMessage);
+        await interaction.reply({ content: '✅', ephemeral: true });
     }
 };

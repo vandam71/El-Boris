@@ -1,8 +1,10 @@
+const { SlashCommandBuilder } = require('discord.js');
+
 module.exports = {
-    name: 'Fist Bump',
-    description: 'Fist bumps someone',
-    usage: 'fistbump',
-    execute: async function (message, client, args) {
-        return message.channel.send('https://i.imgur.com/oL0XUD8.png');
+    data: new SlashCommandBuilder()
+        .setName('fistbump')
+        .setDescription('Fist bumps someone'),
+    execute: async function (interaction, client) {
+        return interaction.reply('https://i.imgur.com/oL0XUD8.png');
     }
 };
