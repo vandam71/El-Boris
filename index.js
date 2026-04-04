@@ -9,6 +9,11 @@ const logger = require('./logger');
 //Bot startup message
 client.on('ready', async () => {
     logger.info(`Bot has started, with ${client.users.cache.size} users, in ${client.channels.cache.size} channels of ${client.guilds.cache.size} guilds`)
+    // Sync all guilds the bot is already in (handles DB resets)
+    for (const guild of client.guilds.cache.values()) {
+        await Guild.syncGuild(guild);
+    }
+    logger.info('Guild sync complete');
     await client.user.setPresence({
         activities: [{
             name: '+help',
@@ -21,7 +26,7 @@ client.on('ready', async () => {
 //When the bot is added to a new server
 client.on('guildCreate', async guild => {
     logger.info(`New guild joined: ${guild.name} (id: ${guild.id}). This guild has ${guild.memberCount} members!`)
-    await Guild.create({name: guild.name, id: guild.id});
+    await Guild.syncGuild(guild);
 });
 
 //When the bot is removed from a server

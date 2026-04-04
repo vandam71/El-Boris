@@ -22,8 +22,17 @@ guildSchema.statics.findById = function (id) {
 };
 
 guildSchema.statics.getPrefix = async function (id) {
-    let guild = await this.findById(id)
+    let guild = await this.findById(id);
+    if (!guild) return '+';
     return guild['prefix'].toString();
+};
+
+guildSchema.statics.syncGuild = async function (discordGuild) {
+    await this.findOneAndUpdate(
+        {id: discordGuild.id},
+        {name: discordGuild.name, id: discordGuild.id},
+        {upsert: true, setDefaultsOnInsert: true}
+    );
 };
 
 const Guild = mongoose.model('Guild', guildSchema);
