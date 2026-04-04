@@ -59,6 +59,7 @@ userSchema.statics.findById = function (id) {
 
 userSchema.statics.getPerks = async function (id) {
     let user = await this.findById(id);
+    if (!user) return [];
     let perks = [];
     for (const item of user.inventory) {
         if (await Item.getCategory(item.id) === 'perk') {
@@ -70,11 +71,13 @@ userSchema.statics.getPerks = async function (id) {
 
 userSchema.statics.getBalance = async function (id) {
     let user = await User.findById(id);
+    if (!user) return 0;
     return user.coins;
 };
 
 userSchema.statics.checkInventory = async function (id, itemId) {
     let user = await this.findById(id);
+    if (!user) return null;
     return user.inventory.find(o => o.id === itemId);
 };
 
@@ -98,6 +101,7 @@ userSchema.methods.addItem = async function (name, id) {
 
 userSchema.methods.removeItem = async function (name) {
     let obj = this.inventory.find(x => x.name === name);
+    if (!obj) return;
     if (obj.quantity === 1) {
         let index = this.inventory.indexOf(obj);
         this.inventory.splice(index, 1);
