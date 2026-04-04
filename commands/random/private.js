@@ -14,14 +14,14 @@ module.exports = {
         const setting = interaction.options.getString('setting');
         await User.findOne({ id: interaction.user.id }).then(async user => {
             if (setting === 'on') {
-                user.private = false;
+                user.private = true;
                 const embed = new EmbedBuilder()
                     .setColor(0xACA19D)
                     .setAuthor({ name: interaction.user.username, iconURL: interaction.user.avatarURL() })
                     .setTitle('You turned private messages on');
                 await interaction.reply({ embeds: [embed] });
             } else {
-                user.private = true;
+                user.private = false;
                 const embed = new EmbedBuilder()
                     .setColor(0xACA19D)
                     .setAuthor({ name: interaction.user.username, iconURL: interaction.user.avatarURL() })

@@ -44,6 +44,10 @@ const userSchema = mongoose.Schema({
         type: Number,
         default: 0
     },
+    private: {
+        type: Boolean,
+        default: false
+    },
     inventory: {
         type: [itemSchema]
     }
