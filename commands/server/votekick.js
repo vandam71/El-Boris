@@ -37,6 +37,6 @@ module.exports = {
             .then(async () => {
                 // TODO: count votes and kick if threshold met
             })
-            .catch(() => {});
+            .catch(() => { });
     },
 };

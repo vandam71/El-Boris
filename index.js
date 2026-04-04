@@ -9,7 +9,7 @@ const Guild = require('./models/guild');
 const logger = require('./logger');
 
 //Bot startup message
-client.on('ready', async () => {
+client.on('clientReady', async () => {
     logger.info(`Bot has started, with ${client.users.cache.size} users, in ${client.channels.cache.size} channels of ${client.guilds.cache.size} guilds`)
     // Sync all guilds the bot is already in (handles DB resets)
     for (const guild of client.guilds.cache.values()) {
@@ -20,6 +20,7 @@ client.on('ready', async () => {
     // Register guild-scoped slash commands (instant propagation)
     const rest = new REST().setToken(process.env.DISCORD_API);
     const slashBody = [...slashCommands.values()].map(cmd => cmd.data.toJSON());
+    logger.info(`Registering ${slashBody.length} slash commands for app ${client.user.id} in guild ${config.server_id}`);
     try {
         await rest.put(
             Routes.applicationGuildCommands(client.user.id, config.server_id),
@@ -27,7 +28,7 @@ client.on('ready', async () => {
         );
         logger.info(`Registered ${slashBody.length} slash commands`);
     } catch (e) {
-        logger.error('Failed to register slash commands: ' + e.message);
+        logger.error(`Failed to register slash commands for guild ${config.server_id}: ${e.message}`);
     }
 
     await client.user.setPresence({
@@ -93,9 +94,9 @@ client.on('interactionCreate', async interaction => {
         logger.error(e.message);
         const err = { content: e.message, ephemeral: true };
         if (interaction.replied || interaction.deferred) {
-            await interaction.followUp(err).catch(() => {});
+            await interaction.followUp(err).catch(() => { });
         } else {
-            await interaction.reply(err).catch(() => {});
+            await interaction.reply(err).catch(() => { });
         }
     }
 });

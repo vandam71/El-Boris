@@ -1,4 +1,4 @@
-# El Boris — v3.0.1
+# El Boris — v3.0.2
 
 A Discord bot built with discord.js v14, Node.js v20, and MongoDB (Mongoose v8).
 
@@ -44,6 +44,11 @@ A Discord bot built with discord.js v14, Node.js v20, and MongoDB (Mongoose v8).
 - [ ] Some kind of prestige system
 
 ## Changelog
+
+**v3.0.2**
+- Fixed `ready` → `clientReady` deprecation warning (discord.js v14 prep for v15)
+- Improved slash command registration logging (app ID + guild ID)
+- Fixed slash command error message to include guild ID
 
 **v3.0.1**
 - Migrated all commands to slash commands (`/command` format)
