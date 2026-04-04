@@ -53,6 +53,7 @@ client.on("guildDelete", guild => {
 
 //Command handler
 client.on('messageCreate', async message => {
+    try {
     if (message.author.bot) return;
 
     if (client.devMode && message.author.id !== '90535285909118976') return;
@@ -72,6 +73,9 @@ client.on('messageCreate', async message => {
     await commandHandler(message, client, prefix);              //very well made command handler :)
 
     logger.command(`User ${message.author.username} send a command to ${message.channel.name} in ${message.guild.name}`);
+    } catch (e) {
+        logger.error(`messageCreate error: ${e.message}`);
+    }
 });
 
 //new member added
@@ -106,4 +110,4 @@ client.on('error', e => logger.error(e));
 client.on('warn', e => logger.warn(e));
 client.on('debug', e => logger.debug(e));
 
-client.login(process.env.DISCORD_API).then();
+client.login(process.env.DISCORD_API).catch(e => { logger.error(`Login failed: ${e.message}`); process.exit(1); });

@@ -13,6 +13,6 @@ mongoose.connection.on('disconnected', function () {
     logger.info('Mongoose default connection disconnected');
 });
 
-mongoose.connect(process.env.MONGODB_URI).then();
+mongoose.connect(process.env.MONGODB_URI).catch(e => { logger.error(`MongoDB connection failed: ${e.message}`); process.exit(1); });
 
 module.exports = mongoose;
