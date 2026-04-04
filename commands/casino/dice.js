@@ -32,8 +32,6 @@ module.exports = {
         client.activeDice.add(interaction.user.id);
         client.activeDice.add(member.id);
 
-        await new Transaction(interaction.user.id, -bet_value, 'Dice').process();
-
         let roll_1 = Math.floor(Math.random() * 100) + 1;
         let roll_2 = Math.floor(Math.random() * 100) + 1;
 
@@ -54,8 +52,19 @@ module.exports = {
             .then(async collected => {
                 const reaction = collected.first();
                 if (reaction.emoji.name === '✔') {
+                    // Atomically deduct sender's bet now that opponent accepted
+                    const senderUpdate = await User.findOneAndUpdate(
+                        { id: interaction.user.id, coins: { $gte: bet_value } },
+                        { $inc: { coins: -bet_value } }
+                    );
+                    if (!senderUpdate) {
+                        await dice_message.edit({ embeds: [new EmbedBuilder().setColor(0xAF873D).setTitle('Dice Challenge').setDescription('Challenger no longer has enough coins. Cancelled!')] });
+                        client.activeDice.delete(interaction.user.id);
+                        client.activeDice.delete(member.id);
+                        return dice_message.reactions.removeAll();
+                    }
                     if (await User.getBalance(member.id) < bet_value) {
-                        await new Transaction(interaction.user.id, bet_value, 'Dice').process();
+                        await User.findOneAndUpdate({ id: interaction.user.id }, { $inc: { coins: bet_value } });
                         await dice_message.edit({ embeds: [new EmbedBuilder().setColor(0xAF873D).setTitle('Dice Challenge').setDescription('You dont have enough coins to accept this challenge. Cancelled!')] });
                         client.activeDice.delete(interaction.user.id);
                         client.activeDice.delete(member.id);
@@ -70,7 +79,6 @@ module.exports = {
                         await dice_message.edit({ embeds: [new EmbedBuilder().setColor(0xAF873D).setTitle('Dice Challenge').setDescription(`**${interaction.user.username}** won the dice with a roll of **${roll_1}** vs **${roll_2}**, and received **${bet_value}** <:boriscoin:798017751842291732>`)] });
                     }
                 } else {
-                    await new Transaction(interaction.user.id, bet_value, 'Dice').process();
                     await dice_message.edit({ embeds: [new EmbedBuilder().setColor(0xAF873D).setTitle('Dice Challenge').setDescription(`**${member.displayName}** declined the dice, better friends next time!`)] });
                 }
                 client.activeDice.delete(interaction.user.id);
@@ -78,8 +86,7 @@ module.exports = {
                 await dice_message.reactions.removeAll();
             })
             .catch(async () => {
-                await new Transaction(interaction.user.id, bet_value, 'Dice').process();
-                await dice_message.edit({ embeds: [new EmbedBuilder().setColor(0xAF873D).setTitle('Dice Challenge').setDescription('Challenge timed out, bet returned.')] });
+                await dice_message.edit({ embeds: [new EmbedBuilder().setColor(0xAF873D).setTitle('Dice Challenge').setDescription('Challenge timed out, bet not deducted.')] });
                 client.activeDice.delete(interaction.user.id);
                 client.activeDice.delete(member.id);
                 await dice_message.reactions.removeAll();
