@@ -1,7 +1,7 @@
 const Transaction = require('../../struct/Transaction');
-const {mining_cooldown} = require('../../config.json');
-const Discord = require('discord.js');
-const {User} = require('../../models/user');
+const { mining_cooldown } = require('../../config.json');
+const { EmbedBuilder } = require('discord.js');
+const { User } = require('../../models/user');
 const Item = require('../../models/item');
 
 module.exports = {
@@ -22,12 +22,12 @@ module.exports = {
         let speedValue = ((!speedPerk) ? 0 : speedPerk.quantity);
         let luckValue = ((!luckPerk) ? 0 : luckPerk.quantity);
 
-        let mineMessage = new Discord.MessageEmbed()
+        let mineMessage = new EmbedBuilder()
             .setColor(0xAF873D)
-            .setAuthor(message.author.username, message.author.avatarURL())
+            .setAuthor({ name: message.author.username, iconURL: message.author.avatarURL() })
             .setTitle('Mining...')
             .setDescription(`The mining process has started. It will take **${(mining_cooldown) - (5 * speedValue)}** seconds.\n You will receive <:boriscoin:798017751842291732> **${luckValue}** extra.`);
-        let msg = await message.channel.send({embeds: [mineMessage]});
+        let msg = await message.channel.send({ embeds: [mineMessage] });
 
         setTimeout(async () => {
             client.minedRecently.delete(message.author.id);
@@ -42,22 +42,22 @@ module.exports = {
             let gold_roll = Math.floor(Math.random() * 1000) + 1
 
             if (bronze_roll === 1) {
-                let item = await Item.findOne({id: 801});
-                User.findOne({id: message.author.id}).then(async user => {
+                let item = await Item.findOne({ id: 801 });
+                User.findOne({ id: message.author.id }).then(async user => {
                     await user.addItem(item.name, item.id);
                     user.save();
                 });
-                mineMessage.addField('Item Drop:', '<' + item.emote + '>' + 'Bronze Key', true);
+                mineMessage.addFields({ name: 'Item Drop:', value: '<' + item.emote + '>' + 'Bronze Key', inline: true });
             }
             if (gold_roll === 1) {
-                let item = await Item.findOne({id: 802});
-                User.findOne({id: message.author.id}).then(async user => {
+                let item = await Item.findOne({ id: 802 });
+                User.findOne({ id: message.author.id }).then(async user => {
                     await user.addItem(item.name, item.id);
                     user.save();
                 });
-                mineMessage.addField('Item Drop:', '<' + item.emote + '>' + 'Gold Key', true);
+                mineMessage.addFields({ name: 'Item Drop:', value: '<' + item.emote + '>' + 'Gold Key', inline: true });
             }
-            return msg.edit({embeds: [mineMessage]})
+            return msg.edit({ embeds: [mineMessage] })
         }, (mining_cooldown * 1000) - (5000 * speedValue));
     }
 };

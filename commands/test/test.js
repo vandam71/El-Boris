@@ -1,5 +1,4 @@
-const Discord = require('discord.js');
-const {User} = require("../../models/user");
+const { User } = require("../../models/user");
 const Item = require("../../models/item");
 
 module.exports = {

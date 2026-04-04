@@ -1,4 +1,4 @@
-const Discord = require('discord.js');
+const { EmbedBuilder } = require('discord.js');
 
 module.exports = {
     name: 'Inspire',
@@ -8,8 +8,8 @@ module.exports = {
         const res = await fetch('https://zenquotes.io/api/random');
         const json = await res.json();
         message.channel.send({
-            embeds: [new Discord.MessageEmbed()
-                .setAuthor(message.author.username, message.author.avatarURL())
+            embeds: [new EmbedBuilder()
+                .setAuthor({ name: message.author.username, iconURL: message.author.avatarURL() })
                 .setTitle(json[0].a)
                 .setDescription(json[0].q)]
         });

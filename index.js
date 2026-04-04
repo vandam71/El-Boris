@@ -1,8 +1,9 @@
 require('dotenv').config();
+const { ActivityType } = require('discord.js');
 const ElBoris = require("./struct/Client");
 const client = new ElBoris();
-const {commandHandler} = require("./commands");
-const {newMessageUser} = require('./models/user');
+const { commandHandler } = require("./commands");
+const { newMessageUser } = require('./models/user');
 const Guild = require('./models/guild');
 const logger = require('./logger');
 
@@ -16,8 +17,8 @@ client.on('ready', async () => {
     logger.info('Guild sync complete');
     await client.user.setPresence({
         activities: [{
-            name: '+help',
-            type: 'LISTENING'
+            name: '/help',
+            type: ActivityType.Listening
         }],
         status: 'online'
     });

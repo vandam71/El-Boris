@@ -1,6 +1,6 @@
 const Item = require('../../models/item');
 const Guild = require('../../models/guild');
-const Discord = require('discord.js');
+const { EmbedBuilder } = require('discord.js');
 
 module.exports = {
     name: 'Shop',
@@ -21,24 +21,24 @@ module.exports = {
                 categoryMessage += capCategory + ' Shop' + " **" + prefix + "shop " + category + "**\n";
             });
 
-            let embedMessage = new Discord.MessageEmbed()
-                .setColor('0xD8BFD8')
-                .setAuthor(message.author.username, message.author.avatarURL())
+            let embedMessage = new EmbedBuilder()
+                .setColor(0xD8BFD8)
+                .setAuthor({ name: message.author.username, iconURL: message.author.avatarURL() })
                 .setTitle('Shop')
                 .setDescription(categoryMessage);
 
-            return message.channel.send({embeds: [embedMessage]});
+            return message.channel.send({ embeds: [embedMessage] });
         }
 
         if (!categories.includes(args[0])) return;
 
-        let items = await Item.find({category: args[0]});
+        let items = await Item.find({ category: args[0] });
 
         let capCategory = args[0].charAt(0).toUpperCase() + args[0].slice(1);
 
-        let embedMessage = new Discord.MessageEmbed()
-            .setColor('0xD8BFD8')
-            .setAuthor(message.author.username, message.author.avatarURL())
+        let embedMessage = new EmbedBuilder()
+            .setColor(0xD8BFD8)
+            .setAuthor({ name: message.author.username, iconURL: message.author.avatarURL() })
             .setTitle(capCategory + ' Shop');
 
         let messageConcat = '';
@@ -49,6 +49,6 @@ module.exports = {
 
         embedMessage.setDescription(messageConcat);
 
-        return message.channel.send({embeds: [embedMessage]});
+        return message.channel.send({ embeds: [embedMessage] });
     }
 };

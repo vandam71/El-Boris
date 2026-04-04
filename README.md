@@ -1,64 +1,57 @@
-- [x] Change file structure, remove help function;
-- [x] Change experience calculation (requires database reset);
-- [x] Check how to have static images (changed to emote);
-- [x] Starter shop and buy options;
-- [ ] Shop Sprites:
-    - [ ] Weapons;
-    - [ ] Fish;
-    - [ ] Upgrades;
-- [x] Better command handler;
-- [x] Better Logger - https://stackify.com/winston-logging-tutorial/;
-- [x] Make pretty Embed stuff;
-- [x] Fix help command;
-- [x] Improve mining method:
-    - [x] Add a luck and speed upgrade;
-- [x] Profile perks (mining and other);
-- [x] Make a suggestions command, that saves requests for bot functions;
-- [ ] Maybe work on a minigame;
+# El Boris — v3.0.0
 
-**Fixes**
-- [x] Fix Dice Command (new Discordjs version):
-    - [x] Dice command is working but need to be redone to support transactions;
-- [x] Empty bot command gives an error message "+";
-- [x] Fix NSFW command;
-- [x] All permission commands are not working;
-- [x] Find a better buy (method to add something to the user inventory, because of mining rewards);
-- [x] User exists (Dice and Give);
-- [x] Allin keyword when balance is 0;
-- [ ] Space after bot prefix is working with commands
-  - "+ command" maybe it shouldn't? 
+A Discord bot built with discord.js v14, Node.js v20, and MongoDB (Mongoose v8).
 
-**BEFORE 3.0**
-- [x] Active Dice challenge check;
-- [x] Dice to deduct funds, and if timeout of decline give them back;
-- [x] Add experience drop to chest open;
-- [ ] Vote kick from voice channel;
+## Stack
+
+- **discord.js** 14.x (slash commands, EmbedBuilder, GatewayIntentBits)
+- **mongoose** 8.x
+- **Node.js** 20.x
+- **nodemon** 3.x (dev)
+
+## Setup
+
+1. Copy `.env.example` → `.env` and fill in `TOKEN`, `MONGO_URI`, `PREFIX`
+2. `npm install`
+3. `npm run dev` (nodemon) or `npm start`
+
+## Commands
+
+| Category | Commands |
+|---|---|
+| BorisCoins | boriscoin, chest, give, mine |
+| Casino | blackjack, coinflip, dice, slots, specialslots |
+| Dev | dev, help, release |
+| Gaming | opgg |
+| Random | azia, borischill, casinha, cat, die, discord, fistbump, giphy, highscores, inspire, levelup, nsfw, ping, private, say, suggestion |
+| Roles | role |
+| Server | ban, kick, poke, poll, prefix, purge, votekick |
+| Shop | buy, info, shop, upgrade |
+| Team | team |
+| User | inventory, peek, profile |
+
+## Roadmap — 3.x
+
+- [ ] Migrate all commands to slash commands
+- [ ] Vote kick from voice channel
 - [ ] Poll system
-- [ ] Teams
-  - Create a team (with Boriscoins);
-  - Join a team;
-  - Owner to be able to delete a team;
-  - Detailed Stats (if not too heavy on database);
-- [ ] Mining blocks with bonus;
-- [ ] Some kind of prestige;
-- [x] Coin Flip;
-- [ ] Super Special Slots Machine;
-- [ ] Scratch Card;
-- [x] Evaluate the need for Buy/Upgrade Cooldown;
-- [ ] Probably inventory sorting (or at least keyword filtering);
-- [ ] Transactions to give xp;
-- [ ] Give/Sell Item command;
-- [ ] User lock;
-- [ ] Fishing command (with sell after (+sell fish));
-- [ ] Quests (fish x times, mine x times, slots x times);
+- [ ] Teams (create, join, delete, stats)
+- [ ] Mining blocks with bonus drops
+- [ ] Fishing command + sell fish
+- [ ] Scratch Card
+- [ ] Inventory sorting / keyword filtering
+- [ ] Quests (fish x, mine x, slots x)
+- [ ] Some kind of prestige system
 
-**AFTER 4.0**
-- Everything from this point on will be with Discord Buttons (https://discordjs.guide/interactions/buttons.html#building-and-sending-buttons);
-- Interactions update and slash commands;
-- [ ] Fishing command (with sell after (+sell fish));
-- [ ] Probably inventory sorting (or at least keyword filtering);
-- [ ] Scratch Card;
-- [ ] Mining blocks with bonus;
+## Changelog
 
-**Latest Version: 2.7.8**
-- Hotfixing coinflip command;
+**v3.0.0**
+- Upgraded discord.js v13 → v14 (EmbedBuilder, GatewayIntentBits, PermissionFlagsBits, ActivityType)
+- Upgraded mongoose v6 → v8, axios v0.26 → v1, nodemon v2 → v3
+- Replaced all deprecated npm packages with Node 20 built-in `fetch`
+- Fixed guild sync on bot ready (handles DB resets gracefully)
+- Removed audio dependencies (incompatible with Node 20)
+- 0 npm audit vulnerabilities
+
+**v2.7.8**
+- Hotfix: coinflip command

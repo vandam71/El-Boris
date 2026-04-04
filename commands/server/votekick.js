@@ -1,4 +1,4 @@
-const Discord = require("discord.js");
+const { EmbedBuilder } = require("discord.js");
 
 module.exports = {
     name: 'Vote Kick',
@@ -34,15 +34,15 @@ module.exports = {
                 return ['✔'].includes(reaction.emoji.name) && members_id.includes(user.id);
             }
 
-            let embedMessage = new Discord.MessageEmbed()
+            let embedMessage = new EmbedBuilder()
                 .setColor(0x4F2A5D)
                 .setTitle('Vote Kick')
                 .setDescription(`Voting to kick **${member_tag.displayName}**.`);
 
-            message.channel.send({embeds: [embedMessage]}).then(async vote_kick_message => {
+            message.channel.send({ embeds: [embedMessage] }).then(async vote_kick_message => {
                 await vote_kick_message.react('✔');
 
-                vote_kick_message.awaitReactions({filter, max: 1, time: 60000, errors: ['time']})
+                vote_kick_message.awaitReactions({ filter, max: 1, time: 60000, errors: ['time'] })
                     .then(async collected => {
                         // count how many reacts are received and if it's over the threshold do stuff
                     });

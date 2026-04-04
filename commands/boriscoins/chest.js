@@ -1,5 +1,5 @@
-const {User} = require('../../models/user');
-const Discord = require("discord.js");
+const { User } = require('../../models/user');
+const { EmbedBuilder } = require("discord.js");
 const Transaction = require("../../struct/Transaction");
 
 module.exports = {
@@ -15,17 +15,17 @@ module.exports = {
         }, 5 * 1000);
 
         let key = args.join(' ');
-        let chestMessage = new Discord.MessageEmbed()
+        let chestMessage = new EmbedBuilder()
             .setColor(0xFE961A)
-            .setAuthor(message.author.username, message.author.avatarURL())
+            .setAuthor({ name: message.author.username, iconURL: message.author.avatarURL() })
             .setTitle('Opening Chest');
         switch (key) {
             case 'Bronze Key':
-                User.findOne({id: message.author.id}).then(async user => {
+                User.findOne({ id: message.author.id }).then(async user => {
                     let keyObj = await user.findItem(key);
                     if (!keyObj) {
                         chestMessage.setTitle('Failed!').setDescription("You don't have this key!");
-                        return message.channel.send({embeds: [chestMessage]});
+                        return message.channel.send({ embeds: [chestMessage] });
                     }
 
                     // Receive 300 to 400 coins and 200 to 300xp (to be added latter)
@@ -38,15 +38,15 @@ module.exports = {
                     user.save();
 
                     chestMessage.setTitle('Bronze Chest').setDescription("You received <:boriscoin:798017751842291732> " + coins_roll + " and <:xp:801554148994056202> " + xp_roll + " from the chest.");
-                    return message.channel.send({embeds: [chestMessage]});
+                    return message.channel.send({ embeds: [chestMessage] });
                 });
                 break;
             case 'Gold Key':
-                User.findOne({id: message.author.id}).then(async user => {
+                User.findOne({ id: message.author.id }).then(async user => {
                     let keyObj = await user.findItem(key);
                     if (!keyObj) {
                         chestMessage.setTitle('Failed!').setDescription("You don't have this key!");
-                        return message.channel.send({embeds: [chestMessage]});
+                        return message.channel.send({ embeds: [chestMessage] });
                     }
 
                     // Receive 2-3k coins and 500 to 1000 xp (to be added latter)
@@ -59,7 +59,7 @@ module.exports = {
                     user.save();
 
                     chestMessage.setTitle('Gold Chest').setDescription("You received <:boriscoin:798017751842291732> " + coins_roll + " and <:xp:801554148994056202> " + xp_roll + " from the chest.");
-                    return message.channel.send({embeds: [chestMessage]});
+                    return message.channel.send({ embeds: [chestMessage] });
                 });
                 break;
             default:
@@ -69,7 +69,7 @@ module.exports = {
                     chestMessage.setTitle('Failed!').setDescription("This doesn't match any of the existing keys!");
                 }
 
-                return message.channel.send({embeds: [chestMessage]});
+                return message.channel.send({ embeds: [chestMessage] });
         }
     }
 }

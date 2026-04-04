@@ -1,5 +1,5 @@
-const Discord = require("discord.js");
-const {User} = require("../../models/user");
+const { EmbedBuilder } = require("discord.js");
+const { User } = require("../../models/user");
 const Transaction = require("../../struct/Transaction");
 const shuffle = require("shuffle-array")
 const slotsRecently = new Set();
@@ -13,12 +13,12 @@ module.exports = {
         if (args[0] === 'allin') {
             bet_value = await User.getBalance(message.author.id);
             if (bet_value === 0) {
-                return message.channel.send({embeds: [new Discord.MessageEmbed().setDescription("Can't all in 0.")]});
+                return message.channel.send({ embeds: [new EmbedBuilder().setDescription("Can't all in 0.")] });
             }
         } else if (!args[0] || isNaN(args[0]) || parseInt(args[0]) === 0) {
-            return message.channel.send({embeds: [new Discord.MessageEmbed().setDescription('The value you inserted is invalid!')]});
+            return message.channel.send({ embeds: [new EmbedBuilder().setDescription('The value you inserted is invalid!')] });
         } else if (await User.getBalance(message.author.id) < parseInt(args[0])) {
-            return message.channel.send({embeds: [new Discord.MessageEmbed().setDescription('You dont have enough coins!')]});
+            return message.channel.send({ embeds: [new EmbedBuilder().setDescription('You dont have enough coins!')] });
         } else {
             bet_value = parseInt(args[0]);
         }
@@ -39,26 +39,26 @@ module.exports = {
         let $$$ = items3[Math.floor(items3.length * Math.random())];
 
         let spinner = await message.channel.send({
-            embeds: [new Discord.MessageEmbed()
+            embeds: [new EmbedBuilder()
                 .setTitle("Special Slot Machine")
-                .setAuthor(message.author.username, message.author.avatarURL())
+                .setAuthor({ name: message.author.username, iconURL: message.author.avatarURL() })
                 .setDescription(`••••••••••••••••••••••••\n•••••• ❌ ❌ ❌ ••••••\n••••••••••••••••••••••••`)
                 .setColor(0xAF873D)]
         });
         setTimeout(() => {
             spinner.edit({
-                embeds: [new Discord.MessageEmbed()
+                embeds: [new EmbedBuilder()
                     .setTitle("Special Slot Machine")
-                    .setAuthor(message.author.username, message.author.avatarURL())
+                    .setAuthor({ name: message.author.username, iconURL: message.author.avatarURL() })
                     .setDescription(`••••••••••••••••••••••••\n•••••• ${$} ❌ ❌ ••••••\n••••••••••••••••••••••••`)
                     .setColor(0xAF873D)]
             });
         }, 600);
         setTimeout(() => {
             spinner.edit({
-                embeds: [new Discord.MessageEmbed()
+                embeds: [new EmbedBuilder()
                     .setTitle("Special Slot Machine")
-                    .setAuthor(message.author.username, message.author.avatarURL())
+                    .setAuthor({ name: message.author.username, iconURL: message.author.avatarURL() })
                     .setDescription(`••••••••••••••••••••••••\n•••••• ${$} ${$$} ❌ ••••••\n••••••••••••••••••••••••`)
                     .setColor(0xAF873D)]
             });
@@ -68,9 +68,9 @@ module.exports = {
             // create the embed
             // process the thing, add the field
             // print at the end
-            let win_screen = new Discord.MessageEmbed()
+            let win_screen = new EmbedBuilder()
                 .setTitle("Special Slot Machine")
-                .setAuthor(message.author.username, message.author.avatarURL())
+                .setAuthor({ name: message.author.username, iconURL: message.author.avatarURL() })
                 .setDescription(`••••••••••••••••••••••••\n•••••• ${$} ${$$} ${$$$} ••••••\n••••••••••••••••••••••••`)
                 .setColor(0xAF873D);
 
@@ -78,32 +78,32 @@ module.exports = {
                 if ($ === '🎰') {
                     // 3 Jokers -> 60
                     await new Transaction(message.author.id, bet_value * 59, 'Slots').process();
-                    win_screen.addField('Jackpot!', "Big win! You won " + bet_value * 60 + " <:boriscoin:798017751842291732>.");
+                    win_screen.addFields({ name: 'Jackpot!', value: "Big win! You won " + bet_value * 60 + " <:boriscoin:798017751842291732>." });
                 } else if ($ === '💎') {
                     // 3 Diamonds -> 40
                     await new Transaction(message.author.id, bet_value * 39, 'Slots').process();
-                    win_screen.addField('3 Diamonds', "You won " + bet_value * 40 + " <:boriscoin:798017751842291732>.")
+                    win_screen.addFields({ name: '3 Diamonds', value: "You won " + bet_value * 40 + " <:boriscoin:798017751842291732>." });
                 } else if ($ === '🍒') {
                     // 3 Cherries -> 20
                     await new Transaction(message.author.id, bet_value * 19, 'Slots').process();
-                    win_screen.addField('3 Cherries', "You won " + bet_value * 20 + " <:boriscoin:798017751842291732>.")
+                    win_screen.addFields({ name: '3 Cherries', value: "You won " + bet_value * 20 + " <:boriscoin:798017751842291732>." });
                 } else {
                     // 3 Other Fruits -> 10
                     await new Transaction(message.author.id, bet_value * 9, 'Slots').process();
-                    win_screen.addField('3 Of A Kind', "You won " + bet_value * 10 + " <:boriscoin:798017751842291732>.")
+                    win_screen.addFields({ name: '3 Of A Kind', value: "You won " + bet_value * 10 + " <:boriscoin:798017751842291732>." });
                 }
             } else if (($ === $$ || $ === $$$) && ($ === '🍒') || (($$ === $$$) && ($$ === '🍒'))) {
                 // 2 Cherries -> 3
                 await new Transaction(message.author.id, bet_value * 2, 'Slots').process();
-                win_screen.addField('2 Cherries', "You won " + bet_value * 3 + " <:boriscoin:798017751842291732>.")
+                win_screen.addFields({ name: '2 Cherries', value: "You won " + bet_value * 3 + " <:boriscoin:798017751842291732>." });
             } else if ($ === '🍒' || $$ === '🍒' || $$$ === '🍒') {
                 // 1 Cherry - 1
-                win_screen.addField('1 Cherry', "You break even.")
+                win_screen.addFields({ name: '1 Cherry', value: "You break even." });
             } else {
                 await new Transaction(message.author.id, -bet_value, 'Slots').process();
-                win_screen.addField('Lost...', "Better luck next time.")
+                win_screen.addFields({ name: 'Lost...', value: "Better luck next time." })
             }
-            spinner.edit({embeds: [win_screen]});
+            spinner.edit({ embeds: [win_screen] });
         }, 1800);
     }
 }

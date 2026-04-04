@@ -1,4 +1,4 @@
-const Discord = require('discord.js');
+const { EmbedBuilder } = require('discord.js');
 
 module.exports = {
     name: 'NSFW',
@@ -7,7 +7,7 @@ module.exports = {
     execute: async function (message, client, args) {
         if (!message.channel.nsfw) return message.channel.send('This command can only be executed in a NSFW channel!');
 
-        let lo = new Discord.MessageEmbed()
+        let lo = new EmbedBuilder()
             .setDescription('Loading...')
             .setTimestamp();
 
@@ -22,7 +22,7 @@ module.exports = {
             const res = await fetch(`https://nekobot.xyz/api/image?type=${type}`, { signal: controller.signal });
             const body = await res.json();
             await m.edit({
-                embeds: [new Discord.MessageEmbed()
+                embeds: [new EmbedBuilder()
                     .setDescription(body.message)
                     .setTimestamp()
                     .setImage(body.message)]

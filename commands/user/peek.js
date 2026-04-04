@@ -1,5 +1,5 @@
-const {User} = require('../../models/user');
-const Discord = require("discord.js");
+const { User } = require('../../models/user');
+const { EmbedBuilder } = require("discord.js");
 
 module.exports = {
     name: 'Peek',
@@ -7,16 +7,16 @@ module.exports = {
     usage: 'peek <user tag>',
     execute: async function (message, client, args) {
         let member = message.mentions.members.first();
-        let user = await User.findOne({id: member.user.id});
+        let user = await User.findOne({ id: member.user.id });
         if (user === null) {
             return message.reply("This user has no profile!");
         }
-        const embed = new Discord.MessageEmbed()
+        const embed = new EmbedBuilder()
             .setColor(0x00AE86)
-            .setAuthor(message.author.username, message.author.avatarURL())
+            .setAuthor({ name: message.author.username, iconURL: message.author.avatarURL() })
             .setTitle(`${member.user.username} Profile`)
-            .addField("Stats", `**Level: ${user.level}**\nAzia: **${user.azia}**`)
+            .addFields({ name: "Stats", value: `**Level: ${user.level}**\nAzia: **${user.azia}**` })
             .setThumbnail(member.user.avatarURL());
-        return message.channel.send({embeds: [embed]});
+        return message.channel.send({ embeds: [embed] });
     }
 };

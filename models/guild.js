@@ -18,7 +18,7 @@ const guildSchema = mongoose.Schema({
 });
 
 guildSchema.statics.findById = function (id) {
-    return this.findOne({id: id});
+    return this.findOne({ id: id });
 };
 
 guildSchema.statics.getPrefix = async function (id) {
@@ -29,9 +29,9 @@ guildSchema.statics.getPrefix = async function (id) {
 
 guildSchema.statics.syncGuild = async function (discordGuild) {
     await this.findOneAndUpdate(
-        {id: discordGuild.id},
-        {name: discordGuild.name, id: discordGuild.id},
-        {upsert: true, setDefaultsOnInsert: true}
+        { id: discordGuild.id },
+        { name: discordGuild.name, id: discordGuild.id },
+        { upsert: true, setDefaultsOnInsert: true }
     );
 };
 

@@ -1,5 +1,5 @@
 const Suggestions = require('../../models/suggestions');
-const Discord = require('discord.js');
+const { EmbedBuilder } = require('discord.js');
 
 module.exports = {
     name: 'Suggestion',
@@ -7,12 +7,12 @@ module.exports = {
     usage: 'suggestion <sentence>',
     execute: async function (message, client, args) {
         const sayMessage = args.join(' ');
-        await Suggestions.create({name: message.author.username, id: message.author.id, suggestion: sayMessage});
+        await Suggestions.create({ name: message.author.username, id: message.author.id, suggestion: sayMessage });
 
         message.channel.send({
-            embeds: [new Discord.MessageEmbed()
+            embeds: [new EmbedBuilder()
                 .setColor(0xAAFF00)
-                .setAuthor(message.author.username, message.author.avatarURL())
+                .setAuthor({ name: message.author.username, iconURL: message.author.avatarURL() })
                 .setTitle('Suggestion')
                 .setDescription(`your suggestion has been recorded!`)]
         });

@@ -1,5 +1,3 @@
-const Discord = require("discord.js");
-
 module.exports = {
     name: 'Poke',
     description: 'Send a private message to the user you want to poke',

@@ -1,6 +1,6 @@
-const {User} = require('../../models/user');
+const { User } = require('../../models/user');
 const Item = require('../../models/item');
-const Discord = require("discord.js");
+const { EmbedBuilder } = require("discord.js");
 
 module.exports = {
     name: 'Inventory',
@@ -11,9 +11,9 @@ module.exports = {
         let inventory = user.inventory;
 
         if (!(inventory.length > 0)) return message.channel.send({
-            embeds: [new Discord.MessageEmbed()
-                .setColor('0x00AE86')
-                .setAuthor(message.author.username, message.author.avatarURL())
+            embeds: [new EmbedBuilder()
+                .setColor(0x00AE86)
+                .setAuthor({ name: message.author.username, iconURL: message.author.avatarURL() })
                 .setTitle('Inventory')
                 .setDescription('Empty')]
         });
@@ -24,9 +24,9 @@ module.exports = {
         }
 
         message.channel.send({
-            embeds: [new Discord.MessageEmbed()
-                .setColor('0x00AE86')
-                .setAuthor(message.author.username, message.author.avatarURL())
+            embeds: [new EmbedBuilder()
+                .setColor(0x00AE86)
+                .setAuthor({ name: message.author.username, iconURL: message.author.avatarURL() })
                 .setTitle('Inventory')
                 .setDescription(messageConcat)]
         });
