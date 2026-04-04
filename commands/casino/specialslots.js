@@ -1,7 +1,6 @@
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const { User } = require('../../models/user');
 const Transaction = require('../../struct/Transaction');
-const shuffle = require('shuffle-array');
 const slotsRecently = new Set();
 
 module.exports = {
@@ -30,10 +29,9 @@ module.exports = {
         setTimeout(() => { slotsRecently.delete(interaction.user.id); }, 5 * 60 * 1000);
 
         let items = ['🎰', '💎', '🍒', '🍊', '🍌', '🍋'];
-        shuffle(items);
-        let $ = items[0];
-        let $$ = items[1];
-        let $$$ = items[2];
+        let $ = items[Math.floor(Math.random() * items.length)];
+        let $$ = items[Math.floor(Math.random() * items.length)];
+        let $$$ = items[Math.floor(Math.random() * items.length)];
 
         const spinner = await interaction.reply({
             embeds: [new EmbedBuilder().setTitle('Special Slot Machine').setAuthor({ name: interaction.user.username, iconURL: interaction.user.avatarURL() }).setDescription(`••••••••••••••••••••••••\n•••••• ❌ ❌ ❌ ••••••\n••••••••••••••••••••••••`).setColor(0xAF873D)],
