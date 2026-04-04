@@ -9,7 +9,7 @@ const Guild = require('./models/guild');
 const logger = require('./logger');
 
 //Bot startup message
-client.on('clientReady', async () => {
+client.on('ready', async () => {
     logger.info(`Bot has started, with ${client.users.cache.size} users, in ${client.channels.cache.size} channels of ${client.guilds.cache.size} guilds`)
     // Sync all guilds the bot is already in (handles DB resets)
     for (const guild of client.guilds.cache.values()) {
