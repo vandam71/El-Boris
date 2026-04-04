@@ -1,4 +1,4 @@
-# El Boris — v3.0.0
+# El Boris — v3.0.1
 
 A Discord bot built with discord.js v14, Node.js v20, and MongoDB (Mongoose v8).
 
@@ -32,7 +32,7 @@ A Discord bot built with discord.js v14, Node.js v20, and MongoDB (Mongoose v8).
 
 ## Roadmap — 3.x
 
-- [ ] Migrate all commands to slash commands
+- [x] Migrate all commands to slash commands
 - [ ] Vote kick from voice channel
 - [ ] Poll system
 - [ ] Teams (create, join, delete, stats)
@@ -44,6 +44,12 @@ A Discord bot built with discord.js v14, Node.js v20, and MongoDB (Mongoose v8).
 - [ ] Some kind of prestige system
 
 ## Changelog
+
+**v3.0.1**
+- Migrated all commands to slash commands (`/command` format)
+- Added `interactionCreate` handler with guild-scoped slash registration
+- Removed prefix-based command handling for user-facing commands
+- Fixed `server_id` precision issue in config (BigInt-safe string)
 
 **v3.0.0**
 - Upgraded discord.js v13 → v14 (EmbedBuilder, GatewayIntentBits, PermissionFlagsBits, ActivityType)
