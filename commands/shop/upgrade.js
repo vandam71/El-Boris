@@ -63,23 +63,22 @@ module.exports = {
             .then(async collected => {
                 const reaction = collected.first();
                 if (reaction.emoji.name === '✔') {
-                    User.findOne({ id: interaction.user.id }).then(async user => {
-                        let upgradeRoll = Math.floor(Math.random() * 100);
+                    const user = await User.findOne({ id: interaction.user.id });
+                    let upgradeRoll = Math.floor(Math.random() * 100);
 
-                        // delete or reduce the quantity of the material by one
-                        await user.removeItem(material.name);
+                    // delete or reduce the quantity of the material by one
+                    await user.removeItem(material.name);
 
-                        if (upgradeRoll <= successRate) {
-                            // if the roll is lower than the rate, the upgrade is successful
-                            await user.addItem(upgradablePerk.name, upgradablePerk.id);
-                            upgradeMessage.setDescription("You successfully upgraded <" + perk.emote + "> **" + perk.name + "** to **Tier " + (upgradablePerk.quantity + 1).toString() + "**.");
-                            await upgrade_message.edit({ embeds: [upgradeMessage] });
-                        } else {
-                            upgradeMessage.setDescription("You failed to upgrade <" + perk.emote + "> **" + perk.name + "** to **Tier " + (upgradablePerk.quantity + 1).toString() + "**.\n Better luck next time!");
-                            await upgrade_message.edit({ embeds: [upgradeMessage] });
-                        }
-                        user.save();
-                    });
+                    if (upgradeRoll <= successRate) {
+                        // if the roll is lower than the rate, the upgrade is successful
+                        await user.addItem(upgradablePerk.name, upgradablePerk.id);
+                        upgradeMessage.setDescription("You successfully upgraded <" + perk.emote + "> **" + perk.name + "** to **Tier " + (upgradablePerk.quantity + 1).toString() + "**.");
+                        await upgrade_message.edit({ embeds: [upgradeMessage] });
+                    } else {
+                        upgradeMessage.setDescription("You failed to upgrade <" + perk.emote + "> **" + perk.name + "** to **Tier " + (upgradablePerk.quantity + 1).toString() + "**.\n Better luck next time!");
+                        await upgrade_message.edit({ embeds: [upgradeMessage] });
+                    }
+                    await user.save();
                 } else {
                     upgradeMessage.setDescription(`You declined the upgrade.`);
                     await upgrade_message.edit({ embeds: [upgradeMessage] });
