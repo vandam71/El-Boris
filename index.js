@@ -77,7 +77,8 @@ client.on('messageCreate', async message => {
 //new member added
 client.on('guildMemberAdd', async member => {
     logger.info(`New User ${member.user.username} has joined ${member.guild.name}`);
-    await member.guild.channels.cache.findOne(c => c.name === "welcome").send(`${member.user.username} has joined this server`);
+    const welcomeChannel = member.guild.channels.cache.find(c => c.name === 'welcome');
+    if (welcomeChannel) await welcomeChannel.send(`${member.user.username} has joined this server`);
 });
 
 client.on('interactionCreate', async interaction => {
