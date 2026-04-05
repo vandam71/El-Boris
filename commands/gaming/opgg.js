@@ -32,6 +32,8 @@ module.exports = {
             Discord_message.addFields({ name: 'Most Played Champions', value: stats.most_played_champions.join(' ') });
 
             sent_message.edit({ embeds: [Discord_message] });
+        }).catch(() => {
+            sent_message.edit({ embeds: [Discord_message.setTitle('Failed to retrieve OP.GG stats. Try again later.')] });
         });
     }
 };
