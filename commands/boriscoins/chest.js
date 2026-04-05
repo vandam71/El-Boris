@@ -34,7 +34,7 @@ module.exports = {
                 let keyObj = await user.findItem(key);
                 if (!keyObj) {
                     chestMessage.setTitle('Failed!').setDescription("You don't have this key!");
-                    return interaction.reply({ embeds: [chestMessage] });
+                    return interaction.reply({ embeds: [chestMessage], ephemeral: true });
                 }
                 let coins_roll = Math.floor(Math.random() * 100) + 300;
                 let xp_roll = Math.floor(Math.random() * 100) + 200;
@@ -49,7 +49,7 @@ module.exports = {
                 let keyObj = await user.findItem(key);
                 if (!keyObj) {
                     chestMessage.setTitle('Failed!').setDescription("You don't have this key!");
-                    return interaction.reply({ embeds: [chestMessage] });
+                    return interaction.reply({ embeds: [chestMessage], ephemeral: true });
                 }
                 let coins_roll = Math.floor(Math.random() * 1000) + 2000;
                 let xp_roll = Math.floor(Math.random() * 500) + 500;
