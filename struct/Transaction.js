@@ -1,4 +1,4 @@
-const {User} = require('../models/user');
+const { User } = require('../models/user');
 const _Transaction = require('../models/transaction');
 const logger = require('../logger');
 

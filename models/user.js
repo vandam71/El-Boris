@@ -54,7 +54,7 @@ const userSchema = mongoose.Schema({
 });
 
 userSchema.statics.findById = function (id) {
-    return this.findOne({id: id});
+    return this.findOne({ id: id });
 };
 
 userSchema.statics.getPerks = async function (id) {
@@ -63,7 +63,7 @@ userSchema.statics.getPerks = async function (id) {
     let perks = [];
     for (const item of user.inventory) {
         if (await Item.getCategory(item.id) === 'perk') {
-            perks.push({id: item.id, name: item.name, quantity: item.quantity})
+            perks.push({ id: item.id, name: item.name, quantity: item.quantity })
         }
     }
     return perks;
@@ -119,7 +119,7 @@ userSchema.methods.findItem = async function (name) {
     return this.inventory.find(x => x.name === name)
 }
 
-userSchema.methods.addExperience = async function (xp){
+userSchema.methods.addExperience = async function (xp) {
     this.xp += xp;
     let req_xp = 69 * (this.level + 1) * (1 + (this.level + 1));
     if (this.xp >= req_xp) {
@@ -130,10 +130,10 @@ userSchema.methods.addExperience = async function (xp){
 const User = mongoose.model('User', userSchema);
 
 async function newMessageUser(message) {
-    await User.findOne({id: message.author.id}).then(async user => {
+    await User.findOne({ id: message.author.id }).then(async user => {
 
         if (user === null) {
-            await User.create({name: message.author.username, id: message.author.id});
+            await User.create({ name: message.author.username, id: message.author.id });
             return logger.warn('New User Created (first time talking in the presence of the bot)');
         }
 
@@ -144,4 +144,4 @@ async function newMessageUser(message) {
     });
 }
 
-module.exports = {User, newMessageUser};
+module.exports = { User, newMessageUser };

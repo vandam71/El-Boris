@@ -9,7 +9,7 @@ const Guild = require('./models/guild');
 const logger = require('./logger');
 
 //Bot startup message
-client.on('ready', async () => {
+client.on('clientReady', async () => {
     logger.info(`Bot has started, with ${client.users.cache.size} users, in ${client.channels.cache.size} channels of ${client.guilds.cache.size} guilds`)
     // Sync all guilds the bot is already in (handles DB resets)
     for (const guild of client.guilds.cache.values()) {
@@ -54,25 +54,25 @@ client.on("guildDelete", guild => {
 //Command handler
 client.on('messageCreate', async message => {
     try {
-    if (message.author.bot) return;
+        if (message.author.bot) return;
 
-    if (client.devMode && message.author.id !== '90535285909118976') return;
+        if (client.devMode && message.author.id !== '90535285909118976') return;
 
-    // if (message.author.id === '398231924151418880' || message.author.id === '755848086823239700') return message.reply('"fdp"');
+        // if (message.author.id === '398231924151418880' || message.author.id === '755848086823239700') return message.reply('"fdp"');
 
-    if (message.content === '@everyone') {
-        return message.reply('@everyone ping ping @everyone');
-    }
+        if (message.content === '@everyone') {
+            return message.reply('@everyone ping ping @everyone');
+        }
 
-    await newMessageUser(message);
+        await newMessageUser(message);
 
-    const prefix = await Guild.getPrefix(message.guild.id);
+        const prefix = await Guild.getPrefix(message.guild.id);
 
-    if (!message.content.startsWith(prefix)) return;
+        if (!message.content.startsWith(prefix)) return;
 
-    await commandHandler(message, client, prefix);              //very well made command handler :)
+        await commandHandler(message, client, prefix);              //very well made command handler :)
 
-    logger.command(`User ${message.author.username} send a command to ${message.channel.name} in ${message.guild.name}`);
+        logger.command(`User ${message.author.username} send a command to ${message.channel.name} in ${message.guild.name}`);
     } catch (e) {
         logger.error(`messageCreate error: ${e.message}`);
     }

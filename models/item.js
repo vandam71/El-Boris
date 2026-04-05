@@ -29,11 +29,11 @@ const itemSchema = mongoose.Schema({
 });
 
 itemSchema.statics.findById = function (id) {
-    return this.findOne({id: id});
+    return this.findOne({ id: id });
 };
 
 itemSchema.statics.findByName = function (name) {
-    return this.findOne({name: name});
+    return this.findOne({ name: name });
 }
 
 itemSchema.statics.getItemString = async function (id, quantity) {
