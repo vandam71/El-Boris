@@ -1,4 +1,4 @@
-# El Boris — v3.0.2
+# El Boris — v3.1.0
 
 A Discord bot built with discord.js v14, Node.js v20, and MongoDB (Mongoose v8).
 
@@ -44,6 +44,27 @@ A Discord bot built with discord.js v14, Node.js v20, and MongoDB (Mongoose v8).
 - [ ] Some kind of prestige system
 
 ## Changelog
+
+**v3.1.0**
+- Fixed `clientReady` → `ready` (correct discord.js v14 event name — startup was silently broken)
+- Fixed `chest.js` double `module.exports` that overwrote the slash command definition
+- Fixed `specialslots.js` shuffle-based sampling that made jackpots mathematically impossible
+- Fixed `private.js` on/off logic being inverted; added `private` field to user schema
+- Fixed `guildMemberAdd` crash: `.cache.findOne()` doesn't exist, replaced with `.cache.find()` + null guard
+- Fixed `Transaction.process()` mixed `await`/`.then()` anti-pattern; audit record now skipped if user not found
+- Fixed `give.js` TOCTOU race: balance check + deduction are now atomic via `findOneAndUpdate` with `$gte`
+- Fixed `dice.js` bet being deducted before opponent accepts; deduction deferred to acceptance
+- Fixed `buy.js` `save()` not awaited and item being added before coins deducted
+- Fixed `upgrade.js` inner `User.findOne().then()` not awaited; reactions cleared before DB writes
+- Fixed `mine.js` speed perk allowing zero/negative delay; capped at 5s minimum
+- Fixed all schemas storing Discord IDs as `Number` (BigInt precision loss) — changed to `String`
+- Added `messageCreate` top-level try/catch
+- Added `.catch()` with `process.exit(1)` to `mongoose.connect()` and `client.login()`
+- Added null guards to `User.getPerks`, `User.getBalance`, `User.checkInventory`, `User.removeItem`
+- Added null guards to `Item.getItemString` and `Item.getCategory`
+- Fixed `chest.js` `removeItem()`, `addExperience()`, `save()` not awaited
+- Added try/catch in `mine.js` `setTimeout` callback to prevent silent failures
+- Fixed `azia.js` cooldown being applied before validating the target user exists
 
 **v3.0.2**
 - Fixed `ready` → `clientReady` deprecation warning (discord.js v14 prep for v15)
