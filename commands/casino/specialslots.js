@@ -15,7 +15,7 @@ module.exports = {
             bet_value = await User.getBalance(interaction.user.id);
             if (bet_value === 0)
                 return interaction.reply({ embeds: [new EmbedBuilder().setDescription("Can't all in 0.")], ephemeral: true });
-        } else if (!betInput || isNaN(betInput) || parseInt(betInput) === 0) {
+        } else if (!betInput || isNaN(betInput) || parseInt(betInput) < 1) {
             return interaction.reply({ embeds: [new EmbedBuilder().setDescription('The value you inserted is invalid!')], ephemeral: true });
         } else if (await User.getBalance(interaction.user.id) < parseInt(betInput)) {
             return interaction.reply({ embeds: [new EmbedBuilder().setDescription('You dont have enough coins!')], ephemeral: true });
