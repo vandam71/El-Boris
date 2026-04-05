@@ -8,6 +8,7 @@ module.exports = {
         .setDescription('View your user profile'),
     execute: async function (interaction, client) {
         let user = await User.findOne({ id: interaction.user.id });
+        if (!user) return interaction.reply({ content: "You have no profile yet! Talk in the server first.", ephemeral: true });
         let embed = new EmbedBuilder()
             .setColor(0x00AE86)
             .setTitle(`${interaction.user.username}'s Profile`)

@@ -27,6 +27,7 @@ module.exports = {
             .setTitle('Opening Chest');
 
         const user = await User.findOne({ id: interaction.user.id });
+        if (!user) return interaction.reply({ content: 'You have no profile yet! Talk in the server first.', ephemeral: true });
 
         switch (key) {
             case 'Bronze Key': {
