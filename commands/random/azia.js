@@ -14,13 +14,13 @@ module.exports = {
         const targetMember = interaction.options.getMember('user');
         const target = targetMember ? targetMember.user : interaction.user;
 
+        const user = await User.findOneAndUpdate({ id: target.id }, { $inc: { azia: 1 } });
+        if (!user)
+            return interaction.reply({ content: "This user hasn't talked in this server yet.", ephemeral: true });
+
         aziaRecently.add(interaction.user.id);
         setTimeout(() => { aziaRecently.delete(interaction.user.id); }, 60 * 1000);
 
-        User.findOneAndUpdate({ id: target.id }, { $inc: { azia: 1 } }).then(user => {
-            if (user === null)
-                return interaction.reply({ content: "This user hasn't talked in this server yet.", ephemeral: true });
-            return interaction.reply(`O <@${target.id}> já aziou ${user.azia + 1} vezes.`);
-        });
+        return interaction.reply(`O <@${target.id}> já aziou ${user.azia + 1} vezes.`);
     }
 };
