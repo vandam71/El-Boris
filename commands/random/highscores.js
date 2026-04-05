@@ -16,6 +16,7 @@ module.exports = {
                 { name: 'Coins', value: 'coins' }
             )),
     execute: async function (interaction, client) {
+        await interaction.deferReply();
         const sort = interaction.options.getString('sort');
         let users = await User.find({}).sort([[sort, 'desc']]).limit(10);
         let table = new AsciiTable();
@@ -36,6 +37,6 @@ module.exports = {
                 break;
         }
 
-        return interaction.reply('```\nHighscores\n' + table.toString() + '\n```');
+        return interaction.editReply('```\nHighscores\n' + table.toString() + '\n```');
     },
 };
