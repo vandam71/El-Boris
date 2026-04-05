@@ -39,12 +39,11 @@ module.exports = {
             return interaction.reply({ embeds: [buyMessage], ephemeral: true });
         }
 
-        User.findOne({ id: interaction.user.id }).then(async user => {
-            await user.addItem(item.name, item.id);
-            user.save();
-            await new Transaction(interaction.user.id, -item.price, 'Buy').process();
-            buyMessage.setDescription("You bought <" + item.emote + "> " + item.name + " for <:boriscoin:798017751842291732> " + item.price + ".");
-            return interaction.reply({ embeds: [buyMessage] });
-        });
+        await new Transaction(interaction.user.id, -item.price, 'Buy').process();
+        const user = await User.findOne({ id: interaction.user.id });
+        await user.addItem(item.name, item.id);
+        await user.save();
+        buyMessage.setDescription("You bought <" + item.emote + "> " + item.name + " for <:boriscoin:798017751842291732> " + item.price + ".");
+        return interaction.reply({ embeds: [buyMessage] });
     }
 };

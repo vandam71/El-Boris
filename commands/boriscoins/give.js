@@ -1,6 +1,5 @@
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const { User } = require('../../models/user');
-const Transaction = require('../../struct/Transaction');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -15,11 +14,15 @@ module.exports = {
         if (!member || member.id === interaction.user.id || !(await User.exists({ id: member.id })))
             return interaction.reply({ embeds: [new EmbedBuilder().setDescription('Not a valid user')], ephemeral: true });
 
-        if (await User.getBalance(interaction.user.id) < give_value)
+        // Atomically deduct — only succeeds if the sender has enough coins right now
+        const sender = await User.findOneAndUpdate(
+            { id: interaction.user.id, coins: { $gte: give_value } },
+            { $inc: { coins: -give_value } }
+        );
+        if (!sender)
             return interaction.reply({ embeds: [new EmbedBuilder().setDescription('You dont have enough coins to give')], ephemeral: true });
 
-        await new Transaction(interaction.user.id, -give_value, 'Give').process();
-        await new Transaction(member.id, give_value, 'Give').process();
+        await User.findOneAndUpdate({ id: member.id }, { $inc: { coins: give_value } });
 
         return interaction.reply({
             embeds: [new EmbedBuilder()

@@ -9,7 +9,7 @@ const Guild = require('./models/guild');
 const logger = require('./logger');
 
 //Bot startup message
-client.on('clientReady', async () => {
+client.on('ready', async () => {
     logger.info(`Bot has started, with ${client.users.cache.size} users, in ${client.channels.cache.size} channels of ${client.guilds.cache.size} guilds`)
     // Sync all guilds the bot is already in (handles DB resets)
     for (const guild of client.guilds.cache.values()) {
@@ -53,6 +53,7 @@ client.on("guildDelete", guild => {
 
 //Command handler
 client.on('messageCreate', async message => {
+    try {
     if (message.author.bot) return;
 
     if (client.devMode && message.author.id !== '90535285909118976') return;
@@ -72,12 +73,16 @@ client.on('messageCreate', async message => {
     await commandHandler(message, client, prefix);              //very well made command handler :)
 
     logger.command(`User ${message.author.username} send a command to ${message.channel.name} in ${message.guild.name}`);
+    } catch (e) {
+        logger.error(`messageCreate error: ${e.message}`);
+    }
 });
 
 //new member added
 client.on('guildMemberAdd', async member => {
     logger.info(`New User ${member.user.username} has joined ${member.guild.name}`);
-    await member.guild.channels.cache.findOne(c => c.name === "welcome").send(`${member.user.username} has joined this server`);
+    const welcomeChannel = member.guild.channels.cache.find(c => c.name === 'welcome');
+    if (welcomeChannel) await welcomeChannel.send(`${member.user.username} has joined this server`);
 });
 
 client.on('interactionCreate', async interaction => {
@@ -105,4 +110,4 @@ client.on('error', e => logger.error(e));
 client.on('warn', e => logger.warn(e));
 client.on('debug', e => logger.debug(e));
 
-client.login(process.env.DISCORD_API).then();
+client.login(process.env.DISCORD_API).catch(e => { logger.error(`Login failed: ${e.message}`); process.exit(1); });

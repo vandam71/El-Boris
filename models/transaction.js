@@ -2,7 +2,7 @@ const mongoose = require('./index');
 
 const transactionSchema = mongoose.Schema({
     user: {
-        type: Number,
+        type: String,
         required: true
     },
     value: {

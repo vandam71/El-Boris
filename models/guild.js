@@ -6,7 +6,7 @@ const guildSchema = mongoose.Schema({
         required: true
     },
     id: {
-        type: Number,
+        type: String,
         required: true,
         unique: true
     },
