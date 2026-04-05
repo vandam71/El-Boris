@@ -18,8 +18,12 @@ module.exports = class extends Client {
         // project wise variables
         this.activeDice = new Set();
         this.pokedRecently = new Set();
-        this.minedRecently = new Set();
-        this.chestRecently = new Set();
+        // cooldown Maps: id -> expireTimestamp (ms)
+        this.minedRecently = new Map();
+        this.chestRecently = new Map();
+        this.flipRecently = new Map();
+        this.slotsRecently = new Map();
+        this.specialSlotsRecently = new Map();
 
         // dev mode global flag
         this.devMode = false;

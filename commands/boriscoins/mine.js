@@ -10,21 +10,26 @@ module.exports = {
         .setName('mine')
         .setDescription('Mine for BorisCoins'),
     execute: async function (interaction, client) {
-        if (client.minedRecently.has(interaction.user.id))
-            return interaction.reply({ content: 'you are still mining!', ephemeral: true });
-        client.minedRecently.add(interaction.user.id);
+        const now = Date.now();
+        const expires = client.minedRecently.get(interaction.user.id);
+        if (expires && now < expires) {
+            const remaining = Math.ceil((expires - now) / 1000);
+            return interaction.reply({ content: `You are still mining! Try again in **${remaining}s**.`, ephemeral: true });
+        }
 
         let perks = await User.getPerks(interaction.user.id);
         let speedPerk = perks.find(o => o.name === 'Speed Perk');
         let luckPerk = perks.find(o => o.name === 'Luck Perk');
         let speedValue = ((!speedPerk) ? 0 : speedPerk.quantity);
         let luckValue = ((!luckPerk) ? 0 : luckPerk.quantity);
+        const cooldownMs = Math.max(5, mining_cooldown - (5 * speedValue)) * 1000;
+        client.minedRecently.set(interaction.user.id, now + cooldownMs);
 
         let mineMessage = new EmbedBuilder()
             .setColor(0xAF873D)
             .setAuthor({ name: interaction.user.username, iconURL: interaction.user.avatarURL() })
             .setTitle('Mining...')
-            .setDescription(`The mining process has started. It will take **${Math.max(5, mining_cooldown - (5 * speedValue))}** seconds.\n You will receive <:boriscoin:798017751842291732> **${luckValue}** extra.`);
+            .setDescription(`The mining process has started. It will take **${cooldownMs / 1000}** seconds.${luckValue > 0 ? `\n You will receive <:boriscoin:798017751842291732> **${luckValue}** extra.` : ''}`);
 
         await interaction.reply({ embeds: [mineMessage] });
 
@@ -57,6 +62,6 @@ module.exports = {
                 client.minedRecently.delete(interaction.user.id);
                 logger.error(`mine setTimeout error for ${interaction.user.id}: ${err}`);
             }
-        }, Math.max(5, mining_cooldown - (5 * speedValue)) * 1000);
+        }, cooldownMs);
     }
 };

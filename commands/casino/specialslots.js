@@ -1,7 +1,6 @@
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const { User } = require('../../models/user');
 const Transaction = require('../../struct/Transaction');
-const slotsRecently = new Set();
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -23,10 +22,15 @@ module.exports = {
             bet_value = parseInt(betInput);
         }
 
-        if (slotsRecently.has(interaction.user.id))
-            return interaction.reply({ content: 'Command has a 5 minute cooldown.', ephemeral: true });
-        slotsRecently.add(interaction.user.id);
-        setTimeout(() => { slotsRecently.delete(interaction.user.id); }, 5 * 60 * 1000);
+        const now = Date.now();
+        const cooldownMs = 5 * 60 * 1000;
+        const expires = client.specialSlotsRecently.get(interaction.user.id);
+        if (expires && now < expires) {
+            const remaining = Math.ceil((expires - now) / 1000);
+            return interaction.reply({ content: `Command on cooldown. Try again in **${remaining}s**.`, ephemeral: true });
+        }
+        client.specialSlotsRecently.set(interaction.user.id, now + cooldownMs);
+        setTimeout(() => { client.specialSlotsRecently.delete(interaction.user.id); }, cooldownMs);
 
         let items = ['🎰', '💎', '🍒', '🍊', '🍌', '🍋'];
         let $ = items[Math.floor(Math.random() * items.length)];

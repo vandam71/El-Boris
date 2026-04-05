@@ -15,10 +15,15 @@ module.exports = {
                 { name: 'Gold Key', value: 'Gold Key' }
             )),
     execute: async function (interaction, client) {
-        if (client.chestRecently.has(interaction.user.id))
-            return interaction.reply({ content: 'You have a cooldown of 5 seconds on opening chests.', ephemeral: true });
-        client.chestRecently.add(interaction.user.id);
-        setTimeout(async () => { client.chestRecently.delete(interaction.user.id); }, 5 * 1000);
+        const now = Date.now();
+        const cooldownMs = 5 * 1000;
+        const expires = client.chestRecently.get(interaction.user.id);
+        if (expires && now < expires) {
+            const remaining = Math.ceil((expires - now) / 1000);
+            return interaction.reply({ content: `You have a cooldown on opening chests. Try again in **${remaining}s**.`, ephemeral: true });
+        }
+        client.chestRecently.set(interaction.user.id, now + cooldownMs);
+        setTimeout(() => { client.chestRecently.delete(interaction.user.id); }, cooldownMs);
 
         const key = interaction.options.getString('key');
         let chestMessage = new EmbedBuilder()
