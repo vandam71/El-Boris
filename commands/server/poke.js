@@ -17,7 +17,11 @@ module.exports = {
 
         const call_messages = ['is calling you!', 'needs your attention...', 'requests your presence.', 'demands you to join him!'];
 
-        await member_tag.send(`<@${interaction.user.id}> ${call_messages[Math.floor(Math.random() * call_messages.length)]}`);
-        return interaction.reply({ content: '👋 Poked!', ephemeral: true });
+        try {
+            await member_tag.send(`<@${interaction.user.id}> ${call_messages[Math.floor(Math.random() * call_messages.length)]}`);
+            return interaction.reply({ content: '👋 Poked!', ephemeral: true });
+        } catch {
+            return interaction.reply({ content: 'Could not DM that user — their DMs may be closed.', ephemeral: true });
+        }
     },
 };
