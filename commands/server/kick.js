@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
+const { SlashCommandBuilder, PermissionFlagsBits, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -19,8 +19,25 @@ module.exports = {
 
         const reason = interaction.options.getString('reason') || 'No reason provided';
 
-        await member.kick(reason)
-            .then(() => interaction.reply(`${member.user.tag} has been kicked by ${interaction.user.tag} because: ${reason}`))
-            .catch(e => interaction.reply({ content: `I couldn't kick because of: ${e}`, ephemeral: true }));
+        const row = new ActionRowBuilder().addComponents(
+            new ButtonBuilder().setCustomId('kick_confirm').setLabel('Confirm Kick').setStyle(ButtonStyle.Danger),
+            new ButtonBuilder().setCustomId('kick_cancel').setLabel('Cancel').setStyle(ButtonStyle.Secondary)
+        );
+
+        await interaction.reply({ content: `Are you sure you want to kick **${member.user.tag}**? Reason: *${reason}*`, components: [row], ephemeral: true });
+
+        const filter = i => i.user.id === interaction.user.id;
+        try {
+            const confirmation = await interaction.fetchReply();
+            const collected = await confirmation.awaitMessageComponent({ filter, time: 15000 });
+            if (collected.customId === 'kick_confirm') {
+                await member.kick(reason);
+                await collected.update({ content: `**${member.user.tag}** has been kicked. Reason: *${reason}*`, components: [] });
+            } else {
+                await collected.update({ content: 'Kick cancelled.', components: [] });
+            }
+        } catch {
+            await interaction.editReply({ content: 'Confirmation timed out. Kick cancelled.', components: [] });
+        }
     }
 };
