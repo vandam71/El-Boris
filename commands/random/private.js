@@ -12,23 +12,16 @@ module.exports = {
             .addChoices({ name: 'On', value: 'on' }, { name: 'Off', value: 'off' })),
     execute: async function (interaction, client) {
         const setting = interaction.options.getString('setting');
-        await User.findOne({ id: interaction.user.id }).then(async user => {
-            if (setting === 'on') {
-                user.private = true;
-                const embed = new EmbedBuilder()
-                    .setColor(0xACA19D)
-                    .setAuthor({ name: interaction.user.username, iconURL: interaction.user.avatarURL() })
-                    .setTitle('You turned private messages on');
-                await interaction.reply({ embeds: [embed] });
-            } else {
-                user.private = false;
-                const embed = new EmbedBuilder()
-                    .setColor(0xACA19D)
-                    .setAuthor({ name: interaction.user.username, iconURL: interaction.user.avatarURL() })
-                    .setTitle('You turned private messages off');
-                await interaction.reply({ embeds: [embed] });
-            }
-            await user.save();
-        });
+        const user = await User.findOne({ id: interaction.user.id });
+        if (!user) return interaction.reply({ content: 'You have no profile yet! Talk in the server first.', ephemeral: true });
+
+        user.private = (setting === 'on');
+        await user.save();
+
+        const embed = new EmbedBuilder()
+            .setColor(0xACA19D)
+            .setAuthor({ name: interaction.user.username, iconURL: interaction.user.avatarURL() })
+            .setTitle(`You turned private messages ${setting === 'on' ? 'on' : 'off'}`);
+        return interaction.reply({ embeds: [embed], ephemeral: true });
     }
 };
