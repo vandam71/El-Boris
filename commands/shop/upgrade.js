@@ -7,7 +7,14 @@ module.exports = {
     data: new SlashCommandBuilder()
         .setName('upgrade')
         .setDescription('Upgrade a perk to the next tier')
-        .addStringOption(opt => opt.setName('item').setDescription('Name of the perk to upgrade').setRequired(true)),
+        .addStringOption(opt => opt.setName('item').setDescription('Name of the perk to upgrade').setRequired(true).setAutocomplete(true)),
+    autocomplete: async function (interaction) {
+        const focused = interaction.options.getFocused().toLowerCase();
+        const { User } = require('../../models/user');
+        const perks = await User.getPerks(interaction.user.id);
+        const choices = perks.map(p => p.name).filter(n => n.toLowerCase().includes(focused));
+        await interaction.respond(choices.slice(0, 25).map(n => ({ name: n, value: n })));
+    },
     execute: async function (interaction, client) {
 
         let materialID = [201, 202, 203, 204, 205];

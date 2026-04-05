@@ -7,7 +7,13 @@ module.exports = {
     data: new SlashCommandBuilder()
         .setName('buy')
         .setDescription('Buy an item from the shop')
-        .addStringOption(opt => opt.setName('item').setDescription('Name of the item to buy').setRequired(true)),
+        .addStringOption(opt => opt.setName('item').setDescription('Name of the item to buy').setRequired(true).setAutocomplete(true)),
+    autocomplete: async function (interaction) {
+        const focused = interaction.options.getFocused().toLowerCase();
+        const items = await Item.find({ category: { $ne: 'untradeable' } }, 'name').limit(25);
+        const choices = items.map(i => i.name).filter(n => n.toLowerCase().includes(focused));
+        await interaction.respond(choices.slice(0, 25).map(n => ({ name: n, value: n })));
+    },
     execute: async function (interaction, client) {
 
         let buyMessage = new EmbedBuilder()

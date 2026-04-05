@@ -86,6 +86,14 @@ client.on('guildMemberAdd', async member => {
 });
 
 client.on('interactionCreate', async interaction => {
+    if (interaction.isAutocomplete()) {
+        const command = slashCommands.get(interaction.commandName);
+        if (command?.autocomplete) {
+            try { await command.autocomplete(interaction); } catch { await interaction.respond([]).catch(() => {}); }
+        }
+        return;
+    }
+
     if (!interaction.isChatInputCommand()) return;
 
     const command = slashCommands.get(interaction.commandName);
