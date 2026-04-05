@@ -38,9 +38,9 @@ module.exports = {
                 let coins_roll = Math.floor(Math.random() * 100) + 300;
                 let xp_roll = Math.floor(Math.random() * 100) + 200;
                 await new Transaction(interaction.user.id, coins_roll, 'Chest').process();
-                user.removeItem(keyObj.name);
-                user.addExperience(xp_roll);
-                user.save();
+                await user.removeItem(keyObj.name);
+                await user.addExperience(xp_roll);
+                await user.save();
                 chestMessage.setTitle('Bronze Chest').setDescription('You received <:boriscoin:798017751842291732> ' + coins_roll + ' and <:xp:801554148994056202> ' + xp_roll + ' from the chest.');
                 return interaction.reply({ embeds: [chestMessage] });
             }
@@ -53,9 +53,9 @@ module.exports = {
                 let coins_roll = Math.floor(Math.random() * 1000) + 2000;
                 let xp_roll = Math.floor(Math.random() * 500) + 500;
                 await new Transaction(interaction.user.id, coins_roll, 'Chest').process();
-                user.removeItem(keyObj.name);
-                user.addExperience(xp_roll);
-                user.save();
+                await user.removeItem(keyObj.name);
+                await user.addExperience(xp_roll);
+                await user.save();
                 chestMessage.setTitle('Gold Chest').setDescription('You received <:boriscoin:798017751842291732> ' + coins_roll + ' and <:xp:801554148994056202> ' + xp_roll + ' from the chest.');
                 return interaction.reply({ embeds: [chestMessage] });
             }
