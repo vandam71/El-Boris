@@ -34,16 +34,22 @@ blockSchema.statics.getActive = function () {
     return this.findOne({ active: true });
 };
 
-blockSchema.statics.spawnRandom = function () {
-    const entries = Object.entries(TIERS);
-    const total = entries.reduce((s, [, t]) => s + t.weight, 0);
-    let r = Math.random() * total;
-    let chosen = entries[0];
-    for (const entry of entries) {
-        r -= entry[1].weight;
-        if (r <= 0) { chosen = entry; break; }
+blockSchema.statics.spawnRandom = function (forcedType = null) {
+    let type, tier;
+    if (forcedType && TIERS[forcedType]) {
+        type = forcedType;
+        tier = TIERS[forcedType];
+    } else {
+        const entries = Object.entries(TIERS);
+        const total = entries.reduce((s, [, t]) => s + t.weight, 0);
+        let r = Math.random() * total;
+        let chosen = entries[0];
+        for (const entry of entries) {
+            r -= entry[1].weight;
+            if (r <= 0) { chosen = entry; break; }
+        }
+        [type, tier] = chosen;
     }
-    const [type, tier] = chosen;
     const rewardPool = Math.floor(Math.random() * (tier.rewardMax - tier.rewardMin + 1)) + tier.rewardMin;
     return this.create({ type, maxHp: tier.maxHp, currentHp: tier.maxHp, rewardPool });
 };
