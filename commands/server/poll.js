@@ -19,9 +19,7 @@ module.exports = {
         .addStringOption(opt => opt.setName('options').setDescription('Options separated by | e.g. Yes | No | Maybe (2–5 options)').setRequired(true))
         .addStringOption(opt => opt.setName('duration').setDescription('How long the poll runs (default: 5 minutes)').setRequired(false)
             .addChoices(...DURATION_CHOICES))
-        .addUserOption(opt => opt.setName('ping1').setDescription('Tag a user to notify').setRequired(false))
-        .addUserOption(opt => opt.setName('ping2').setDescription('Tag a second user').setRequired(false))
-        .addUserOption(opt => opt.setName('ping3').setDescription('Tag a third user').setRequired(false)),
+        .addStringOption(opt => opt.setName('ping').setDescription('Mention users to notify, space-separated e.g. @user1 @user2').setRequired(false)),
     execute: async function (interaction, client) {
         const question = interaction.options.getString('question');
         const durationSec = parseInt(interaction.options.getString('duration') ?? '300');
@@ -32,11 +30,9 @@ module.exports = {
         if (rawOptions.length < 2 || rawOptions.length > 5)
             return interaction.reply({ content: 'Please provide between **2 and 5** options separated by `|`.', flags: MessageFlags.Ephemeral });
 
-        const pingUsers = [
-            interaction.options.getUser('ping1'),
-            interaction.options.getUser('ping2'),
-            interaction.options.getUser('ping3'),
-        ].filter(Boolean);
+        // Extract all <@id> mentions from the ping string
+        const pingRaw = interaction.options.getString('ping') ?? '';
+        const pingContent = pingRaw.trim() || undefined;
 
         const votes = new Map(rawOptions.map((_, i) => [i, new Set()]));
         const endsAt = Math.floor((Date.now() + durationSec * 1000) / 1000);
@@ -72,7 +68,7 @@ module.exports = {
         }
 
         const { resource: pollResource } = await interaction.reply({
-            content: pingUsers.length > 0 ? pingUsers.map(u => `<@${u.id}>`).join(' ') : undefined,
+            content: pingContent,
             embeds: [buildEmbed()],
             components: [buildRow()],
             withResponse: true
@@ -105,7 +101,7 @@ module.exports = {
             const winnerLabel = totalVotes === 0 ? 'No votes cast.' : `Winner: ${LABELS[winnerIdx]} **${rawOptions[winnerIdx]}**`;
 
             const finalEmbed = buildEmbed(true).addFields({ name: 'Result', value: winnerLabel });
-            await msg.edit({ embeds: [finalEmbed], components: [buildRow(true)] });
+            await msg.edit({ embeds: [finalEmbed], components: [] });
         });
     }
 };
