@@ -1,5 +1,7 @@
 const { User } = require('../../models/user');
-const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder ,
+    MessageFlags
+} = require('discord.js');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -13,7 +15,7 @@ module.exports = {
     execute: async function (interaction, client) {
         const setting = interaction.options.getString('setting');
         const user = await User.findOne({ id: interaction.user.id });
-        if (!user) return interaction.reply({ content: 'You have no profile yet! Talk in the server first.', ephemeral: true });
+        if (!user) return interaction.reply({ content: 'You have no profile yet! Talk in the server first.', flags: MessageFlags.Ephemeral });
 
         user.private = (setting === 'on');
         await user.save();
@@ -22,6 +24,6 @@ module.exports = {
             .setColor(0xACA19D)
             .setAuthor({ name: interaction.user.username, iconURL: interaction.user.avatarURL() })
             .setTitle(`You turned private messages ${setting === 'on' ? 'on' : 'off'}`);
-        return interaction.reply({ embeds: [embed], ephemeral: true });
+        return interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
     }
 };

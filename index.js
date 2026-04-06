@@ -1,5 +1,7 @@
 require('dotenv').config();
-const { ActivityType, REST, Routes } = require('discord.js');
+const { ActivityType, REST, Routes,
+    MessageFlags
+} = require('discord.js');
 const config = require('./config.json');
 const ElBoris = require("./struct/Client");
 const client = new ElBoris();
@@ -17,18 +19,29 @@ client.on('clientReady', async () => {
     }
     logger.info('Guild sync complete');
 
-    // Register guild-scoped slash commands (instant propagation)
+    // Register guild-scoped slash commands for every guild the bot is in (instant propagation)
     const rest = new REST().setToken(process.env.DISCORD_API);
     const slashBody = [...slashCommands.values()].map(cmd => cmd.data.toJSON());
-    logger.info(`Registering ${slashBody.length} slash commands for app ${client.user.id} in guild ${config.server_id}`);
+
+    // Clear any stale global commands (they can shadow guild commands with outdated definitions)
     try {
-        await rest.put(
-            Routes.applicationGuildCommands(client.user.id, config.server_id),
-            { body: slashBody }
-        );
-        logger.info(`Registered ${slashBody.length} slash commands`);
+        await rest.put(Routes.applicationCommands(client.user.id), { body: [] });
+        logger.info('Cleared global application commands');
     } catch (e) {
-        logger.error(`Failed to register slash commands for guild ${config.server_id}: ${e.message}`);
+        logger.error(`Failed to clear global commands: ${e.message}`);
+    }
+
+    logger.info(`Registering ${slashBody.length} slash commands across ${client.guilds.cache.size} guild(s)`);
+    for (const guild of client.guilds.cache.values()) {
+        try {
+            await rest.put(
+                Routes.applicationGuildCommands(client.user.id, guild.id),
+                { body: slashBody }
+            );
+            logger.info(`Registered slash commands for guild ${guild.name} (${guild.id})`);
+        } catch (e) {
+            logger.error(`Failed to register slash commands for guild ${guild.name} (${guild.id}): ${e.message}`);
+        }
     }
 
     await client.user.setPresence({
@@ -44,6 +57,14 @@ client.on('clientReady', async () => {
 client.on('guildCreate', async guild => {
     logger.info(`New guild joined: ${guild.name} (id: ${guild.id}). This guild has ${guild.memberCount} members!`)
     await Guild.syncGuild(guild);
+    const rest = new REST().setToken(process.env.DISCORD_API);
+    const slashBody = [...slashCommands.values()].map(cmd => cmd.data.toJSON());
+    try {
+        await rest.put(Routes.applicationGuildCommands(client.user.id, guild.id), { body: slashBody });
+        logger.info(`Registered slash commands for new guild ${guild.name} (${guild.id})`);
+    } catch (e) {
+        logger.error(`Failed to register slash commands for new guild ${guild.name} (${guild.id}): ${e.message}`);
+    }
 });
 
 //When the bot is removed from a server
@@ -89,7 +110,7 @@ client.on('interactionCreate', async interaction => {
     if (interaction.isAutocomplete()) {
         const command = slashCommands.get(interaction.commandName);
         if (command?.autocomplete) {
-            try { await command.autocomplete(interaction); } catch { await interaction.respond([]).catch(() => {}); }
+            try { await command.autocomplete(interaction); } catch { await interaction.respond([]).catch(() => { }); }
         }
         return;
     }
@@ -98,14 +119,14 @@ client.on('interactionCreate', async interaction => {
 
     const command = slashCommands.get(interaction.commandName);
     if (!command) {
-        await interaction.reply({ content: 'Unknown command.', ephemeral: true });
+        await interaction.reply({ content: 'Unknown command.', flags: MessageFlags.Ephemeral });
         return;
     }
     try {
         await command.execute(interaction, client);
     } catch (e) {
         logger.error(e.message);
-        const err = { content: e.message, ephemeral: true };
+        const err = { content: e.message, flags: MessageFlags.Ephemeral };
         if (interaction.replied || interaction.deferred) {
             await interaction.followUp(err).catch(() => { });
         } else {

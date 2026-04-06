@@ -1,4 +1,6 @@
-const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder ,
+    MessageFlags
+} = require('discord.js');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -28,7 +30,7 @@ module.exports = {
         }
 
         const cmd = slashCommands.get(commandName);
-        if (!cmd) return interaction.reply({ content: 'This command is not in the command list.', ephemeral: true });
+        if (!cmd) return interaction.reply({ content: 'This command is not in the command list.', flags: MessageFlags.Ephemeral });
 
         const embed = new EmbedBuilder()
             .setColor(0xFFFE00)

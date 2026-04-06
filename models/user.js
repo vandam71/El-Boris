@@ -9,8 +9,7 @@ const itemSchema = mongoose.Schema({
     },
     id: {
         type: Number,
-        required: true,
-        unique: true
+        required: true
     },
     quantity: {
         type: Number,

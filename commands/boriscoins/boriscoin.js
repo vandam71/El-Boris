@@ -7,7 +7,7 @@ module.exports = {
     execute: async function (interaction, client) {
         const embed = new EmbedBuilder()
             .setColor(0xAF873D)
-            .setTitle('<:boriscoin:798017751842291732> BorisCoin')
+            .setTitle('<:boriscoin:1490632869695983617> BorisCoin')
             .setDescription('BorisCoin is the server economy currency. Earn, spend, and gamble your way to the top!')
             .addFields(
                 { name: 'Earn', value: '`/mine` — Mine coins on cooldown\n`/chest` — Open daily chests\n`/dice` — Challenge others to a duel' },

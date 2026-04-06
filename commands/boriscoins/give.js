@@ -1,4 +1,6 @@
-const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder ,
+    MessageFlags
+} = require('discord.js');
 const { User } = require('../../models/user');
 
 module.exports = {
@@ -12,7 +14,7 @@ module.exports = {
         const give_value = interaction.options.getInteger('amount');
 
         if (!member || member.id === interaction.user.id || !(await User.exists({ id: member.id })))
-            return interaction.reply({ embeds: [new EmbedBuilder().setDescription('Not a valid user')], ephemeral: true });
+            return interaction.reply({ embeds: [new EmbedBuilder().setDescription('Not a valid user')], flags: MessageFlags.Ephemeral });
 
         // Atomically deduct — only succeeds if the sender has enough coins right now
         const sender = await User.findOneAndUpdate(
@@ -20,7 +22,7 @@ module.exports = {
             { $inc: { coins: -give_value } }
         );
         if (!sender)
-            return interaction.reply({ embeds: [new EmbedBuilder().setDescription('You dont have enough coins to give')], ephemeral: true });
+            return interaction.reply({ embeds: [new EmbedBuilder().setDescription('You dont have enough coins to give')], flags: MessageFlags.Ephemeral });
 
         await User.findOneAndUpdate({ id: member.id }, { $inc: { coins: give_value } });
 
@@ -29,7 +31,7 @@ module.exports = {
                 .setColor(0xAF873D)
                 .setAuthor({ name: interaction.user.username, iconURL: interaction.user.avatarURL() })
                 .setTitle('Give')
-                .setDescription(`You gave ${member.displayName} ${give_value} <:boriscoin:798017751842291732>`)]
+                .setDescription(`You gave ${member.displayName} ${give_value} <:boriscoin:1490632869695983617>`)]
         });
     }
 };
