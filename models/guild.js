@@ -14,6 +14,10 @@ const guildSchema = mongoose.Schema({
         type: String,
         required: true,
         default: '+'
+    },
+    miningChannelId: {
+        type: String,
+        default: null
     }
 });
 
@@ -25,6 +29,10 @@ guildSchema.statics.getPrefix = async function (id) {
     let guild = await this.findById(id);
     if (!guild) return '+';
     return guild['prefix'].toString();
+};
+
+guildSchema.statics.getMiningChannels = function () {
+    return this.find({ miningChannelId: { $ne: null } }, 'id miningChannelId');
 };
 
 guildSchema.statics.syncGuild = async function (discordGuild) {

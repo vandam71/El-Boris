@@ -1,4 +1,5 @@
 const { Client, GatewayIntentBits } = require('discord.js');
+const appConfig = require('../config.json');
 
 module.exports = class extends Client {
     constructor(config) {
@@ -24,6 +25,8 @@ module.exports = class extends Client {
 
         // block spawn schedule: epoch ms, or Infinity when a block is active
         this.nextBlockSpawn = null;
+        // block tick interval in seconds (overridable at runtime via /dev settick)
+        this.blockTickInterval = appConfig.block_tick_interval;
         this.chestRecently = new Map();
         this.flipRecently = new Map();
         this.slotsRecently = new Map();

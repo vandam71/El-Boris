@@ -2,9 +2,9 @@ const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('
 const { TIERS } = require('../models/block');
 
 const TIER_COLORS = {
-    stone:   0x888888,
-    iron:    0xC0C0C0,
-    gold:    0xFFD700,
+    stone: 0x888888,
+    iron: 0xC0C0C0,
+    gold: 0xFFD700,
     diamond: 0x00BFFF,
 };
 
@@ -74,4 +74,12 @@ async function syncAllMessages(block, client, ended = false) {
     }
 }
 
-module.exports = { buildBlockEmbed, buildBlockRows, syncAllMessages };
+function spawnAnnounceEmbed(block) {
+    const tier = TIERS[block.type];
+    return new EmbedBuilder()
+        .setColor(TIER_COLORS[block.type] ?? 0x5865F2)
+        .setTitle(`${tier.emoji} A ${tier.label} Block has spawned!`)
+        .setDescription(`HP: **${block.maxHp}** | Reward Pool: <:boriscoin:1490632869695983617> **${block.rewardPool}**\nUse \`/mine block\` to join!`);
+}
+
+module.exports = { buildBlockEmbed, buildBlockRows, syncAllMessages, spawnAnnounceEmbed };

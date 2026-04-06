@@ -67,7 +67,7 @@ module.exports = {
         // ── CREATE ──────────────────────────────────────────────────────────
         if (sub === 'create') {
             const name = interaction.options.getString('name').trim();
-            const tag  = interaction.options.getString('tag').trim().toUpperCase();
+            const tag = interaction.options.getString('tag').trim().toUpperCase();
 
             if (!TAG_REGEX.test(tag))
                 return interaction.reply({ content: 'Tag must be **3–5 uppercase letters only** (A–Z, no numbers).', flags: MessageFlags.Ephemeral });
