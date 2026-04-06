@@ -27,7 +27,8 @@ function reelComment(r1, r2) {
 
 function makeEmbed(author, iconURL, a, b, c, comment, color) {
     const ind = s => s !== SPIN ? '✅' : '⏳';
-    const desc = `${a}  ${b}  ${c}\n${ind(a)}  ${ind(b)}  ${ind(c)}\n${comment || '\u200b'}`;
+    const gap = '\u2003\u2003';
+    const desc = `${a}${gap}${b}${gap}${c}\n${ind(a)}${gap}${ind(b)}${gap}${ind(c)}\n${comment || '\u200b'}`;
     return new EmbedBuilder()
         .setTitle('✨ Special Slot Machine')
         .setAuthor({ name: author, iconURL })
@@ -75,16 +76,14 @@ module.exports = {
         });
         const msg = slotsResource.message;
 
-        const STEP = 400;
+        const STEP = 700;
         const frames = [
-            [roll(), SPIN,  SPIN,  ''],
-            [roll(), SPIN,  SPIN,  ''],
-            [$,      SPIN,  SPIN,  reelComment($)],
-            [$,      roll(), SPIN, ''],
-            [$,      roll(), SPIN, ''],
-            [$,      $$,    SPIN,  reelComment($, $$)],
-            [$,      $$,    roll(), ''],
-            [$,      $$,    roll(), ''],
+            [roll(),  SPIN,  SPIN,  ''],
+            [$,       SPIN,  SPIN,  reelComment($)],
+            [$,       roll(), SPIN, ''],
+            [$,       $$,    SPIN,  reelComment($, $$)],
+            [$,       $$,    roll(), ''],
+            [$,       $$,    $$$,   '✅ All reels locked!'],
         ];
         frames.forEach(([r1, r2, r3, status], i) => {
             setTimeout(() => msg.edit({ embeds: [makeEmbed(author, iconURL, r1, r2, r3, status, 0xF4D03F)] }), STEP * (i + 1));
@@ -127,6 +126,6 @@ module.exports = {
             const finalEmbed = makeEmbed(author, iconURL, $, $$, $$$, '', color);
             finalEmbed.addFields({ name: fieldName, value: fieldValue });
             await msg.edit({ embeds: [finalEmbed] });
-        }, STEP * 9);
+        }, STEP * 7);
     }
 };

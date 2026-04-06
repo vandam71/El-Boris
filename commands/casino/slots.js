@@ -22,7 +22,8 @@ function evaluate(a, b, c, bet) {
 
 function makeEmbed(author, iconURL, a, b, c, status, color) {
     const ind = s => s !== SPIN ? '✅' : '⏳';
-    const desc = `${a}  ${b}  ${c}\n${ind(a)}  ${ind(b)}  ${ind(c)}\n${status || '\u200b'}`;
+    const gap = '\u2003\u2003';
+    const desc = `${a}${gap}${b}${gap}${c}\n${ind(a)}${gap}${ind(b)}${gap}${ind(c)}\n${status || '\u200b'}`;
     return new EmbedBuilder()
         .setTitle('🎰 Slot Machine')
         .setAuthor({ name: author, iconURL })
@@ -70,17 +71,14 @@ module.exports = {
         });
         const msg = slotsResource.message;
 
-        const STEP = 400;
-        // 2 fake spins per reel, then lock — each fake value pre-computed so they're all different
+        const STEP = 700;
         const frames = [
-            [roll(), SPIN,   SPIN,   ''],
             [roll(), SPIN,   SPIN,   ''],
             [a,      SPIN,   SPIN,   '✅ Reel 1 locked!'],
             [a,      roll(), SPIN,   ''],
-            [a,      roll(), SPIN,   ''],
             [a,      b,      SPIN,   '✅ Reel 2 locked!'],
             [a,      b,      roll(), ''],
-            [a,      b,      roll(), ''],
+            [a,      b,      c,      '✅ Reel 3 locked!'],
         ];
         frames.forEach(([r1, r2, r3, status], i) => {
             setTimeout(() => msg.edit({ embeds: [makeEmbed(author, iconURL, r1, r2, r3, status, 0xF4D03F)] }), STEP * (i + 1));
@@ -99,6 +97,6 @@ module.exports = {
             const finalEmbed = makeEmbed(author, iconURL, a, b, c, '', color);
             finalEmbed.addFields({ name: label, value: resultText });
             await msg.edit({ embeds: [finalEmbed] });
-        }, STEP * 9);
+        }, STEP * 7);
     }
 };
