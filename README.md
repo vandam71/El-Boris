@@ -1,4 +1,4 @@
-# El Boris — v3.1.0
+# El Boris — v3.2.0
 
 A Discord bot built with discord.js v14, Node.js v20, and MongoDB (Mongoose v8).
 
@@ -20,7 +20,7 @@ A Discord bot built with discord.js v14, Node.js v20, and MongoDB (Mongoose v8).
 | Category | Commands |
 |---|---|
 | BorisCoins | boriscoin, chest, give, mine |
-| Casino | blackjack, coinflip, dice, slots, specialslots |
+| Casino | blackjack, coinflip, dice, scratchcard, slots, specialslots |
 | Dev | dev, help, release |
 | Gaming | opgg |
 | Random | azia, borischill, casinha, cat, die, discord, fistbump, giphy, highscores, inspire, levelup, nsfw, ping, private, say, suggestion |
@@ -38,12 +38,26 @@ A Discord bot built with discord.js v14, Node.js v20, and MongoDB (Mongoose v8).
 - [ ] Teams (create, join, delete, stats)
 - [ ] Mining blocks with bonus drops
 - [ ] Fishing command + sell fish
-- [ ] Scratch Card
+- [x] Scratch Card
 - [ ] Inventory sorting / keyword filtering
 - [ ] Quests (fish x, mine x, slots x)
 - [ ] Some kind of prestige system
 
 ## Changelog
+
+**v3.2.0**
+- Added `/scratchcard` — 3×3 grid scratch card, costs 50 coins; scratch one row at a time or reveal all; match symbols to win up to 20× bet
+- Added `/blackjack` — full blackjack vs dealer with Hit/Stand buttons, 60s timeout, handles naturals, bust and push
+- Restored `/dev` as a proper slash command with subcommands: `mode`, `emojis`, `give`, `setlevel`
+- Fixed global slash commands being left stale on restart — now cleared and re-registered per guild on startup
+- Fixed per-guild command registration running on `guildCreate` so new guilds get commands immediately
+- Fixed `/dev` crashing when invoked without a subcommand (`getSubcommand(false)` + null guard)
+- Fixed `inventory.id` unique index causing E11000 duplicate key errors — removed `unique: true` from itemSchema and dropped the live index
+- Replaced all deprecated `ephemeral: true` with `flags: MessageFlags.Ephemeral` across all commands
+- Replaced all deprecated `fetchReply: true` with `withResponse: true` across all commands
+- Updated all custom emoji IDs to match new server emojis (boriscoin, xp, keys, gems, perks)
+- Improved `/slots` and `/specialslots`: reveal reels one at a time with `[ emoji ]` slot-window format
+- Improved `/scratchcard`: per-row scratch buttons, live match preview while scratching
 
 **v3.1.0**
 - Fixed `clientReady` → `ready` (correct discord.js v14 event name — startup was silently broken)
