@@ -1,4 +1,6 @@
-const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle ,
+    MessageFlags
+} = require('discord.js');
 const { User } = require('../../models/user');
 const Transaction = require('../../struct/Transaction');
 
@@ -50,7 +52,7 @@ module.exports = {
     execute: async function (interaction, client) {
         const balance = await User.getBalance(interaction.user.id);
         if (balance < COST)
-            return interaction.reply({ content: `You need **${COST}** <:boriscoin:798017751842291732> to buy a scratch card. You only have **${balance}**.`, ephemeral: true });
+            return interaction.reply({ content: `You need **${COST}** <:boriscoin:798017751842291732> to buy a scratch card. You only have **${balance}**.`, flags: MessageFlags.Ephemeral });
 
         // Deduct cost upfront
         await new Transaction(interaction.user.id, -COST, 'Scratchcard').process();

@@ -1,5 +1,7 @@
 const { User } = require('../../models/user');
-const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder ,
+    MessageFlags
+} = require('discord.js');
 const Item = require('../../models/item');
 
 module.exports = {
@@ -8,7 +10,7 @@ module.exports = {
         .setDescription('View your user profile'),
     execute: async function (interaction, client) {
         let user = await User.findOne({ id: interaction.user.id });
-        if (!user) return interaction.reply({ content: "You have no profile yet! Talk in the server first.", ephemeral: true });
+        if (!user) return interaction.reply({ content: "You have no profile yet! Talk in the server first.", flags: MessageFlags.Ephemeral });
         let embed = new EmbedBuilder()
             .setColor(0x00AE86)
             .setTitle(`${interaction.user.username}'s Profile`)

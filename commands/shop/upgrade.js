@@ -1,4 +1,6 @@
-const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require("discord.js");
+const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle ,
+    MessageFlags
+} = require('discord.js');
 const { User } = require("../../models/user");
 const Item = require("../../models/item");
 const { base_upgrade } = require('../../config.json');
@@ -38,12 +40,12 @@ module.exports = {
 
         if (!upgradablePerk) {
             upgradeMessage.setDescription(`You don't have this perk!`);
-            return interaction.reply({ embeds: [upgradeMessage], ephemeral: true });
+            return interaction.reply({ embeds: [upgradeMessage], flags: MessageFlags.Ephemeral });
         }
 
         if (upgradablePerk.quantity >= 6) {
             upgradeMessage.setDescription(`This perk is already max level!`);
-            return interaction.reply({ embeds: [upgradeMessage], ephemeral: true });
+            return interaction.reply({ embeds: [upgradeMessage], flags: MessageFlags.Ephemeral });
         }
 
         let material = await User.checkInventory(interaction.user.id, materialID[(upgradablePerk.quantity - 1)]);
@@ -51,7 +53,7 @@ module.exports = {
 
         if (!material) {
             upgradeMessage.setDescription("You don't have the required material to upgrade this Perk\n You need 1 <" + reqMaterial.emote + "> **" + reqMaterial.name + "**.");
-            return interaction.reply({ embeds: [upgradeMessage], ephemeral: true });
+            return interaction.reply({ embeds: [upgradeMessage], flags: MessageFlags.Ephemeral });
         }
 
         let successRate = base_upgrade - (upgradablePerk.quantity * 5);

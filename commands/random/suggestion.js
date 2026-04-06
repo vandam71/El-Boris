@@ -1,5 +1,7 @@
 const Suggestions = require('../../models/suggestions');
-const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder ,
+    MessageFlags
+} = require('discord.js');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -10,7 +12,7 @@ module.exports = {
         const sayMessage = interaction.options.getString('text');
         await Suggestions.create({ name: interaction.user.username, id: interaction.user.id, suggestion: sayMessage });
         return interaction.reply({
-            ephemeral: true,
+            flags: MessageFlags.Ephemeral,
             embeds: [new EmbedBuilder()
                 .setColor(0xAAFF00)
                 .setAuthor({ name: interaction.user.username, iconURL: interaction.user.avatarURL() })

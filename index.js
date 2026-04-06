@@ -1,5 +1,7 @@
 require('dotenv').config();
-const { ActivityType, REST, Routes } = require('discord.js');
+const { ActivityType, REST, Routes ,
+    MessageFlags
+} = require('discord.js');
 const config = require('./config.json');
 const ElBoris = require("./struct/Client");
 const client = new ElBoris();
@@ -89,7 +91,7 @@ client.on('interactionCreate', async interaction => {
     if (interaction.isAutocomplete()) {
         const command = slashCommands.get(interaction.commandName);
         if (command?.autocomplete) {
-            try { await command.autocomplete(interaction); } catch { await interaction.respond([]).catch(() => {}); }
+            try { await command.autocomplete(interaction); } catch { await interaction.respond([]).catch(() => { }); }
         }
         return;
     }
@@ -98,14 +100,14 @@ client.on('interactionCreate', async interaction => {
 
     const command = slashCommands.get(interaction.commandName);
     if (!command) {
-        await interaction.reply({ content: 'Unknown command.', ephemeral: true });
+        await interaction.reply({ content: 'Unknown command.', flags: MessageFlags.Ephemeral });
         return;
     }
     try {
         await command.execute(interaction, client);
     } catch (e) {
         logger.error(e.message);
-        const err = { content: e.message, ephemeral: true };
+        const err = { content: e.message, flags: MessageFlags.Ephemeral };
         if (interaction.replied || interaction.deferred) {
             await interaction.followUp(err).catch(() => { });
         } else {

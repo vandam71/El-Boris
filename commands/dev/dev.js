@@ -1,4 +1,6 @@
-const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder ,
+    MessageFlags
+} = require('discord.js');
 const { User } = require('../../models/user');
 const Item = require('../../models/item');
 const config = require('../../config.json');
@@ -27,14 +29,14 @@ module.exports = {
             .addIntegerOption(opt => opt.setName('level').setDescription('Level to set').setRequired(true))),
     execute: async function (interaction, client) {
         if (interaction.user.id !== config.dev_id)
-            return interaction.reply({ content: 'You are not a developer.', ephemeral: true });
+            return interaction.reply({ content: 'You are not a developer.', flags: MessageFlags.Ephemeral });
 
         const sub = interaction.options.getSubcommand();
 
         if (sub === 'mode') {
             const state = interaction.options.getString('state');
             client.devMode = state === 'on';
-            return interaction.reply({ content: `Dev mode **${state}**.`, ephemeral: true });
+            return interaction.reply({ content: `Dev mode **${state}**.`, flags: MessageFlags.Ephemeral });
         }
 
         if (sub === 'emojis') {
@@ -42,23 +44,23 @@ module.exports = {
             const emojis = {};
             guild.emojis.cache.forEach(e => { emojis[e.name] = e.id; });
             const json = JSON.stringify(emojis, null, 2);
-            return interaction.reply({ content: `\`\`\`json\n${json}\n\`\`\``, ephemeral: true });
+            return interaction.reply({ content: `\`\`\`json\n${json}\n\`\`\``, flags: MessageFlags.Ephemeral });
         }
 
         if (sub === 'give') {
             const target = interaction.options.getUser('user');
             const amount = interaction.options.getInteger('amount');
             const user = await User.findOneAndUpdate({ id: target.id }, { $inc: { coins: amount } }, { new: true });
-            if (!user) return interaction.reply({ content: 'User not found in DB.', ephemeral: true });
-            return interaction.reply({ content: `Gave **${amount}** coins to **${target.username}**. New balance: **${user.coins}**.`, ephemeral: true });
+            if (!user) return interaction.reply({ content: 'User not found in DB.', flags: MessageFlags.Ephemeral });
+            return interaction.reply({ content: `Gave **${amount}** coins to **${target.username}**. New balance: **${user.coins}**.`, flags: MessageFlags.Ephemeral });
         }
 
         if (sub === 'setlevel') {
             const target = interaction.options.getUser('user');
             const level = interaction.options.getInteger('level');
             const user = await User.findOneAndUpdate({ id: target.id }, { level }, { new: true });
-            if (!user) return interaction.reply({ content: 'User not found in DB.', ephemeral: true });
-            return interaction.reply({ content: `Set **${target.username}** to level **${level}**.`, ephemeral: true });
+            if (!user) return interaction.reply({ content: 'User not found in DB.', flags: MessageFlags.Ephemeral });
+            return interaction.reply({ content: `Set **${target.username}** to level **${level}**.`, flags: MessageFlags.Ephemeral });
         }
     }
 };

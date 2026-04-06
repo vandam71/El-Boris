@@ -1,6 +1,8 @@
 const Transaction = require('../../struct/Transaction');
 const { mining_cooldown } = require('../../config.json');
-const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder ,
+    MessageFlags
+} = require('discord.js');
 const { User } = require('../../models/user');
 const Item = require('../../models/item');
 const logger = require('../../logger');
@@ -14,7 +16,7 @@ module.exports = {
         const expires = client.minedRecently.get(interaction.user.id);
         if (expires && now < expires) {
             const remaining = Math.ceil((expires - now) / 1000);
-            return interaction.reply({ content: `You are still mining! Try again in **${remaining}s**.`, ephemeral: true });
+            return interaction.reply({ content: `You are still mining! Try again in **${remaining}s**.`, flags: MessageFlags.Ephemeral });
         }
 
         let perks = await User.getPerks(interaction.user.id);

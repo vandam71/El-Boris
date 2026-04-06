@@ -1,5 +1,7 @@
 const Item = require('../../models/item');
-const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder ,
+    MessageFlags
+} = require('discord.js');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -30,7 +32,7 @@ module.exports = {
         }
 
         if (!categories.includes(categoryArg))
-            return interaction.reply({ content: `Unknown category \`${categoryArg}\`. Use /shop to see available categories.`, ephemeral: true });
+            return interaction.reply({ content: `Unknown category \`${categoryArg}\`. Use /shop to see available categories.`, flags: MessageFlags.Ephemeral });
 
         let items = await Item.find({ category: categoryArg });
 

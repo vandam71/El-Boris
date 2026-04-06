@@ -1,4 +1,6 @@
-const { SlashCommandBuilder, PermissionFlagsBits, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
+const { SlashCommandBuilder, PermissionFlagsBits, ActionRowBuilder, ButtonBuilder, ButtonStyle ,
+    MessageFlags
+} = require('discord.js');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -9,13 +11,13 @@ module.exports = {
         .addStringOption(opt => opt.setName('reason').setDescription('Reason for kick').setRequired(false)),
     execute: async function (interaction, client) {
         if (!interaction.member.permissions.has(PermissionFlagsBits.KickMembers))
-            return interaction.reply({ content: "You don't have permissions to use this!", ephemeral: true });
+            return interaction.reply({ content: "You don't have permissions to use this!", flags: MessageFlags.Ephemeral });
 
         const member = interaction.options.getMember('user');
         if (!member)
-            return interaction.reply({ content: 'Please mention a valid member of this server.', ephemeral: true });
+            return interaction.reply({ content: 'Please mention a valid member of this server.', flags: MessageFlags.Ephemeral });
         if (!member.kickable)
-            return interaction.reply({ content: 'I cannot kick this user! Do they have a higher role?', ephemeral: true });
+            return interaction.reply({ content: 'I cannot kick this user! Do they have a higher role?', flags: MessageFlags.Ephemeral });
 
         const reason = interaction.options.getString('reason') || 'No reason provided';
 
@@ -24,7 +26,7 @@ module.exports = {
             new ButtonBuilder().setCustomId('kick_cancel').setLabel('Cancel').setStyle(ButtonStyle.Secondary)
         );
 
-        await interaction.reply({ content: `Are you sure you want to kick **${member.user.tag}**? Reason: *${reason}*`, components: [row], ephemeral: true });
+        await interaction.reply({ content: `Are you sure you want to kick **${member.user.tag}**? Reason: *${reason}*`, components: [row], flags: MessageFlags.Ephemeral });
 
         const filter = i => i.user.id === interaction.user.id;
         try {

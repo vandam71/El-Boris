@@ -1,4 +1,6 @@
-const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle ,
+    MessageFlags
+} = require('discord.js');
 const { User } = require('../../models/user');
 const Transaction = require('../../struct/Transaction');
 
@@ -11,24 +13,24 @@ module.exports = {
     execute: async function (interaction, client) {
         const member = interaction.options.getMember('opponent');
         if (!member || member.id === interaction.user.id || !(await User.exists({ id: member.id })))
-            return interaction.reply({ embeds: [new EmbedBuilder().setDescription('Not a valid player')], ephemeral: true });
+            return interaction.reply({ embeds: [new EmbedBuilder().setDescription('Not a valid player')], flags: MessageFlags.Ephemeral });
 
         const betInput = interaction.options.getString('bet');
         let bet_value;
         if (betInput === 'allin') {
             bet_value = await User.getBalance(interaction.user.id);
             if (bet_value === 0)
-                return interaction.reply({ embeds: [new EmbedBuilder().setDescription("Can't all in 0.")], ephemeral: true });
+                return interaction.reply({ embeds: [new EmbedBuilder().setDescription("Can't all in 0.")], flags: MessageFlags.Ephemeral });
         } else if (!betInput || isNaN(betInput) || parseInt(betInput) < 1) {
-            return interaction.reply({ embeds: [new EmbedBuilder().setDescription('The value you inserted is invalid!')], ephemeral: true });
+            return interaction.reply({ embeds: [new EmbedBuilder().setDescription('The value you inserted is invalid!')], flags: MessageFlags.Ephemeral });
         } else if (await User.getBalance(interaction.user.id) < parseInt(betInput)) {
-            return interaction.reply({ embeds: [new EmbedBuilder().setDescription('You dont have enough coins!')], ephemeral: true });
+            return interaction.reply({ embeds: [new EmbedBuilder().setDescription('You dont have enough coins!')], flags: MessageFlags.Ephemeral });
         } else {
             bet_value = parseInt(betInput);
         }
 
         if (client.activeDice.has(interaction.user.id) || client.activeDice.has(member.id))
-            return interaction.reply({ content: 'Either you or your opponent have an active dice.', ephemeral: true });
+            return interaction.reply({ content: 'Either you or your opponent have an active dice.', flags: MessageFlags.Ephemeral });
         client.activeDice.add(interaction.user.id);
         client.activeDice.add(member.id);
 

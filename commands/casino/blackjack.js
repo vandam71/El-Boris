@@ -1,4 +1,6 @@
-const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle ,
+    MessageFlags
+} = require('discord.js');
 const { User } = require('../../models/user');
 const Transaction = require('../../struct/Transaction');
 const shuffle = require('shuffle-array');
@@ -54,18 +56,18 @@ module.exports = {
         .addStringOption(opt => opt.setName('bet').setDescription('Amount to bet or "allin"').setRequired(true)),
     execute: async function (interaction, client) {
         if (activeBlackjack.has(interaction.user.id))
-            return interaction.reply({ content: 'You already have an active Blackjack game.', ephemeral: true });
+            return interaction.reply({ content: 'You already have an active Blackjack game.', flags: MessageFlags.Ephemeral });
 
         const betInput = interaction.options.getString('bet');
         let bet_value;
         if (betInput === 'allin') {
             bet_value = await User.getBalance(interaction.user.id);
             if (bet_value === 0)
-                return interaction.reply({ embeds: [new EmbedBuilder().setDescription("Can't all in 0.")], ephemeral: true });
+                return interaction.reply({ embeds: [new EmbedBuilder().setDescription("Can't all in 0.")], flags: MessageFlags.Ephemeral });
         } else if (!betInput || isNaN(betInput) || parseInt(betInput) < 1) {
-            return interaction.reply({ embeds: [new EmbedBuilder().setDescription('The value you inserted is invalid!')], ephemeral: true });
+            return interaction.reply({ embeds: [new EmbedBuilder().setDescription('The value you inserted is invalid!')], flags: MessageFlags.Ephemeral });
         } else if (await User.getBalance(interaction.user.id) < parseInt(betInput)) {
-            return interaction.reply({ embeds: [new EmbedBuilder().setDescription('You dont have enough coins!')], ephemeral: true });
+            return interaction.reply({ embeds: [new EmbedBuilder().setDescription('You dont have enough coins!')], flags: MessageFlags.Ephemeral });
         } else {
             bet_value = parseInt(betInput);
         }
