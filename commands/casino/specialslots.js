@@ -58,20 +58,20 @@ module.exports = {
 
             if ($ === $$ && $ === $$$) {
                 if ($ === '🎰') {
-                    await new Transaction(interaction.user.id, bet_value * 59, 'Slots').process();
+                    await new Transaction(interaction.user.id, bet_value * 60, 'Slots').process();
                     win_screen.addFields({ name: 'Jackpot!', value: 'Big win! You won ' + bet_value * 60 + ' <:boriscoin:798017751842291732>.' });
                 } else if ($ === '💎') {
-                    await new Transaction(interaction.user.id, bet_value * 39, 'Slots').process();
+                    await new Transaction(interaction.user.id, bet_value * 40, 'Slots').process();
                     win_screen.addFields({ name: '3 Diamonds', value: 'You won ' + bet_value * 40 + ' <:boriscoin:798017751842291732>.' });
                 } else if ($ === '🍒') {
-                    await new Transaction(interaction.user.id, bet_value * 19, 'Slots').process();
+                    await new Transaction(interaction.user.id, bet_value * 20, 'Slots').process();
                     win_screen.addFields({ name: '3 Cherries', value: 'You won ' + bet_value * 20 + ' <:boriscoin:798017751842291732>.' });
                 } else {
-                    await new Transaction(interaction.user.id, bet_value * 9, 'Slots').process();
+                    await new Transaction(interaction.user.id, bet_value * 10, 'Slots').process();
                     win_screen.addFields({ name: '3 Of A Kind', value: 'You won ' + bet_value * 10 + ' <:boriscoin:798017751842291732>.' });
                 }
             } else if (($ === $$ || $ === $$$) && ($ === '🍒') || (($$ === $$$) && ($$ === '🍒'))) {
-                await new Transaction(interaction.user.id, bet_value * 2, 'Slots').process();
+                await new Transaction(interaction.user.id, bet_value * 3, 'Slots').process();
                 win_screen.addFields({ name: '2 Cherries', value: 'You won ' + bet_value * 3 + ' <:boriscoin:798017751842291732>.' });
             } else if ($ === '🍒' || $$ === '🍒' || $$$ === '🍒') {
                 win_screen.addFields({ name: '1 Cherry', value: 'You break even.' });
