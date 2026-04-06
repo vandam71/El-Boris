@@ -122,6 +122,7 @@ client.on('clientReady', async () => {
                     const baseShare = Math.floor(block.rewardPool / activeMiners.length);
                     const share = Math.floor(baseShare * (1 + 0.1 * luckLevel));
                     await new Transaction(miner.userId, share, 'Block Mining').process();
+                    User.findOneAndUpdate({ id: miner.userId }, { $inc: { 'stats.blocksParticipated': 1, 'stats.coinsFromBlocks': share, 'stats.coinsEarned': share } }).catch(() => {});
                 }
 
                 await syncAllMessages(block, client, true);
