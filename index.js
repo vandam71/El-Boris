@@ -10,6 +10,7 @@ const { newMessageUser, syncGuildMembers, User } = require('./models/user');
 const { Block } = require('./models/block');
 const { syncAllMessages } = require('./struct/BlockUtils');
 const Transaction = require('./struct/Transaction');
+const Team = require('./models/team');
 const Guild = require('./models/guild');
 const logger = require('./logger');
 
@@ -235,6 +236,64 @@ client.on('interactionCreate', async interaction => {
                 await syncAllMessages(block, client, false);
             } catch (err) {
                 logger.error(`mb_leave error: ${err.message}`);
+            }
+            return;
+        }
+
+        if (interaction.customId.startsWith('team_accept:')) {
+            const teamId = interaction.customId.split(':')[1];
+            const userId = interaction.user.id;
+            try {
+                const team = await Team.findById(teamId);
+                if (!team) return interaction.reply({ content: 'This team no longer exists.', flags: MessageFlags.Ephemeral });
+
+                const inviteIdx = team.pendingInvites.findIndex(i => i.userId === userId);
+                if (inviteIdx === -1)
+                    return interaction.reply({ content: 'You do not have a pending invite to this team.', flags: MessageFlags.Ephemeral });
+
+                if (await Team.findByMember(userId))
+                    return interaction.reply({ content: 'You are already in a team. Leave it first.', flags: MessageFlags.Ephemeral });
+
+                if (team.members.length >= 10)
+                    return interaction.reply({ content: 'The team is now full.', flags: MessageFlags.Ephemeral });
+
+                team.pendingInvites.splice(inviteIdx, 1);
+                team.members.push({ userId, joinedAt: new Date() });
+                team.markModified('pendingInvites');
+                team.markModified('members');
+                await team.save();
+
+                await interaction.update({
+                    content: `<@${userId}> joined **[${team.tag}] ${team.name}**!`,
+                    components: [],
+                });
+            } catch (err) {
+                logger.error(`team_accept error: ${err.message}`);
+            }
+            return;
+        }
+
+        if (interaction.customId.startsWith('team_decline:')) {
+            const teamId = interaction.customId.split(':')[1];
+            const userId = interaction.user.id;
+            try {
+                const team = await Team.findById(teamId);
+                if (!team) return interaction.reply({ content: 'This team no longer exists.', flags: MessageFlags.Ephemeral });
+
+                const inviteIdx = team.pendingInvites.findIndex(i => i.userId === userId);
+                if (inviteIdx === -1)
+                    return interaction.reply({ content: 'You do not have a pending invite to this team.', flags: MessageFlags.Ephemeral });
+
+                team.pendingInvites.splice(inviteIdx, 1);
+                team.markModified('pendingInvites');
+                await team.save();
+
+                await interaction.update({
+                    content: `<@${userId}> declined the invite to **[${team.tag}] ${team.name}**.`,
+                    components: [],
+                });
+            } catch (err) {
+                logger.error(`team_decline error: ${err.message}`);
             }
             return;
         }
