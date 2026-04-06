@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, EmbedBuilder ,
+const { SlashCommandBuilder, EmbedBuilder,
     MessageFlags
 } = require('discord.js');
 const { User } = require('../../models/user');
@@ -53,11 +53,11 @@ module.exports = {
 
         if (coin === side) {
             await new Transaction(interaction.user.id, bet_value, 'Coinflip').process();
-            User.findOneAndUpdate({ id: interaction.user.id }, { $inc: { 'stats.coinflipsPlayed': 1, 'stats.coinflipsWon': 1, 'stats.coinsEarned': bet_value } }).catch(() => {});
+            User.findOneAndUpdate({ id: interaction.user.id }, { $inc: { 'stats.coinflipsPlayed': 1, 'stats.coinflipsWon': 1, 'stats.coinsEarned': bet_value } }).catch(() => { });
             flipMessage.setDescription(`You flip a coin, and it lands on ${coin.charAt(0).toUpperCase() + coin.slice(1)}. You won ${bet_value} <:boriscoin:1490632869695983617>.`);
         } else {
             await new Transaction(interaction.user.id, -bet_value, 'Coinflip').process();
-            User.findOneAndUpdate({ id: interaction.user.id }, { $inc: { 'stats.coinflipsPlayed': 1, 'stats.coinflipsLost': 1 } }).catch(() => {});
+            User.findOneAndUpdate({ id: interaction.user.id }, { $inc: { 'stats.coinflipsPlayed': 1, 'stats.coinflipsLost': 1 } }).catch(() => { });
             flipMessage.setDescription(`You flip a coin, and it lands on ${coin.charAt(0).toUpperCase() + coin.slice(1)}. You lost ${bet_value} <:boriscoin:1490632869695983617>.`);
         }
         return interaction.reply({ embeds: [flipMessage] });

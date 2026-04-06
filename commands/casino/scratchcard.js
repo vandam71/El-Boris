@@ -130,10 +130,10 @@ module.exports = {
             let resultText;
             if (winAmount > 0) {
                 await new Transaction(interaction.user.id, winAmount, 'Scratchcard').process();
-                User.findOneAndUpdate({ id: interaction.user.id }, { $inc: { 'stats.scratchcardsPlayed': 1, 'stats.scratchcardsWon': 1, 'stats.coinsEarned': winAmount } }).catch(() => {});
+                User.findOneAndUpdate({ id: interaction.user.id }, { $inc: { 'stats.scratchcardsPlayed': 1, 'stats.scratchcardsWon': 1, 'stats.coinsEarned': winAmount } }).catch(() => { });
                 resultText = `**${max}x ${symbol}** — You won **${winAmount}** <:boriscoin:1490632869695983617>!`;
             } else {
-                User.findOneAndUpdate({ id: interaction.user.id }, { $inc: { 'stats.scratchcardsPlayed': 1, 'stats.scratchcardsLost': 1 } }).catch(() => {});
+                User.findOneAndUpdate({ id: interaction.user.id }, { $inc: { 'stats.scratchcardsPlayed': 1, 'stats.scratchcardsLost': 1 } }).catch(() => { });
                 resultText = `No match — better luck next time!`;
             }
 

@@ -105,7 +105,7 @@ module.exports = {
                 statsInc['stats.specialSlotsWon'] = 1;
                 if (earned > 0) statsInc['stats.coinsEarned'] = earned;
             }
-            User.findOneAndUpdate({ id: interaction.user.id }, { $inc: statsInc }).catch(() => {});
+            User.findOneAndUpdate({ id: interaction.user.id }, { $inc: statsInc }).catch(() => { });
 
             await msg.edit({ embeds: [finalEmbed] });
         }, 2100);

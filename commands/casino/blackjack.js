@@ -93,13 +93,13 @@ module.exports = {
             const dealerFinal = handValue(dealerHand);
             let resultEmbed;
             if (dealerFinal === 21) {
-                User.findOneAndUpdate({ id: interaction.user.id }, { $inc: { 'stats.blackjackPlayed': 1, 'stats.blackjackPush': 1 } }).catch(() => {});
+                User.findOneAndUpdate({ id: interaction.user.id }, { $inc: { 'stats.blackjackPlayed': 1, 'stats.blackjackPush': 1 } }).catch(() => { });
                 resultEmbed = buildEmbed(playerHand, dealerHand, false, bet_value, interaction.user)
                     .addFields({ name: 'Push — Both Blackjack!', value: 'Your bet is returned.' });
             } else {
                 const winAmount = Math.floor(bet_value * 1.5);
                 await new Transaction(interaction.user.id, winAmount, 'Blackjack').process();
-                User.findOneAndUpdate({ id: interaction.user.id }, { $inc: { 'stats.blackjackPlayed': 1, 'stats.blackjackWon': 1, 'stats.coinsEarned': winAmount } }).catch(() => {});
+                User.findOneAndUpdate({ id: interaction.user.id }, { $inc: { 'stats.blackjackPlayed': 1, 'stats.blackjackWon': 1, 'stats.coinsEarned': winAmount } }).catch(() => { });
                 resultEmbed = buildEmbed(playerHand, dealerHand, false, bet_value, interaction.user)
                     .addFields({ name: '🎉 Blackjack!', value: `You win **${winAmount}** <:boriscoin:1490632869695983617>!` });
             }
@@ -125,7 +125,7 @@ module.exports = {
                 if (pVal > 21) {
                     // Bust
                     await new Transaction(interaction.user.id, -bet_value, 'Blackjack').process();
-                    User.findOneAndUpdate({ id: interaction.user.id }, { $inc: { 'stats.blackjackPlayed': 1, 'stats.blackjackLost': 1 } }).catch(() => {});
+                    User.findOneAndUpdate({ id: interaction.user.id }, { $inc: { 'stats.blackjackPlayed': 1, 'stats.blackjackLost': 1 } }).catch(() => { });
                     const embed = buildEmbed(playerHand, dealerHand, false, bet_value, interaction.user)
                         .addFields({ name: '💥 Bust!', value: `You went over 21 and lost **${bet_value}** <:boriscoin:1490632869695983617>.` });
                     await i.update({ embeds: [embed], components: [disabledRow] });
@@ -157,14 +157,14 @@ module.exports = {
 
             if (dVal > 21 || pVal > dVal) {
                 await new Transaction(interaction.user.id, bet_value, 'Blackjack').process();
-                User.findOneAndUpdate({ id: interaction.user.id }, { $inc: { 'stats.blackjackPlayed': 1, 'stats.blackjackWon': 1, 'stats.coinsEarned': bet_value } }).catch(() => {});
+                User.findOneAndUpdate({ id: interaction.user.id }, { $inc: { 'stats.blackjackPlayed': 1, 'stats.blackjackWon': 1, 'stats.coinsEarned': bet_value } }).catch(() => { });
                 resultField = { name: '✅ You win!', value: `Dealer: **${dVal}** vs You: **${pVal}** — You won **${bet_value}** <:boriscoin:1490632869695983617>!` };
             } else if (pVal === dVal) {
-                User.findOneAndUpdate({ id: interaction.user.id }, { $inc: { 'stats.blackjackPlayed': 1, 'stats.blackjackPush': 1 } }).catch(() => {});
+                User.findOneAndUpdate({ id: interaction.user.id }, { $inc: { 'stats.blackjackPlayed': 1, 'stats.blackjackPush': 1 } }).catch(() => { });
                 resultField = { name: '🤝 Push!', value: `Both have **${pVal}** — your bet is returned.` };
             } else {
                 await new Transaction(interaction.user.id, -bet_value, 'Blackjack').process();
-                User.findOneAndUpdate({ id: interaction.user.id }, { $inc: { 'stats.blackjackPlayed': 1, 'stats.blackjackLost': 1 } }).catch(() => {});
+                User.findOneAndUpdate({ id: interaction.user.id }, { $inc: { 'stats.blackjackPlayed': 1, 'stats.blackjackLost': 1 } }).catch(() => { });
                 resultField = { name: '❌ You lose!', value: `Dealer: **${dVal}** vs You: **${pVal}** — You lost **${bet_value}** <:boriscoin:1490632869695983617>.` };
             }
 

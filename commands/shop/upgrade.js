@@ -83,10 +83,10 @@ module.exports = {
                 if (upgradeRoll <= successRate) {
                     // if the roll is lower than the rate, the upgrade is successful
                     await user.addItem(upgradablePerk.name, upgradablePerk.id);
-                    User.findOneAndUpdate({ id: interaction.user.id }, { $inc: { 'stats.upgradesAttempted': 1, 'stats.upgradesSucceeded': 1 } }).catch(() => {});
+                    User.findOneAndUpdate({ id: interaction.user.id }, { $inc: { 'stats.upgradesAttempted': 1, 'stats.upgradesSucceeded': 1 } }).catch(() => { });
                     upgradeMessage.setDescription("You successfully upgraded " + perk.emote + " **" + perk.name + "** to **Tier " + (upgradablePerk.quantity + 1).toString() + "**.");
                 } else {
-                    User.findOneAndUpdate({ id: interaction.user.id }, { $inc: { 'stats.upgradesAttempted': 1, 'stats.upgradesFailed': 1 } }).catch(() => {});
+                    User.findOneAndUpdate({ id: interaction.user.id }, { $inc: { 'stats.upgradesAttempted': 1, 'stats.upgradesFailed': 1 } }).catch(() => { });
                     upgradeMessage.setDescription("You failed to upgrade " + perk.emote + " **" + perk.name + "** to **Tier " + (upgradablePerk.quantity + 1).toString() + "**.\n Better luck next time!");
                 }
                 await user.save();

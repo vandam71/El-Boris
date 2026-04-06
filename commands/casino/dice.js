@@ -74,14 +74,14 @@ module.exports = {
                 }
                 if (roll_2 > roll_1) {
                     await new Transaction(member.id, bet_value, 'Dice').process();
-                    User.findOneAndUpdate({ id: member.id },             { $inc: { 'stats.dicePlayed': 1, 'stats.diceWon': 1, 'stats.coinsEarned': bet_value } }).catch(() => {});
-                    User.findOneAndUpdate({ id: interaction.user.id },   { $inc: { 'stats.dicePlayed': 1, 'stats.diceLost': 1 } }).catch(() => {});
+                    User.findOneAndUpdate({ id: member.id }, { $inc: { 'stats.dicePlayed': 1, 'stats.diceWon': 1, 'stats.coinsEarned': bet_value } }).catch(() => { });
+                    User.findOneAndUpdate({ id: interaction.user.id }, { $inc: { 'stats.dicePlayed': 1, 'stats.diceLost': 1 } }).catch(() => { });
                     await collected.update({ embeds: [new EmbedBuilder().setColor(0xAF873D).setTitle('Dice Challenge').setDescription(`**${member.displayName}** won the dice with a roll of **${roll_2}** vs **${roll_1}**, and received **${bet_value}** <:boriscoin:1490632869695983617>`)], components: [] });
                 } else {
                     await new Transaction(interaction.user.id, 2 * bet_value, 'Dice').process();
                     await new Transaction(member.id, -bet_value, 'Dice').process();
-                    User.findOneAndUpdate({ id: interaction.user.id }, { $inc: { 'stats.dicePlayed': 1, 'stats.diceWon': 1, 'stats.coinsEarned': bet_value } }).catch(() => {});
-                    User.findOneAndUpdate({ id: member.id },           { $inc: { 'stats.dicePlayed': 1, 'stats.diceLost': 1 } }).catch(() => {});
+                    User.findOneAndUpdate({ id: interaction.user.id }, { $inc: { 'stats.dicePlayed': 1, 'stats.diceWon': 1, 'stats.coinsEarned': bet_value } }).catch(() => { });
+                    User.findOneAndUpdate({ id: member.id }, { $inc: { 'stats.dicePlayed': 1, 'stats.diceLost': 1 } }).catch(() => { });
                     await collected.update({ embeds: [new EmbedBuilder().setColor(0xAF873D).setTitle('Dice Challenge').setDescription(`**${interaction.user.username}** won the dice with a roll of **${roll_1}** vs **${roll_2}**, and received **${bet_value}** <:boriscoin:1490632869695983617>`)], components: [] });
                 }
             } else {

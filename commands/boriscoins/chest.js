@@ -1,5 +1,5 @@
 const { User } = require('../../models/user');
-const { SlashCommandBuilder, EmbedBuilder ,
+const { SlashCommandBuilder, EmbedBuilder,
     MessageFlags
 } = require('discord.js');
 const Transaction = require('../../struct/Transaction');
@@ -49,7 +49,7 @@ module.exports = {
                 await user.removeItem(keyObj.name);
                 await user.addExperience(xp_roll);
                 await user.save();
-                User.findOneAndUpdate({ id: interaction.user.id }, { $inc: { 'stats.bronzeChestsOpened': 1, 'stats.coinsEarned': coins_roll } }).catch(() => {});
+                User.findOneAndUpdate({ id: interaction.user.id }, { $inc: { 'stats.bronzeChestsOpened': 1, 'stats.coinsEarned': coins_roll } }).catch(() => { });
                 chestMessage.setTitle('Bronze Chest').setDescription('You received <:boriscoin:1490632869695983617> ' + coins_roll + ' and <:xp:1490633441677676724> ' + xp_roll + ' from the chest.');
                 return interaction.reply({ embeds: [chestMessage] });
             }
@@ -65,7 +65,7 @@ module.exports = {
                 await user.removeItem(keyObj.name);
                 await user.addExperience(xp_roll);
                 await user.save();
-                User.findOneAndUpdate({ id: interaction.user.id }, { $inc: { 'stats.goldChestsOpened': 1, 'stats.coinsEarned': coins_roll } }).catch(() => {});
+                User.findOneAndUpdate({ id: interaction.user.id }, { $inc: { 'stats.goldChestsOpened': 1, 'stats.coinsEarned': coins_roll } }).catch(() => { });
                 chestMessage.setTitle('Gold Chest').setDescription('You received <:boriscoin:1490632869695983617> ' + coins_roll + ' and <:xp:1490633441677676724> ' + xp_roll + ' from the chest.');
                 return interaction.reply({ embeds: [chestMessage] });
             }

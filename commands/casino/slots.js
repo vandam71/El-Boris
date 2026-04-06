@@ -79,7 +79,7 @@ module.exports = {
             const statsInc = { 'stats.slotsPlayed': 1 };
             if (gain > 0) { statsInc['stats.slotsWon'] = 1; statsInc['stats.coinsEarned'] = gain; }
             else if (gain < 0) statsInc['stats.slotsLost'] = 1;
-            User.findOneAndUpdate({ id: interaction.user.id }, { $inc: statsInc }).catch(() => {});
+            User.findOneAndUpdate({ id: interaction.user.id }, { $inc: statsInc }).catch(() => { });
 
             const resultText = gain > 0
                 ? `You won **${gain}** <:boriscoin:1490632869695983617>!`
