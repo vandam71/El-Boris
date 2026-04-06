@@ -78,14 +78,22 @@ module.exports = {
             embeds: [makeEmbed(author, iconURL, SPIN, SPIN, SPIN, 'The reels are spinning...', 0xF4D03F)],
             withResponse: true
         });
-        const spinner = slotsResource.message;
+        const msg = slotsResource.message;
 
-        setTimeout(() => {
-            spinner.edit({ embeds: [makeEmbed(author, iconURL, $, SPIN, SPIN, reelComment($), 0xF4D03F)] });
-        }, 400);
-        setTimeout(() => {
-            spinner.edit({ embeds: [makeEmbed(author, iconURL, $, $$, SPIN, reelComment($, $$), 0xF4D03F)] });
-        }, 800);
+        const STEP = 400;
+        const frames = [
+            [roll(), SPIN,  SPIN,  ''],
+            [roll(), SPIN,  SPIN,  ''],
+            [$,      SPIN,  SPIN,  reelComment($)],
+            [$,      roll(), SPIN, ''],
+            [$,      roll(), SPIN, ''],
+            [$,      $$,    SPIN,  reelComment($, $$)],
+            [$,      $$,    roll(), ''],
+            [$,      $$,    roll(), ''],
+        ];
+        frames.forEach(([r1, r2, r3, status], i) => {
+            setTimeout(() => msg.edit({ embeds: [makeEmbed(author, iconURL, r1, r2, r3, status, 0xF4D03F)] }), STEP * (i + 1));
+        });
 
         setTimeout(async () => {
             let color = 0xE74C3C;
@@ -123,7 +131,7 @@ module.exports = {
 
             const finalEmbed = makeEmbed(author, iconURL, $, $$, $$$, '', color);
             finalEmbed.addFields({ name: fieldName, value: fieldValue });
-            await spinner.edit({ embeds: [finalEmbed] });
-        }, 1200);
+            await msg.edit({ embeds: [finalEmbed] });
+        }, STEP * 9);
     }
 };

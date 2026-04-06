@@ -20,19 +20,18 @@ function evaluate(a, b, c, bet) {
     return { label: 'No Match', gain: -bet, color: 0xE74C3C };
 }
 
-function makeEmbed(author, iconURL, a, b, c, footer, color, spinning = false) {
-    const mid = `${a}   ${b}   ${c}`;
-    const desc = spinning
-        ? `${spinRow()}
-**${mid}**
-${spinRow()}`
-        : `\n**${mid}**\n`;
-    return new EmbedBuilder()
+function makeEmbed(author, iconURL, a, b, c, status, color) {
+    const e = new EmbedBuilder()
         .setTitle('🎰 Slot Machine')
         .setAuthor({ name: author, iconURL })
-        .setDescription(desc)
-        .setFooter({ text: footer })
+        .addFields(
+            { name: a !== SPIN ? '✅ Reel 1' : '⏳ Reel 1', value: a, inline: true },
+            { name: b !== SPIN ? '✅ Reel 2' : '⏳ Reel 2', value: b, inline: true },
+            { name: c !== SPIN ? '✅ Reel 3' : '⏳ Reel 3', value: c, inline: true },
+        )
         .setColor(color);
+    if (status) e.setDescription(`*${status}*`);
+    return e;
 }
 
 module.exports = {
@@ -73,14 +72,24 @@ module.exports = {
             embeds: [makeEmbed(author, iconURL, SPIN, SPIN, SPIN, 'Spinning...', 0xF4D03F)],
             withResponse: true
         });
-        const spinner = slotsResource.message;
+        const msg = slotsResource.message;
 
-        setTimeout(() => {
-            spinner.edit({ embeds: [makeEmbed(author, iconURL, a, SPIN, SPIN, 'Reel 1 locked!', 0xF4D03F)] });
-        }, 400);
-        setTimeout(() => {
-            spinner.edit({ embeds: [makeEmbed(author, iconURL, a, b, SPIN, 'Reel 2 locked!', 0xF4D03F)] });
-        }, 800);
+        const STEP = 400;
+        // 2 fake spins per reel, then lock — each fake value pre-computed so they're all different
+        const frames = [
+            [roll(), SPIN,   SPIN,   ''],
+            [roll(), SPIN,   SPIN,   ''],
+            [a,      SPIN,   SPIN,   '✅ Reel 1 locked!'],
+            [a,      roll(), SPIN,   ''],
+            [a,      roll(), SPIN,   ''],
+            [a,      b,      SPIN,   '✅ Reel 2 locked!'],
+            [a,      b,      roll(), ''],
+            [a,      b,      roll(), ''],
+        ];
+        frames.forEach(([r1, r2, r3, status], i) => {
+            setTimeout(() => msg.edit({ embeds: [makeEmbed(author, iconURL, r1, r2, r3, status, 0xF4D03F)] }), STEP * (i + 1));
+        });
+
         setTimeout(async () => {
             const { label, gain, color } = evaluate(a, b, c, bet_value);
             if (gain !== 0) await new Transaction(interaction.user.id, gain, 'Slots').process();
@@ -91,9 +100,9 @@ module.exports = {
                     ? 'You break even.'
                     : `You lost **${Math.abs(gain)}** <:boriscoin:1490632869695983617>.`;
 
-            const finalEmbed = makeEmbed(author, iconURL, a, b, c, `Bet: ${bet_value} coins`, color);
+            const finalEmbed = makeEmbed(author, iconURL, a, b, c, '', color);
             finalEmbed.addFields({ name: label, value: resultText });
-            await spinner.edit({ embeds: [finalEmbed] });
-        }, 1200);
+            await msg.edit({ embeds: [finalEmbed] });
+        }, STEP * 9);
     }
 };
