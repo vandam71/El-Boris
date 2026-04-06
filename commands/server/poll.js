@@ -14,7 +14,7 @@ const DURATION_CHOICES = [
 
 const LABELS = ['🇦','🇧','🇨','🇩','🇪','🇫','🇬','🇭','🇮'];
 
-// ── helpers ─────────────────────────────────────────────────────────────────
+// ── helpers ──────────────────────────────────────────────────────────────────
 
 function buildVoteRows(options, disabled = false) {
     const buttons = options.map((opt, i) =>
@@ -52,8 +52,7 @@ function buildEmbed(creator, question, options, votes, endsAt, ended = false) {
 async function launchPoll(channel, creator, { question, options, durationSec, pingContent }) {
     const votes  = new Map(options.map((_, i) => [i, new Set()]));
     const endsAt = Math.floor((Date.now() + durationSec * 1000) / 1000);
-
-    const embed = () => buildEmbed(creator, question, options, votes, endsAt);
+    const embed  = () => buildEmbed(creator, question, options, votes, endsAt);
 
     const msg = await channel.send({
         content:    pingContent,
@@ -83,7 +82,6 @@ async function launchPoll(channel, creator, { question, options, durationSec, pi
         const result    = total === 0
             ? 'No votes cast.'
             : `Winner: ${LABELS[winnerIdx]} **${options[winnerIdx]}**`;
-
         await msg.edit({
             embeds:     [buildEmbed(creator, question, options, votes, endsAt, true).addFields({ name: 'Result', value: result })],
             components: [],
@@ -93,10 +91,10 @@ async function launchPoll(channel, creator, { question, options, durationSec, pi
 
 // ── modal builders ───────────────────────────────────────────────────────────
 
-function makeModal1() {
+function makeInitialModal() {
     return new ModalBuilder()
         .setCustomId('poll_m1')
-        .setTitle('Create a Poll — step 1 of 2')
+        .setTitle('Create a Poll')
         .addComponents(
             new ActionRowBuilder().addComponents(
                 new TextInputBuilder().setCustomId('question')
@@ -113,62 +111,47 @@ function makeModal1() {
                     .setLabel('Option 2').setStyle(TextInputStyle.Short)
                     .setRequired(true).setMaxLength(80)
             ),
-            new ActionRowBuilder().addComponents(
-                new TextInputBuilder().setCustomId('o3')
-                    .setLabel('Option 3 (optional)').setStyle(TextInputStyle.Short)
-                    .setRequired(false).setMaxLength(80)
-            ),
-            new ActionRowBuilder().addComponents(
-                new TextInputBuilder().setCustomId('o4')
-                    .setLabel('Option 4 (optional)').setStyle(TextInputStyle.Short)
-                    .setRequired(false).setMaxLength(80)
-            ),
         );
 }
 
-function makeModal2() {
-    return new ModalBuilder()
-        .setCustomId('poll_m2')
-        .setTitle('Create a Poll — step 2 of 2')
-        .addComponents(
+// Dynamic modal — shows however many slots remain (up to 5), first is required
+function makeAddMoreModal(currentCount) {
+    const slots = Math.min(5, 9 - currentCount);
+    const modal = new ModalBuilder()
+        .setCustomId('poll_addmore')
+        .setTitle(`Add Options (${currentCount}/9 so far)`);
+    for (let i = 0; i < slots; i++) {
+        modal.addComponents(
             new ActionRowBuilder().addComponents(
-                new TextInputBuilder().setCustomId('o5')
-                    .setLabel('Option 5').setStyle(TextInputStyle.Short)
-                    .setRequired(true).setMaxLength(80)
-            ),
-            new ActionRowBuilder().addComponents(
-                new TextInputBuilder().setCustomId('o6')
-                    .setLabel('Option 6 (optional)').setStyle(TextInputStyle.Short)
-                    .setRequired(false).setMaxLength(80)
-            ),
-            new ActionRowBuilder().addComponents(
-                new TextInputBuilder().setCustomId('o7')
-                    .setLabel('Option 7 (optional)').setStyle(TextInputStyle.Short)
-                    .setRequired(false).setMaxLength(80)
-            ),
-            new ActionRowBuilder().addComponents(
-                new TextInputBuilder().setCustomId('o8')
-                    .setLabel('Option 8 (optional)').setStyle(TextInputStyle.Short)
-                    .setRequired(false).setMaxLength(80)
-            ),
-            new ActionRowBuilder().addComponents(
-                new TextInputBuilder().setCustomId('o9')
-                    .setLabel('Option 9 (optional)').setStyle(TextInputStyle.Short)
-                    .setRequired(false).setMaxLength(80)
-            ),
+                new TextInputBuilder()
+                    .setCustomId(`ao_${i}`)
+                    .setLabel(`Option ${currentCount + i + 1}${i > 0 ? ' (optional)' : ''}`)
+                    .setStyle(TextInputStyle.Short)
+                    .setRequired(i === 0)
+                    .setMaxLength(80)
+            )
         );
+    }
+    return modal;
 }
 
-function controlRow(addMoreDisabled = false) {
+function controlRow(optionCount) {
     return new ActionRowBuilder().addComponents(
-        new ButtonBuilder().setCustomId('poll_more').setLabel('➕ Add more options (up to 9)').setStyle(ButtonStyle.Secondary).setDisabled(addMoreDisabled),
-        new ButtonBuilder().setCustomId('poll_start').setLabel('🚀 Start Poll').setStyle(ButtonStyle.Success),
-        new ButtonBuilder().setCustomId('poll_cancel').setLabel('Cancel').setStyle(ButtonStyle.Danger),
+        new ButtonBuilder().setCustomId('poll_more')
+            .setLabel(`➕ Add options (${optionCount}/9)`)
+            .setStyle(ButtonStyle.Secondary)
+            .setDisabled(optionCount >= 9),
+        new ButtonBuilder().setCustomId('poll_start')
+            .setLabel('🚀 Start Poll')
+            .setStyle(ButtonStyle.Success),
+        new ButtonBuilder().setCustomId('poll_cancel')
+            .setLabel('Cancel')
+            .setStyle(ButtonStyle.Danger),
     );
 }
 
 function previewText(question, options) {
-    return `**${question}**\n${options.map((o, i) => `${LABELS[i]} ${o}`).join('\n')}\n\n*${options.length} option${options.length !== 1 ? 's' : ''} — add more or start the poll.*`;
+    return `**${question}**\n${options.map((o, i) => `${LABELS[i]} ${o}`).join('\n')}\n\n*${options.length}/9 options — add more or start the poll.*`;
 }
 
 // ── command ──────────────────────────────────────────────────────────────────
@@ -176,7 +159,7 @@ function previewText(question, options) {
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('poll')
-        .setDescription('Create a poll using a form (up to 9 options)')
+        .setDescription('Create a poll using a form (2–9 options)')
         .addStringOption(opt => opt.setName('duration')
             .setDescription('How long the poll runs (default: 5 minutes)').setRequired(false)
             .addChoices(...DURATION_CHOICES))
@@ -184,11 +167,11 @@ module.exports = {
             .setDescription('Users to ping when poll starts, e.g. @user1 @user2').setRequired(false)),
 
     execute: async function (interaction, client) {
-        const durationSec  = parseInt(interaction.options.getString('duration') ?? '300');
-        const pingContent  = interaction.options.getString('ping')?.trim() || undefined;
+        const durationSec = parseInt(interaction.options.getString('duration') ?? '300');
+        const pingContent = interaction.options.getString('ping')?.trim() || undefined;
 
-        // step 1 — show modal 1
-        await interaction.showModal(makeModal1());
+        // Step 1 — initial modal: question + 2 options
+        await interaction.showModal(makeInitialModal());
 
         let m1;
         try {
@@ -196,23 +179,25 @@ module.exports = {
                 filter: i => i.customId === 'poll_m1' && i.user.id === interaction.user.id,
                 time:   5 * 60 * 1000,
             });
-        } catch { return; } // user dismissed / timed out
+        } catch { return; }
 
         const question = m1.fields.getTextInputValue('question');
-        const options  = ['o1','o2','o3','o4'].map(k => m1.fields.getTextInputValue(k)).filter(Boolean);
+        const options  = [
+            m1.fields.getTextInputValue('o1'),
+            m1.fields.getTextInputValue('o2'),
+        ].filter(Boolean);
 
-        // reply ephemeral with preview + control buttons
         const { resource: ctrlResource } = await m1.reply({
-            content:    previewText(question, options),
-            components: [controlRow()],
-            flags:      MessageFlags.Ephemeral,
+            content:      previewText(question, options),
+            components:   [controlRow(options.length)],
+            flags:        MessageFlags.Ephemeral,
             withResponse: true,
         });
         const ctrlMsg = ctrlResource.message;
 
         const btnCollector = ctrlMsg.createMessageComponentCollector({
             filter: i => i.user.id === interaction.user.id,
-            time:   5 * 60 * 1000,
+            time:   10 * 60 * 1000,
         });
 
         btnCollector.on('collect', async btnI => {
@@ -223,23 +208,25 @@ module.exports = {
             }
 
             if (btnI.customId === 'poll_more') {
-                // step 2 — show modal 2
-                await btnI.showModal(makeModal2());
+                const slotsShown = Math.min(5, 9 - options.length);
+                await btnI.showModal(makeAddMoreModal(options.length));
 
-                let m2;
+                let mMore;
                 try {
-                    m2 = await btnI.awaitModalSubmit({
-                        filter: i => i.customId === 'poll_m2' && i.user.id === interaction.user.id,
+                    mMore = await btnI.awaitModalSubmit({
+                        filter: i => i.customId === 'poll_addmore' && i.user.id === interaction.user.id,
                         time:   5 * 60 * 1000,
                     });
                 } catch { return; }
 
-                const more = ['o5','o6','o7','o8','o9'].map(k => m2.fields.getTextInputValue(k)).filter(Boolean);
-                options.push(...more);
+                for (let i = 0; i < slotsShown; i++) {
+                    const val = mMore.fields.getTextInputValue(`ao_${i}`).trim();
+                    if (val) options.push(val);
+                }
 
-                await m2.update({
+                await mMore.update({
                     content:    previewText(question, options),
-                    components: [controlRow(true)], // disable "add more" — already at step 2
+                    components: [controlRow(options.length)],
                 });
                 return;
             }
