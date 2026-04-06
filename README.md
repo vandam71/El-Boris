@@ -1,4 +1,4 @@
-# El Boris — v3.6.0
+# El Boris — v3.7.0
 
 A Discord bot built with discord.js v14, Node.js v20, and MongoDB (Mongoose v8).
 
@@ -45,11 +45,28 @@ A Discord bot built with discord.js v14, Node.js v20, and MongoDB (Mongoose v8).
 - [x] Stats (nr of casino types done, one for slots, one for specialslots, etc, nr of mines, nr of upgrades, nr of blocks mined, basically needs to be tracked in the user)
 
 ## Changelog
+**v3.7.0**
+- Block destroyed embed now shows per-miner coin payouts ("💰 Rewards" field replaces miner list on block end)
+- `/boriscoin` redesigned as an info embed with Earn / Spend / View fields
+- Highscores switched to embed list format (mobile-friendly, removes ASCII table)
+- Dice and Upgrade challenges now use buttons instead of emoji reactions
+- Fixed slots payout amounts in embed matching actual transaction values
+- Scratchcard: minimum win raised to 4 matching symbols; added 15-second per-user cooldown
+- All command cooldowns centralised in `config.json` (`slots_cooldown`, `special_slots_cooldown`, `scratchcard_cooldown`, `poke_cooldown`, `azia_cooldown`)
+
 **v3.6.0**
 - Added `/stats [user]` — categorised embed showing win rates, lifetime coins earned, mining totals, chest and upgrade counts; respects `private` flag
 - Tracks stats across all games and actions: slots, special slots, blackjack, coinflip, dice, scratchcard, mine solo, block mining, chests, perk upgrades
 - Stats stored as a `stats` subdocument on each User; all counters default to 0 so existing users are unaffected
 - Tracking uses atomic `$inc` at each outcome point (fire-and-forget, never blocks gameplay)
+
+**v3.5.0**
+- Added `/configure mining-channel` — set a channel per guild to receive block spawn announcements
+- Block destroyed embed announces per-channel with a fan-out to all configured mining channels
+- Added `/dev spawnblock [type]` to force-spawn a block of a specific tier for testing
+- Added `/dev settick <seconds>` to change the block tick interval at runtime
+- Block tick refactored to recursive `setTimeout` with damage jitter and spawn jitter
+
 **v3.4.0**
 - Added `/team` with 6 subcommands: `create` (costs 2000 coins), `invite` (in-channel button flow, 5 min expiry), `kick`, `leave`, `disband`, `info` (total level + total networth)
 - Team tag `[TAG]` shown in `/profile` title
