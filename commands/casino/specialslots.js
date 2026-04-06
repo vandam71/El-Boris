@@ -57,6 +57,9 @@ module.exports = {
         });
         const msg = slotsResource.message;
 
+        setTimeout(() => msg.edit({ embeds: [makeEmbed(author, iconURL, $, SPIN, SPIN, 0xF4D03F)] }), 700);
+        setTimeout(() => msg.edit({ embeds: [makeEmbed(author, iconURL, $, $$, SPIN, 0xF4D03F)] }), 1400);
+
         setTimeout(async () => {
             let color = 0xE74C3C;
             let fieldName = 'No Match';
@@ -94,6 +97,6 @@ module.exports = {
             const finalEmbed = makeEmbed(author, iconURL, $, $$, $$$, color);
             finalEmbed.addFields({ name: fieldName, value: fieldValue });
             await msg.edit({ embeds: [finalEmbed] });
-        }, 1500);
+        }, 2100);
     }
 };

@@ -68,6 +68,9 @@ module.exports = {
         });
         const msg = slotsResource.message;
 
+        setTimeout(() => msg.edit({ embeds: [makeEmbed(author, iconURL, a, SPIN, SPIN, 0xF4D03F)] }), 700);
+        setTimeout(() => msg.edit({ embeds: [makeEmbed(author, iconURL, a, b, SPIN, 0xF4D03F)] }), 1400);
+
         setTimeout(async () => {
             const { label, gain, color } = evaluate(a, b, c, bet_value);
             if (gain !== 0) await new Transaction(interaction.user.id, gain, 'Slots').process();
@@ -81,6 +84,6 @@ module.exports = {
             const finalEmbed = makeEmbed(author, iconURL, a, b, c, color);
             finalEmbed.addFields({ name: label, value: resultText });
             await msg.edit({ embeds: [finalEmbed] });
-        }, 1500);
+        }, 2100);
     }
 };
