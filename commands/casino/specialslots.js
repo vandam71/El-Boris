@@ -39,10 +39,11 @@ module.exports = {
         let $$ = items[Math.floor(Math.random() * items.length)];
         let $$$ = items[Math.floor(Math.random() * items.length)];
 
-        const spinner = await interaction.reply({
+        const { resource: slotsResource } = await interaction.reply({
             embeds: [new EmbedBuilder().setTitle('Special Slot Machine').setAuthor({ name: interaction.user.username, iconURL: interaction.user.avatarURL() }).setDescription(`••••••••••••••••••••••••\n•••••• ❌ ❌ ❌ ••••••\n••••••••••••••••••••••••`).setColor(0xAF873D)],
-            fetchReply: true
+            withResponse: true
         });
+        const spinner = slotsResource.message;
 
         setTimeout(() => {
             spinner.edit({ embeds: [new EmbedBuilder().setTitle('Special Slot Machine').setAuthor({ name: interaction.user.username, iconURL: interaction.user.avatarURL() }).setDescription(`••••••••••••••••••••••••\n•••••• ${$} ❌ ❌ ••••••\n••••••••••••••••••••••••`).setColor(0xAF873D)] });

@@ -26,11 +26,11 @@ module.exports = {
             new ButtonBuilder().setCustomId('kick_cancel').setLabel('Cancel').setStyle(ButtonStyle.Secondary)
         );
 
-        await interaction.reply({ content: `Are you sure you want to kick **${member.user.tag}**? Reason: *${reason}*`, components: [row], flags: MessageFlags.Ephemeral });
+        const { resource: kickResource } = await interaction.reply({ content: `Are you sure you want to kick **${member.user.tag}**? Reason: *${reason}*`, components: [row], flags: MessageFlags.Ephemeral, withResponse: true });
 
         const filter = i => i.user.id === interaction.user.id;
         try {
-            const confirmation = await interaction.fetchReply();
+            const confirmation = kickResource.message;
             const collected = await confirmation.awaitMessageComponent({ filter, time: 15000 });
             if (collected.customId === 'kick_confirm') {
                 await member.kick(reason);

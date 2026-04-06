@@ -67,7 +67,8 @@ module.exports = {
             new ButtonBuilder().setCustomId('upgrade_cancel').setLabel('Cancel').setStyle(ButtonStyle.Secondary)
         );
 
-        const upgrade_message = await interaction.reply({ embeds: [upgradeMessage], components: [row], fetchReply: true });
+        const { resource: upgradeResource } = await interaction.reply({ embeds: [upgradeMessage], components: [row], withResponse: true });
+        const upgrade_message = upgradeResource.message;
 
         const filter = i => i.user.id === interaction.user.id;
         try {

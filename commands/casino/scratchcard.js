@@ -72,7 +72,8 @@ module.exports = {
             .setDescription(formatGrid(grid, revealed))
             .setFooter({ text: `Cost: ${COST} coins | Scratch to reveal!` });
 
-        const msg = await interaction.reply({ embeds: [embed()], components: [buildRow()], fetchReply: true });
+        const { resource: scResource } = await interaction.reply({ embeds: [embed()], components: [buildRow()], withResponse: true });
+        const msg = scResource.message;
 
         const filter = i => i.user.id === interaction.user.id;
         const collector = msg.createMessageComponentCollector({ filter, time: 60000 });

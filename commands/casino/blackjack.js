@@ -104,11 +104,12 @@ module.exports = {
             return interaction.reply({ embeds: [resultEmbed] });
         }
 
-        const msg = await interaction.reply({
+        const { resource: bjResource } = await interaction.reply({
             embeds: [buildEmbed(playerHand, dealerHand, true, bet_value, interaction.user)],
             components: [row],
-            fetchReply: true
+            withResponse: true
         });
+        const msg = bjResource.message;
 
         const filter = i => i.user.id === interaction.user.id;
         const collector = msg.createMessageComponentCollector({ filter, time: 60000 });

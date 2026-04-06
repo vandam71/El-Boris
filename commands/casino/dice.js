@@ -47,7 +47,8 @@ module.exports = {
             .setTitle('Dice Challenge')
             .setDescription(`You have challenged **${member.displayName}**. Total value in the bet: **${bet_value}** <:boriscoin:1490632869695983617>`);
 
-        const dice_message = await interaction.reply({ embeds: [embedMessage], components: [row], fetchReply: true });
+        const { resource: diceResource } = await interaction.reply({ embeds: [embedMessage], components: [row], withResponse: true });
+        const dice_message = diceResource.message;
 
         const filter = i => i.user.id === member.id;
         try {
