@@ -309,6 +309,15 @@ client.on('interactionCreate', async interaction => {
     }
     try {
         await command.execute(interaction, client);
+
+        // Grant XP for every slash command (except dev)
+        if (interaction.commandName !== 'dev') {
+            User.findOne({ id: interaction.user.id }).then(async user => {
+                if (!user) return;
+                await user.addExperience(5);
+                await user.save();
+            }).catch(() => {});
+        }
     } catch (e) {
         logger.error(e.message);
         const err = { content: e.message, flags: MessageFlags.Ephemeral };
