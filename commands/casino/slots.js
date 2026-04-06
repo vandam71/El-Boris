@@ -42,14 +42,14 @@ module.exports = {
         if ($ === $$ && $ === $$$) {
             if ($ === '🎰') {
                 await new Transaction(interaction.user.id, bet_value * 30, 'Slots').process();
-                return interaction.reply({ embeds: [new EmbedBuilder().setTitle('Slot Machine').setAuthor({ name: interaction.user.username, iconURL: interaction.user.avatarURL() }).setDescription(`• ${$}  ${$$}  ${$$$} •`).addFields({ name: 'Jackpot!', value: 'Big win! You won ' + bet_value * 30 + ' <:boriscoin:798017751842291732>.' }).setColor(0xAF873D)] });
+                return interaction.reply({ embeds: [new EmbedBuilder().setTitle('Slot Machine').setAuthor({ name: interaction.user.username, iconURL: interaction.user.avatarURL() }).setDescription(`• ${$}  ${$$}  ${$$$} •`).addFields({ name: 'Jackpot!', value: 'Big win! You won ' + bet_value * 30 + ' <:boriscoin:1490632869695983617>.' }).setColor(0xAF873D)] });
             } else {
                 await new Transaction(interaction.user.id, bet_value * 10, 'Slots').process();
-                return interaction.reply({ embeds: [new EmbedBuilder().setTitle('Slot Machine').setAuthor({ name: interaction.user.username, iconURL: interaction.user.avatarURL() }).setDescription(`• ${$}  ${$$}  ${$$$} •`).addFields({ name: '3 of a kind!', value: 'You won ' + bet_value * 10 + ' <:boriscoin:798017751842291732>.' }).setColor(0xAF873D)] });
+                return interaction.reply({ embeds: [new EmbedBuilder().setTitle('Slot Machine').setAuthor({ name: interaction.user.username, iconURL: interaction.user.avatarURL() }).setDescription(`• ${$}  ${$$}  ${$$$} •`).addFields({ name: '3 of a kind!', value: 'You won ' + bet_value * 10 + ' <:boriscoin:1490632869695983617>.' }).setColor(0xAF873D)] });
             }
         } else if (($ === $$ || $ === $$$) && ($ === '🎰') || (($$ === $$$) && ($$ === '🎰'))) {
             await new Transaction(interaction.user.id, bet_value * 4, 'Slots').process();
-            return interaction.reply({ embeds: [new EmbedBuilder().setTitle('Slot Machine').setAuthor({ name: interaction.user.username, iconURL: interaction.user.avatarURL() }).setDescription(`• ${$}  ${$$}  ${$$$} •`).addFields({ name: '2 Jokers!', value: 'You won ' + bet_value * 4 + ' <:boriscoin:798017751842291732>.' }).setColor(0xAF873D)] });
+            return interaction.reply({ embeds: [new EmbedBuilder().setTitle('Slot Machine').setAuthor({ name: interaction.user.username, iconURL: interaction.user.avatarURL() }).setDescription(`• ${$}  ${$$}  ${$$$} •`).addFields({ name: '2 Jokers!', value: 'You won ' + bet_value * 4 + ' <:boriscoin:1490632869695983617>.' }).setColor(0xAF873D)] });
         } else if ($ === '🎰' || $$ === '🎰' || $$$ === '🎰') {
             return interaction.reply({ embeds: [new EmbedBuilder().setTitle('Slot Machine').setAuthor({ name: interaction.user.username, iconURL: interaction.user.avatarURL() }).setDescription(`• ${$}  ${$$}  ${$$$} •`).addFields({ name: '1 Joker!', value: 'You break even!' }).setColor(0xAF873D)] });
         } else {

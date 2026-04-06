@@ -45,7 +45,7 @@ module.exports = {
         let embedMessage = new EmbedBuilder()
             .setColor(0xAF873D)
             .setTitle('Dice Challenge')
-            .setDescription(`You have challenged **${member.displayName}**. Total value in the bet: **${bet_value}** <:boriscoin:798017751842291732>`);
+            .setDescription(`You have challenged **${member.displayName}**. Total value in the bet: **${bet_value}** <:boriscoin:1490632869695983617>`);
 
         const dice_message = await interaction.reply({ embeds: [embedMessage], components: [row], fetchReply: true });
 
@@ -73,11 +73,11 @@ module.exports = {
                 }
                 if (roll_2 > roll_1) {
                     await new Transaction(member.id, bet_value, 'Dice').process();
-                    await collected.update({ embeds: [new EmbedBuilder().setColor(0xAF873D).setTitle('Dice Challenge').setDescription(`**${member.displayName}** won the dice with a roll of **${roll_2}** vs **${roll_1}**, and received **${bet_value}** <:boriscoin:798017751842291732>`)], components: [] });
+                    await collected.update({ embeds: [new EmbedBuilder().setColor(0xAF873D).setTitle('Dice Challenge').setDescription(`**${member.displayName}** won the dice with a roll of **${roll_2}** vs **${roll_1}**, and received **${bet_value}** <:boriscoin:1490632869695983617>`)], components: [] });
                 } else {
                     await new Transaction(interaction.user.id, 2 * bet_value, 'Dice').process();
                     await new Transaction(member.id, -bet_value, 'Dice').process();
-                    await collected.update({ embeds: [new EmbedBuilder().setColor(0xAF873D).setTitle('Dice Challenge').setDescription(`**${interaction.user.username}** won the dice with a roll of **${roll_1}** vs **${roll_2}**, and received **${bet_value}** <:boriscoin:798017751842291732>`)], components: [] });
+                    await collected.update({ embeds: [new EmbedBuilder().setColor(0xAF873D).setTitle('Dice Challenge').setDescription(`**${interaction.user.username}** won the dice with a roll of **${roll_1}** vs **${roll_2}**, and received **${bet_value}** <:boriscoin:1490632869695983617>`)], components: [] });
                 }
             } else {
                 await collected.update({ embeds: [new EmbedBuilder().setColor(0xAF873D).setTitle('Dice Challenge').setDescription(`**${member.displayName}** declined the dice, better friends next time!`)], components: [] });

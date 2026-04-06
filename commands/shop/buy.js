@@ -51,7 +51,7 @@ module.exports = {
         const user = await User.findOne({ id: interaction.user.id });
         await user.addItem(item.name, item.id);
         await user.save();
-        buyMessage.setDescription("You bought <" + item.emote + "> " + item.name + " for <:boriscoin:798017751842291732> " + item.price + ".");
+        buyMessage.setDescription("You bought <" + item.emote + "> " + item.name + " for <:boriscoin:1490632869695983617> " + item.price + ".");
         return interaction.reply({ embeds: [buyMessage] });
     }
 };

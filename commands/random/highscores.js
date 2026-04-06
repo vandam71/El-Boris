@@ -29,7 +29,7 @@ module.exports = {
                 lines = users.map((u, i) => `\`${i + 1}.\` **${u.name}** — Lv.${u.level} (${u.xp} XP)`);
                 break;
             case 'coins':
-                lines = users.map((u, i) => `\`${i + 1}.\` **${u.name}** — ${u.coins} <:boriscoin:798017751842291732>`);
+                lines = users.map((u, i) => `\`${i + 1}.\` **${u.name}** — ${u.coins} <:boriscoin:1490632869695983617>`);
                 break;
         }
 

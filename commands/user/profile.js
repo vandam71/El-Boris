@@ -15,7 +15,7 @@ module.exports = {
             .setColor(0x00AE86)
             .setTitle(`${interaction.user.username}'s Profile`)
             .addFields(
-                { name: 'Stats', value: `**Level: ${user.level}**\n<:xp:801554148994056202> Experience: **${user.xp}**\n<:boriscoin:798017751842291732> BorisCoins: **${user.coins}**\nAzia: **${user.azia}**` },
+                { name: 'Stats', value: `**Level: ${user.level}**\n<:xp:1490633441677676724> Experience: **${user.xp}**\n<:boriscoin:1490632869695983617> BorisCoins: **${user.coins}**\nAzia: **${user.azia}**` },
                 { name: 'Inventory', value: `${user.inventory.length} items — use \`/inventory\` to view` }
             )
             .setThumbnail(interaction.user.avatarURL());

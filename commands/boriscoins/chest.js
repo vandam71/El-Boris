@@ -49,7 +49,7 @@ module.exports = {
                 await user.removeItem(keyObj.name);
                 await user.addExperience(xp_roll);
                 await user.save();
-                chestMessage.setTitle('Bronze Chest').setDescription('You received <:boriscoin:798017751842291732> ' + coins_roll + ' and <:xp:801554148994056202> ' + xp_roll + ' from the chest.');
+                chestMessage.setTitle('Bronze Chest').setDescription('You received <:boriscoin:1490632869695983617> ' + coins_roll + ' and <:xp:1490633441677676724> ' + xp_roll + ' from the chest.');
                 return interaction.reply({ embeds: [chestMessage] });
             }
             case 'Gold Key': {
@@ -64,7 +64,7 @@ module.exports = {
                 await user.removeItem(keyObj.name);
                 await user.addExperience(xp_roll);
                 await user.save();
-                chestMessage.setTitle('Gold Chest').setDescription('You received <:boriscoin:798017751842291732> ' + coins_roll + ' and <:xp:801554148994056202> ' + xp_roll + ' from the chest.');
+                chestMessage.setTitle('Gold Chest').setDescription('You received <:boriscoin:1490632869695983617> ' + coins_roll + ' and <:xp:1490633441677676724> ' + xp_roll + ' from the chest.');
                 return interaction.reply({ embeds: [chestMessage] });
             }
             default:

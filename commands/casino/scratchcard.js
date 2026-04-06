@@ -52,7 +52,7 @@ module.exports = {
     execute: async function (interaction, client) {
         const balance = await User.getBalance(interaction.user.id);
         if (balance < COST)
-            return interaction.reply({ content: `You need **${COST}** <:boriscoin:798017751842291732> to buy a scratch card. You only have **${balance}**.`, flags: MessageFlags.Ephemeral });
+            return interaction.reply({ content: `You need **${COST}** <:boriscoin:1490632869695983617> to buy a scratch card. You only have **${balance}**.`, flags: MessageFlags.Ephemeral });
 
         // Deduct cost upfront
         await new Transaction(interaction.user.id, -COST, 'Scratchcard').process();
@@ -107,7 +107,7 @@ module.exports = {
             let resultText;
             if (winAmount > 0) {
                 await new Transaction(interaction.user.id, winAmount, 'Scratchcard').process();
-                resultText = `**${max}x ${symbol}** — You won **${winAmount}** <:boriscoin:798017751842291732>!`;
+                resultText = `**${max}x ${symbol}** — You won **${winAmount}** <:boriscoin:1490632869695983617>!`;
             } else {
                 resultText = `No match — better luck next time!`;
             }

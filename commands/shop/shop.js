@@ -46,7 +46,7 @@ module.exports = {
         let messageConcat = '';
 
         for (const item of items) {
-            messageConcat += '<' + (item.emote).toString() + '> **' + (item.name).toString() + '** - <:boriscoin:798017751842291732>' + (item.price).toString() + ' — **/buy** `' + (item.name).toString() + '`\n';
+            messageConcat += '<' + (item.emote).toString() + '> **' + (item.name).toString() + '** - <:boriscoin:1490632869695983617>' + (item.price).toString() + ' — **/buy** `' + (item.name).toString() + '`\n';
         }
 
         embedMessage.setDescription(messageConcat);

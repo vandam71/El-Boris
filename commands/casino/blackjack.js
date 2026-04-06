@@ -98,7 +98,7 @@ module.exports = {
             } else {
                 await new Transaction(interaction.user.id, Math.floor(bet_value * 1.5), 'Blackjack').process();
                 resultEmbed = buildEmbed(playerHand, dealerHand, false, bet_value, interaction.user)
-                    .addFields({ name: '🎉 Blackjack!', value: `You win **${Math.floor(bet_value * 1.5)}** <:boriscoin:798017751842291732>!` });
+                    .addFields({ name: '🎉 Blackjack!', value: `You win **${Math.floor(bet_value * 1.5)}** <:boriscoin:1490632869695983617>!` });
             }
             activeBlackjack.delete(interaction.user.id);
             return interaction.reply({ embeds: [resultEmbed] });
@@ -122,7 +122,7 @@ module.exports = {
                     // Bust
                     await new Transaction(interaction.user.id, -bet_value, 'Blackjack').process();
                     const embed = buildEmbed(playerHand, dealerHand, false, bet_value, interaction.user)
-                        .addFields({ name: '💥 Bust!', value: `You went over 21 and lost **${bet_value}** <:boriscoin:798017751842291732>.` });
+                        .addFields({ name: '💥 Bust!', value: `You went over 21 and lost **${bet_value}** <:boriscoin:1490632869695983617>.` });
                     await i.update({ embeds: [embed], components: [disabledRow] });
                     collector.stop('bust');
                 } else if (pVal === 21) {
@@ -152,12 +152,12 @@ module.exports = {
 
             if (dVal > 21 || pVal > dVal) {
                 await new Transaction(interaction.user.id, bet_value, 'Blackjack').process();
-                resultField = { name: '✅ You win!', value: `Dealer: **${dVal}** vs You: **${pVal}** — You won **${bet_value}** <:boriscoin:798017751842291732>!` };
+                resultField = { name: '✅ You win!', value: `Dealer: **${dVal}** vs You: **${pVal}** — You won **${bet_value}** <:boriscoin:1490632869695983617>!` };
             } else if (pVal === dVal) {
                 resultField = { name: '🤝 Push!', value: `Both have **${pVal}** — your bet is returned.` };
             } else {
                 await new Transaction(interaction.user.id, -bet_value, 'Blackjack').process();
-                resultField = { name: '❌ You lose!', value: `Dealer: **${dVal}** vs You: **${pVal}** — You lost **${bet_value}** <:boriscoin:798017751842291732>.` };
+                resultField = { name: '❌ You lose!', value: `Dealer: **${dVal}** vs You: **${pVal}** — You lost **${bet_value}** <:boriscoin:1490632869695983617>.` };
             }
 
             if (reason === 'time') {

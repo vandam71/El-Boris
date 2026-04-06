@@ -31,7 +31,7 @@ module.exports = {
             .setColor(0xAF873D)
             .setAuthor({ name: interaction.user.username, iconURL: interaction.user.avatarURL() })
             .setTitle('Mining...')
-            .setDescription(`The mining process has started. It will take **${cooldownMs / 1000}** seconds.${luckValue > 0 ? `\n You will receive <:boriscoin:798017751842291732> **${luckValue}** extra.` : ''}`);
+            .setDescription(`The mining process has started. It will take **${cooldownMs / 1000}** seconds.${luckValue > 0 ? `\n You will receive <:boriscoin:1490632869695983617> **${luckValue}** extra.` : ''}`);
 
         await interaction.reply({ embeds: [mineMessage] });
 
@@ -40,7 +40,7 @@ module.exports = {
                 client.minedRecently.delete(interaction.user.id);
                 let value = await new Transaction(interaction.user.id, Math.floor(Math.random() * 5) + 1 + luckValue, 'Mining').process();
                 mineMessage.setTitle('Mined!')
-                    .setDescription(`you have mined <:boriscoin:798017751842291732> **${value}**`);
+                    .setDescription(`you have mined <:boriscoin:1490632869695983617> **${value}**`);
 
                 let bronze_roll = Math.floor(Math.random() * 100) + 1;
                 let gold_roll = Math.floor(Math.random() * 1000) + 1;

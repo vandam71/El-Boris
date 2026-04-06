@@ -31,7 +31,7 @@ module.exports = {
                 .setColor(0xAF873D)
                 .setAuthor({ name: interaction.user.username, iconURL: interaction.user.avatarURL() })
                 .setTitle('Give')
-                .setDescription(`You gave ${member.displayName} ${give_value} <:boriscoin:798017751842291732>`)]
+                .setDescription(`You gave ${member.displayName} ${give_value} <:boriscoin:1490632869695983617>`)]
         });
     }
 };
