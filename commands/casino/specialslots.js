@@ -26,11 +26,13 @@ function reelComment(r1, r2) {
 }
 
 function makeEmbed(author, iconURL, a, b, c, comment, color) {
-    return new EmbedBuilder()
+    const e = new EmbedBuilder()
         .setTitle('✨ Special Slot Machine')
         .setAuthor({ name: author, iconURL })
-        .setDescription(`╔══════════════╗\n║  ${a}   ${b}   ${c}  ║\n╚══════════════╝\n\n*${comment}*`)
+        .setDescription(`${a}  ${b}  ${c}`)
         .setColor(color);
+    if (comment) e.setFooter({ text: comment });
+    return e;
 }
 
 module.exports = {

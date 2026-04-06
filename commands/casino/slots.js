@@ -24,7 +24,7 @@ function makeEmbed(author, iconURL, a, b, c, footer, color) {
     return new EmbedBuilder()
         .setTitle('🎰 Slot Machine')
         .setAuthor({ name: author, iconURL })
-        .setDescription(`╔═══════════╗\n║  ${a}   ${b}   ${c}  ║\n╚═══════════╝`)
+        .setDescription(`${a}  ${b}  ${c}`)
         .setFooter({ text: footer })
         .setColor(color);
 }
