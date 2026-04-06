@@ -57,25 +57,6 @@ module.exports = {
         });
         const msg = slotsResource.message;
 
-        const STEP = 700;
-        const frames = [
-            [roll(), SPIN,   SPIN  ],
-            [roll(), SPIN,   SPIN  ],
-            [roll(), SPIN,   SPIN  ],
-            [$,      SPIN,   SPIN  ],
-            [$,      roll(), SPIN  ],
-            [$,      roll(), SPIN  ],
-            [$,      roll(), SPIN  ],
-            [$,      $$,     SPIN  ],
-            [$,      $$,     roll()],
-            [$,      $$,     roll()],
-            [$,      $$,     roll()],
-            [$,      $$,     $$$   ],
-        ];
-        frames.forEach(([r1, r2, r3], i) => {
-            setTimeout(() => msg.edit({ embeds: [makeEmbed(author, iconURL, r1, r2, r3, 0xF4D03F)] }), STEP * (i + 1));
-        });
-
         setTimeout(async () => {
             let color = 0xE74C3C;
             let fieldName = 'No Match';
@@ -113,6 +94,6 @@ module.exports = {
             const finalEmbed = makeEmbed(author, iconURL, $, $$, $$$, color);
             finalEmbed.addFields({ name: fieldName, value: fieldValue });
             await msg.edit({ embeds: [finalEmbed] });
-        }, STEP * 13);
+        }, 1500);
     }
 };

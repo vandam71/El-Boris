@@ -68,25 +68,6 @@ module.exports = {
         });
         const msg = slotsResource.message;
 
-        const STEP = 700;
-        const frames = [
-            [roll(), SPIN,   SPIN  ],
-            [roll(), SPIN,   SPIN  ],
-            [roll(), SPIN,   SPIN  ],
-            [a,      SPIN,   SPIN  ],
-            [a,      roll(), SPIN  ],
-            [a,      roll(), SPIN  ],
-            [a,      roll(), SPIN  ],
-            [a,      b,      SPIN  ],
-            [a,      b,      roll()],
-            [a,      b,      roll()],
-            [a,      b,      roll()],
-            [a,      b,      c     ],
-        ];
-        frames.forEach(([r1, r2, r3], i) => {
-            setTimeout(() => msg.edit({ embeds: [makeEmbed(author, iconURL, r1, r2, r3, 0xF4D03F)] }), STEP * (i + 1));
-        });
-
         setTimeout(async () => {
             const { label, gain, color } = evaluate(a, b, c, bet_value);
             if (gain !== 0) await new Transaction(interaction.user.id, gain, 'Slots').process();
@@ -100,6 +81,6 @@ module.exports = {
             const finalEmbed = makeEmbed(author, iconURL, a, b, c, color);
             finalEmbed.addFields({ name: label, value: resultText });
             await msg.edit({ embeds: [finalEmbed] });
-        }, STEP * 13);
+        }, 1500);
     }
 };
