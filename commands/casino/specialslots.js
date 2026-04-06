@@ -96,6 +96,17 @@ module.exports = {
 
             const finalEmbed = makeEmbed(author, iconURL, $, $$, $$$, color);
             finalEmbed.addFields({ name: fieldName, value: fieldValue });
+
+            // Stats tracking
+            const statsInc = { 'stats.specialSlotsPlayed': 1 };
+            if (color === 0xE74C3C) statsInc['stats.specialSlotsLost'] = 1;
+            else if (fieldName !== '🍒 One Cherry') {
+                const earned = bet_value * ({ '🎰 JACKPOT!': 60, '💎 Three Diamonds!': 40, '🍒 Three Cherries!': 20, '3 of a Kind!': 10, '🍒🍒 Two Cherries!': 3 }[fieldName] ?? 0);
+                statsInc['stats.specialSlotsWon'] = 1;
+                if (earned > 0) statsInc['stats.coinsEarned'] = earned;
+            }
+            User.findOneAndUpdate({ id: interaction.user.id }, { $inc: statsInc }).catch(() => {});
+
             await msg.edit({ embeds: [finalEmbed] });
         }, 2100);
     }

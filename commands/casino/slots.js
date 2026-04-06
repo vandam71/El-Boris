@@ -75,6 +75,12 @@ module.exports = {
             const { label, gain, color } = evaluate(a, b, c, bet_value);
             if (gain !== 0) await new Transaction(interaction.user.id, gain, 'Slots').process();
 
+            // Stats tracking
+            const statsInc = { 'stats.slotsPlayed': 1 };
+            if (gain > 0) { statsInc['stats.slotsWon'] = 1; statsInc['stats.coinsEarned'] = gain; }
+            else if (gain < 0) statsInc['stats.slotsLost'] = 1;
+            User.findOneAndUpdate({ id: interaction.user.id }, { $inc: statsInc }).catch(() => {});
+
             const resultText = gain > 0
                 ? `You won **${gain}** <:boriscoin:1490632869695983617>!`
                 : gain === 0
