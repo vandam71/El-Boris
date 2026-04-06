@@ -6,7 +6,10 @@ const config = require('./config.json');
 const ElBoris = require("./struct/Client");
 const client = new ElBoris();
 const { commandHandler, slashCommands } = require("./commands");
-const { newMessageUser } = require('./models/user');
+const { newMessageUser, User } = require('./models/user');
+const { Block } = require('./models/block');
+const { syncAllMessages } = require('./struct/BlockUtils');
+const Transaction = require('./struct/Transaction');
 const Guild = require('./models/guild');
 const logger = require('./logger');
 
@@ -51,6 +54,71 @@ client.on('clientReady', async () => {
         }],
         status: 'online'
     });
+
+    // Block startup recovery — restore nextBlockSpawn from DB
+    const activeBlock = await Block.getActive();
+    if (activeBlock) {
+        client.nextBlockSpawn = Infinity;
+        logger.info(`Resumed active ${activeBlock.type} block (HP: ${activeBlock.currentHp}/${activeBlock.maxHp})`);
+    } else {
+        const lastBlock = await Block.findOne({ active: false }).sort({ endedAt: -1 });
+        client.nextBlockSpawn = lastBlock?.endedAt
+            ? lastBlock.endedAt.getTime() + config.block_spawn_cooldown * 1000
+            : Date.now();
+        logger.info(`Next block spawn: ${new Date(client.nextBlockSpawn).toISOString()}`);
+    }
+
+    // Block tick — runs every block_tick_interval seconds
+    setInterval(async () => {
+        try {
+            let block = await Block.getActive();
+
+            if (!block) {
+                if (Date.now() >= client.nextBlockSpawn) {
+                    client.nextBlockSpawn = Infinity;
+                    block = await Block.spawnRandom();
+                    logger.info(`Spawned ${block.type} block (HP: ${block.maxHp}, Reward: ${block.rewardPool})`);
+                }
+                return;
+            }
+
+            // Deal damage from each active miner (1 + speedPerkLevel per tick)
+            const activeMiners = block.miners.filter(m => !m.leftAt);
+            let totalDamage = 0;
+            for (const miner of activeMiners) {
+                const perks = await User.getPerks(miner.userId);
+                const speedPerk = perks.find(p => p.name === 'Speed Perk');
+                totalDamage += 1 + (speedPerk ? speedPerk.quantity : 0);
+            }
+
+            block.currentHp = Math.max(0, block.currentHp - totalDamage);
+
+            if (block.currentHp <= 0) {
+                // Block destroyed — distribute rewards
+                block.active = false;
+                block.endedAt = new Date();
+                await block.save();
+
+                for (const miner of activeMiners) {
+                    const perks = await User.getPerks(miner.userId);
+                    const luckPerk = perks.find(p => p.name === 'Luck Perk');
+                    const luckLevel = luckPerk ? luckPerk.quantity : 0;
+                    const baseShare = Math.floor(block.rewardPool / activeMiners.length);
+                    const share = Math.floor(baseShare * (1 + 0.1 * luckLevel));
+                    await new Transaction(miner.userId, share, 'Block Mining').process();
+                }
+
+                await syncAllMessages(block, client, true);
+                client.nextBlockSpawn = Date.now() + config.block_spawn_cooldown * 1000;
+                logger.info(`Block destroyed! Rewarded ${activeMiners.length} miner(s). Next spawn: ${new Date(client.nextBlockSpawn).toISOString()}`);
+            } else {
+                await block.save();
+                if (totalDamage > 0) await syncAllMessages(block, client, false);
+            }
+        } catch (err) {
+            logger.error(`Block tick error: ${err.message}`);
+        }
+    }, config.block_tick_interval * 1000);
 });
 
 //When the bot is added to a new server
@@ -111,6 +179,54 @@ client.on('interactionCreate', async interaction => {
         const command = slashCommands.get(interaction.commandName);
         if (command?.autocomplete) {
             try { await command.autocomplete(interaction); } catch { await interaction.respond([]).catch(() => { }); }
+        }
+        return;
+    }
+
+    if (interaction.isButton()) {
+        if (interaction.customId === 'mb_join') {
+            try {
+                const block = await Block.getActive();
+                if (!block) return interaction.reply({ content: 'The mining block is no longer active.', flags: MessageFlags.Ephemeral });
+
+                const userId = interaction.user.id;
+                if (block.miners.find(m => m.userId === userId && !m.leftAt))
+                    return interaction.reply({ content: 'You are already mining this block!', flags: MessageFlags.Ephemeral });
+
+                const soloExpires = client.minedRecently.get(userId);
+                if (soloExpires && Date.now() < soloExpires) {
+                    const remaining = Math.ceil((soloExpires - Date.now()) / 1000);
+                    return interaction.reply({ content: `You just mined solo. Wait **${remaining}s** before joining a block.`, flags: MessageFlags.Ephemeral });
+                }
+
+                block.miners.push({ userId, joinedAt: new Date(), leftAt: null });
+                await block.save();
+                await interaction.reply({ content: '⛏️ You joined the mining block!', flags: MessageFlags.Ephemeral });
+                await syncAllMessages(block, client, false);
+            } catch (err) {
+                logger.error(`mb_join error: ${err.message}`);
+            }
+            return;
+        }
+
+        if (interaction.customId === 'mb_leave') {
+            try {
+                const block = await Block.getActive();
+                if (!block) return interaction.reply({ content: 'There is no active mining block to leave.', flags: MessageFlags.Ephemeral });
+
+                const userId = interaction.user.id;
+                const idx = block.miners.findIndex(m => m.userId === userId && !m.leftAt);
+                if (idx === -1) return interaction.reply({ content: 'You are not in this mining block.', flags: MessageFlags.Ephemeral });
+
+                block.miners[idx].leftAt = new Date();
+                block.markModified('miners');
+                await block.save();
+                await interaction.reply({ content: '🏃 You left the mining block.', flags: MessageFlags.Ephemeral });
+                await syncAllMessages(block, client, false);
+            } catch (err) {
+                logger.error(`mb_leave error: ${err.message}`);
+            }
+            return;
         }
         return;
     }

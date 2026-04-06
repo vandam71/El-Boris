@@ -20,6 +20,9 @@ module.exports = class extends Client {
         this.pokedRecently = new Set();
         // cooldown Maps: id -> expireTimestamp (ms)
         this.minedRecently = new Map();
+
+        // block spawn schedule: epoch ms, or Infinity when a block is active
+        this.nextBlockSpawn = null;
         this.chestRecently = new Map();
         this.flipRecently = new Map();
         this.slotsRecently = new Map();
