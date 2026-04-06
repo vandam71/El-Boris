@@ -64,6 +64,7 @@ async function executeSolo(interaction, client) {
         try {
             client.minedRecently.delete(userId);
             let value = await new Transaction(userId, Math.floor(Math.random() * 5) + 1 + luckValue, 'Mining').process();
+            User.findOneAndUpdate({ id: userId }, { $inc: { 'stats.minesSolo': 1, 'stats.coinsMinedSolo': value, 'stats.coinsEarned': value } }).catch(() => {});
             mineMessage.setTitle('Mined!')
                 .setDescription(`you have mined <:boriscoin:1490632869695983617> **${value}**`);
 
