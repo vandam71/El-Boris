@@ -8,7 +8,7 @@ const client = new ElBoris();
 const { commandHandler, slashCommands } = require("./commands");
 const { newMessageUser, syncGuildMembers, User } = require('./models/user');
 const { Block } = require('./models/block');
-const { syncAllMessages } = require('./struct/BlockUtils');
+const { syncAllMessages, spawnAnnounceEmbed } = require('./struct/BlockUtils');
 const Transaction = require('./struct/Transaction');
 const Team = require('./models/team');
 const Guild = require('./models/guild');
@@ -71,8 +71,8 @@ client.on('clientReady', async () => {
         logger.info(`Next block spawn: ${new Date(client.nextBlockSpawn).toISOString()}`);
     }
 
-    // Block tick — runs every block_tick_interval seconds
-    setInterval(async () => {
+    // Block tick — recursive setTimeout so each interval reads the live blockTickInterval
+    const blockTick = async () => {
         try {
             let block = await Block.getActive();
 
@@ -81,17 +81,30 @@ client.on('clientReady', async () => {
                     client.nextBlockSpawn = Infinity;
                     block = await Block.spawnRandom();
                     logger.info(`Spawned ${block.type} block (HP: ${block.maxHp}, Reward: ${block.rewardPool})`);
+
+                    // Announce to every configured guild channel
+                    const announceEmbed = spawnAnnounceEmbed(block);
+                    const guildDocs = await Guild.getMiningChannels();
+                    for (const doc of guildDocs) {
+                        try {
+                            const ch = client.channels.cache.get(doc.miningChannelId)
+                                || await client.channels.fetch(doc.miningChannelId);
+                            await ch.send({ embeds: [announceEmbed] });
+                        } catch { /* channel gone or no perms, skip */ }
+                    }
                 }
+                setTimeout(blockTick, client.blockTickInterval * 1000);
                 return;
             }
 
-            // Deal damage from each active miner (1 + speedPerkLevel per tick)
+            // Deal damage from each active miner — randomised: floor((1 + speedLevel) * (1 + rand))
             const activeMiners = block.miners.filter(m => !m.leftAt);
             let totalDamage = 0;
             for (const miner of activeMiners) {
                 const perks = await User.getPerks(miner.userId);
                 const speedPerk = perks.find(p => p.name === 'Speed Perk');
-                totalDamage += 1 + (speedPerk ? speedPerk.quantity : 0);
+                const speedLevel = speedPerk ? speedPerk.quantity : 0;
+                totalDamage += Math.floor((1 + speedLevel) * (1 + Math.random()));
             }
 
             block.currentHp = Math.max(0, block.currentHp - totalDamage);
@@ -112,7 +125,8 @@ client.on('clientReady', async () => {
                 }
 
                 await syncAllMessages(block, client, true);
-                client.nextBlockSpawn = Date.now() + config.block_spawn_cooldown * 1000;
+                // Spawn jitter: ±20% of cooldown
+                client.nextBlockSpawn = Date.now() + config.block_spawn_cooldown * (0.8 + Math.random() * 0.4) * 1000;
                 logger.info(`Block destroyed! Rewarded ${activeMiners.length} miner(s). Next spawn: ${new Date(client.nextBlockSpawn).toISOString()}`);
             } else {
                 await block.save();
@@ -121,7 +135,9 @@ client.on('clientReady', async () => {
         } catch (err) {
             logger.error(`Block tick error: ${err.message}`);
         }
-    }, config.block_tick_interval * 1000);
+        setTimeout(blockTick, client.blockTickInterval * 1000);
+    };
+    setTimeout(blockTick, client.blockTickInterval * 1000);
 });
 
 //When the bot is added to a new server
