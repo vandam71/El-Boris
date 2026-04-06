@@ -1,4 +1,4 @@
-# El Boris — v3.2.2
+# El Boris — v3.3.0
 
 A Discord bot built with discord.js v14, Node.js v20, and MongoDB (Mongoose v8).
 
@@ -36,7 +36,7 @@ A Discord bot built with discord.js v14, Node.js v20, and MongoDB (Mongoose v8).
 - [ ] Vote kick from voice channel
 - [x] Poll system
 - [ ] Teams (create, join, delete, stats)
-- [ ] Mining blocks with bonus drops
+- [x] Mining blocks with bonus drops
 - [ ] Fishing command + sell fish
 - [x] Scratch Card
 - [ ] Inventory sorting / keyword filtering
@@ -44,6 +44,10 @@ A Discord bot built with discord.js v14, Node.js v20, and MongoDB (Mongoose v8).
 - [ ] Some kind of prestige system
 
 ## Changelog
+
+**v3.3.0**
+- Added `/mine block` — global cooperative mining blocks; 4 tiers (Stone/Iron/Gold/Diamond) with scaling HP and reward pools; every player gets their own live embed with HP bar and miner list; ⛏️ Join / 🏃 Leave buttons update all messages across all servers in real time; damage per tick scales with Speed Perk; Luck Perk boosts your share of the reward; must be mining at the end to receive a payout; new block spawns automatically after cooldown
+- Added member sync on startup — all existing server members are created in the DB when the bot starts, when it joins a new guild, or when a new member joins
 
 **v3.2.2**
 - Added `/poll` — modal-based poll creator; type question and options (one per line, 2–9); live vote bar with percentages; toggle/switch votes; auto-closes with winner announced
