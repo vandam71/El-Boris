@@ -1,6 +1,5 @@
-const { SlashCommandBuilder ,
-    MessageFlags
-} = require('discord.js');
+const { SlashCommandBuilder, MessageFlags } = require('discord.js');
+const { poke_cooldown } = require('../../config.json');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -15,7 +14,7 @@ module.exports = {
         if (client.pokedRecently.has(member_tag.id))
             return interaction.reply({ content: 'This user was poked in the last minute.', flags: MessageFlags.Ephemeral });
         client.pokedRecently.add(member_tag.id);
-        setTimeout(() => { client.pokedRecently.delete(member_tag.id); }, 60 * 1000);
+        setTimeout(() => { client.pokedRecently.delete(member_tag.id); }, poke_cooldown * 1000);
 
         const call_messages = ['is calling you!', 'needs your attention...', 'requests your presence.', 'demands you to join him!'];
 

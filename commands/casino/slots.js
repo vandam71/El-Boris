@@ -1,6 +1,7 @@
 const { SlashCommandBuilder, EmbedBuilder, MessageFlags } = require('discord.js');
 const { User } = require('../../models/user');
 const Transaction = require('../../struct/Transaction');
+const { slots_cooldown } = require('../../config.json');
 
 const SYMBOLS = ['🎰', '🍎', '🍇', '🍋', '🍌', '🍒'];
 const SPIN = '🎡';
@@ -49,7 +50,7 @@ module.exports = {
         }
 
         const now = Date.now();
-        const cooldownMs = 15 * 1000;
+        const cooldownMs = slots_cooldown * 1000;
         const expires = client.slotsRecently.get(interaction.user.id);
         if (expires && now < expires) {
             const remaining = Math.ceil((expires - now) / 1000);

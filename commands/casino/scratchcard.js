@@ -3,9 +3,10 @@ const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, Butt
 } = require('discord.js');
 const { User } = require('../../models/user');
 const Transaction = require('../../struct/Transaction');
+const { scratchcard_cooldown } = require('../../config.json');
 
 const COST = 50;
-const COOLDOWN_MS = 15 * 1000;
+const COOLDOWN_MS = scratchcard_cooldown * 1000;
 const SYMBOLS = ['🍒', '🍋', '🍊', '⭐', '💎', '🎰'];
 const cooldowns = new Map();
 

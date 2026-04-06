@@ -1,7 +1,6 @@
 const { User } = require('../../models/user');
-const { SlashCommandBuilder ,
-    MessageFlags
-} = require('discord.js');
+const { SlashCommandBuilder, MessageFlags } = require('discord.js');
+const { azia_cooldown } = require('../../config.json');
 const aziaRecently = new Set();
 
 module.exports = {
@@ -17,7 +16,7 @@ module.exports = {
         const target = targetMember ? targetMember.user : interaction.user;
 
         aziaRecently.add(interaction.user.id);
-        setTimeout(() => { aziaRecently.delete(interaction.user.id); }, 60 * 1000);
+        setTimeout(() => { aziaRecently.delete(interaction.user.id); }, azia_cooldown * 1000);
 
         const user = await User.findOneAndUpdate({ id: target.id }, { $inc: { azia: 1 } });
         if (!user)
