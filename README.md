@@ -28,7 +28,7 @@ A Discord bot built with discord.js v14, Node.js v20, and MongoDB (Mongoose v8).
 | Server | ban, kick, poke, poll, prefix, purge, votekick |
 | Shop | buy, info, shop, upgrade |
 | Team | team |
-| User | inventory, peek, profile |
+| User | inventory, peek, profile, stats |
 
 ## Roadmap — 3.x
 
@@ -42,10 +42,14 @@ A Discord bot built with discord.js v14, Node.js v20, and MongoDB (Mongoose v8).
 - [ ] Inventory sorting / keyword filtering
 - [ ] Quests (fish x, mine x, slots x)
 - [ ] Some kind of prestige system
-- [ ] Stats (nr of casino types done, one for slots, one for specialslots, etc, nr of mines, nr of upgrades, nr of blocks mined, basically needs to be tracked in the user)
+- [x] Stats (nr of casino types done, one for slots, one for specialslots, etc, nr of mines, nr of upgrades, nr of blocks mined, basically needs to be tracked in the user)
 
 ## Changelog
-
+**v3.6.0**
+- Added `/stats [user]` — categorised embed showing win rates, lifetime coins earned, mining totals, chest and upgrade counts; respects `private` flag
+- Tracks stats across all games and actions: slots, special slots, blackjack, coinflip, dice, scratchcard, mine solo, block mining, chests, perk upgrades
+- Stats stored as a `stats` subdocument on each User; all counters default to 0 so existing users are unaffected
+- Tracking uses atomic `$inc` at each outcome point (fire-and-forget, never blocks gameplay)
 **v3.4.0**
 - Added `/team` with 6 subcommands: `create` (costs 2000 coins), `invite` (in-channel button flow, 5 min expiry), `kick`, `leave`, `disband`, `info` (total level + total networth)
 - Team tag `[TAG]` shown in `/profile` title
