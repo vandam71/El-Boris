@@ -51,8 +51,8 @@ module.exports = {
                 .setColor(ended ? 0xACA19D : 0x5865F2)
                 .setAuthor({ name: `Poll by ${interaction.user.username}`, iconURL: interaction.user.avatarURL() })
                 .setTitle(question)
-                .setDescription(description)
-                .setFooter({ text: ended ? `Poll ended — ${totalVotes} total vote${totalVotes !== 1 ? 's' : ''}` : `Ends <t:${endsAt}:R> — ${totalVotes} vote${totalVotes !== 1 ? 's' : ''}` });
+                .setDescription(description + (ended ? '' : `\n\n⏱️ Ends <t:${endsAt}:R>`))
+                .setFooter({ text: ended ? `Poll ended — ${totalVotes} total vote${totalVotes !== 1 ? 's' : ''}` : `${totalVotes} vote${totalVotes !== 1 ? 's' : ''} cast` });
 
             return embed;
         }
