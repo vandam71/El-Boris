@@ -9,6 +9,10 @@ function roll() {
     return SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)];
 }
 
+function spinRow() {
+    return [0, 1, 2].map(() => SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)]).join('   ');
+}
+
 function evaluate(a, b, c, bet) {
     if (a === b && b === c) {
         if (a === '🎰') return { label: '🎰 JACKPOT!', gain: bet * 30, color: 0xFFD700 };
@@ -20,11 +24,17 @@ function evaluate(a, b, c, bet) {
     return { label: 'No Match', gain: -bet, color: 0xE74C3C };
 }
 
-function makeEmbed(author, iconURL, a, b, c, footer, color) {
+function makeEmbed(author, iconURL, a, b, c, footer, color, spinning = false) {
+    const mid = `${a}   ${b}   ${c}`;
+    const desc = spinning
+        ? `${spinRow()}
+**${mid}**
+${spinRow()}`
+        : `\n**${mid}**\n`;
     return new EmbedBuilder()
         .setTitle('🎰 Slot Machine')
         .setAuthor({ name: author, iconURL })
-        .setDescription(`${a}  ${b}  ${c}`)
+        .setDescription(desc)
         .setFooter({ text: footer })
         .setColor(color);
 }
@@ -64,16 +74,16 @@ module.exports = {
         const iconURL = interaction.user.avatarURL();
 
         const { resource: slotsResource } = await interaction.reply({
-            embeds: [makeEmbed(author, iconURL, SPIN, SPIN, SPIN, 'Spinning...', 0xF4D03F)],
+            embeds: [makeEmbed(author, iconURL, SPIN, SPIN, SPIN, 'Spinning...', 0xF4D03F, true)],
             withResponse: true
         });
         const spinner = slotsResource.message;
 
         setTimeout(() => {
-            spinner.edit({ embeds: [makeEmbed(author, iconURL, a, SPIN, SPIN, 'Reel 1 locked in...', 0xF4D03F)] });
+            spinner.edit({ embeds: [makeEmbed(author, iconURL, a, SPIN, SPIN, 'Reel 1 locked in...', 0xF4D03F, true)] });
         }, 600);
         setTimeout(() => {
-            spinner.edit({ embeds: [makeEmbed(author, iconURL, a, b, SPIN, 'Reel 2 locked in...', 0xF4D03F)] });
+            spinner.edit({ embeds: [makeEmbed(author, iconURL, a, b, SPIN, 'Reel 2 locked in...', 0xF4D03F, true)] });
         }, 1200);
         setTimeout(async () => {
             const { label, gain, color } = evaluate(a, b, c, bet_value);
