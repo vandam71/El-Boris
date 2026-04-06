@@ -52,7 +52,7 @@ module.exports = {
         let reqMaterial = await Item.findById(materialID[(upgradablePerk.quantity - 1)]);
 
         if (!material) {
-            upgradeMessage.setDescription("You don't have the required material to upgrade this Perk\n You need 1 <" + reqMaterial.emote + "> **" + reqMaterial.name + "**.");
+            upgradeMessage.setDescription("You don't have the required material to upgrade this Perk\n You need 1 " + reqMaterial.emote + " **" + reqMaterial.name + "**.");
             return interaction.reply({ embeds: [upgradeMessage], flags: MessageFlags.Ephemeral });
         }
 
@@ -60,7 +60,7 @@ module.exports = {
 
         let perk = await Item.findById(upgradablePerk.id);
 
-        upgradeMessage.setDescription("You are attempting to upgrade <" + perk.emote + "> **" + perk.name + "** to **Tier " + (upgradablePerk.quantity + 1) + "**.\n It will consume **1** <" + reqMaterial.emote + "> **" + material.name + "** and it has a **" + successRate + "%** success rate.\n Continue?");
+        upgradeMessage.setDescription("You are attempting to upgrade " + perk.emote + " **" + perk.name + "** to **Tier " + (upgradablePerk.quantity + 1) + "**.\n It will consume **1** " + reqMaterial.emote + " **" + material.name + "** and it has a **" + successRate + "%** success rate.\n Continue?");
 
         const row = new ActionRowBuilder().addComponents(
             new ButtonBuilder().setCustomId('upgrade_confirm').setLabel('Confirm').setStyle(ButtonStyle.Success),
@@ -83,9 +83,9 @@ module.exports = {
                 if (upgradeRoll <= successRate) {
                     // if the roll is lower than the rate, the upgrade is successful
                     await user.addItem(upgradablePerk.name, upgradablePerk.id);
-                    upgradeMessage.setDescription("You successfully upgraded <" + perk.emote + "> **" + perk.name + "** to **Tier " + (upgradablePerk.quantity + 1).toString() + "**.");
+                    upgradeMessage.setDescription("You successfully upgraded " + perk.emote + " **" + perk.name + "** to **Tier " + (upgradablePerk.quantity + 1).toString() + "**.");
                 } else {
-                    upgradeMessage.setDescription("You failed to upgrade <" + perk.emote + "> **" + perk.name + "** to **Tier " + (upgradablePerk.quantity + 1).toString() + "**.\n Better luck next time!");
+                    upgradeMessage.setDescription("You failed to upgrade " + perk.emote + " **" + perk.name + "** to **Tier " + (upgradablePerk.quantity + 1).toString() + "**.\n Better luck next time!");
                 }
                 await user.save();
                 await collected.update({ embeds: [upgradeMessage], components: [] });

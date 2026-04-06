@@ -1,4 +1,4 @@
-# El Boris — v3.2.0
+# El Boris — v3.2.1
 
 A Discord bot built with discord.js v14, Node.js v20, and MongoDB (Mongoose v8).
 
@@ -44,6 +44,10 @@ A Discord bot built with discord.js v14, Node.js v20, and MongoDB (Mongoose v8).
 - [ ] Some kind of prestige system
 
 ## Changelog
+
+**v3.2.1**
+- Fixed item emotes being double-wrapped (`<<:name:id>>`) — emote field is now stored as the full `<:name:id>` string and rendered directly
+- Added `additem` and `removeitem` subcommands to `/dev` for managing shop items without code changes
 
 **v3.2.0**
 - Added `/scratchcard` — 3×3 grid scratch card, costs 50 coins; scratch one row at a time or reveal all; match symbols to win up to 20× bet

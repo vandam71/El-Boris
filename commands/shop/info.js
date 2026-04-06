@@ -1,5 +1,5 @@
 const Item = require("../../models/item");
-const { SlashCommandBuilder, EmbedBuilder ,
+const { SlashCommandBuilder, EmbedBuilder,
     MessageFlags
 } = require('discord.js');
 module.exports = {
@@ -24,7 +24,7 @@ module.exports = {
             embeds: [new EmbedBuilder()
                 .setColor(0xFFFE00)
                 .setAuthor({ name: 'Info on: ' + item.name })
-                .setDescription(` <${item.emote}>\n **Description**: ${item.description}\n **Price**: ${item.price}\n **Category**: ${item.category}`)]
+                .setDescription(` ${item.emote}\n **Description**: ${item.description}\n **Price**: ${item.price}\n **Category**: ${item.category}`)]
         });
 
     }

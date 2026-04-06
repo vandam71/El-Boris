@@ -39,7 +39,7 @@ itemSchema.statics.findByName = function (name) {
 itemSchema.statics.getItemString = async function (id, quantity) {
     let item = await this.findById(id);
     if (!item) return `${quantity} [unknown item]\n`;
-    return quantity + ' <' + item.emote + '> ' + item.name + '\n';
+    return quantity + ' ' + item.emote + ' ' + item.name + '\n';
 };
 
 itemSchema.statics.getCategory = async function (id) {

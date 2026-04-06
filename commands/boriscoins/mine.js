@@ -1,6 +1,6 @@
 const Transaction = require('../../struct/Transaction');
 const { mining_cooldown } = require('../../config.json');
-const { SlashCommandBuilder, EmbedBuilder ,
+const { SlashCommandBuilder, EmbedBuilder,
     MessageFlags
 } = require('discord.js');
 const { User } = require('../../models/user');
@@ -50,14 +50,14 @@ module.exports = {
                     const user = await User.findOne({ id: interaction.user.id });
                     await user.addItem(item.name, item.id);
                     await user.save();
-                    mineMessage.addFields({ name: 'Item Drop:', value: '<' + item.emote + '>' + 'Bronze Key', inline: true });
+                    mineMessage.addFields({ name: 'Item Drop:', value: item.emote + ' Bronze Key', inline: true });
                 }
                 if (gold_roll === 1) {
                     let item = await Item.findOne({ id: 802 });
                     const user = await User.findOne({ id: interaction.user.id });
                     await user.addItem(item.name, item.id);
                     await user.save();
-                    mineMessage.addFields({ name: 'Item Drop:', value: '<' + item.emote + '>' + 'Gold Key', inline: true });
+                    mineMessage.addFields({ name: 'Item Drop:', value: item.emote + ' Gold Key', inline: true });
                 }
                 await interaction.editReply({ embeds: [mineMessage] });
             } catch (err) {

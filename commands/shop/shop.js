@@ -1,5 +1,5 @@
 const Item = require('../../models/item');
-const { SlashCommandBuilder, EmbedBuilder ,
+const { SlashCommandBuilder, EmbedBuilder,
     MessageFlags
 } = require('discord.js');
 
@@ -46,7 +46,7 @@ module.exports = {
         let messageConcat = '';
 
         for (const item of items) {
-            messageConcat += '<' + (item.emote).toString() + '> **' + (item.name).toString() + '** - <:boriscoin:1490632869695983617>' + (item.price).toString() + ' — **/buy** `' + (item.name).toString() + '`\n';
+            messageConcat += (item.emote).toString() + ' **' + (item.name).toString() + '** - <:boriscoin:1490632869695983617>' + (item.price).toString() + ' — **/buy** `' + (item.name).toString() + '`\n';
         }
 
         embedMessage.setDescription(messageConcat);

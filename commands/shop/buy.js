@@ -1,7 +1,7 @@
 const Item = require('../../models/item');
 const { User, check_balance } = require('../../models/user');
 const Transaction = require("../../struct/Transaction");
-const { SlashCommandBuilder, EmbedBuilder ,
+const { SlashCommandBuilder, EmbedBuilder,
     MessageFlags
 } = require('discord.js');
 
@@ -51,7 +51,7 @@ module.exports = {
         const user = await User.findOne({ id: interaction.user.id });
         await user.addItem(item.name, item.id);
         await user.save();
-        buyMessage.setDescription("You bought <" + item.emote + "> " + item.name + " for <:boriscoin:1490632869695983617> " + item.price + ".");
+        buyMessage.setDescription("You bought " + item.emote + " " + item.name + " for <:boriscoin:1490632869695983617> " + item.price + ".");
         return interaction.reply({ embeds: [buyMessage] });
     }
 };
