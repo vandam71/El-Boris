@@ -8,7 +8,7 @@ const TIER_COLORS = {
     diamond: 0x00BFFF,
 };
 
-function buildBlockEmbed(block, ended = false) {
+function buildBlockEmbed(block, ended = false, payouts = null) {
     const tier = TIERS[block.type];
     const hpPct = block.currentHp / block.maxHp;
     const filled = Math.round(hpPct * 10);
@@ -25,17 +25,24 @@ function buildBlockEmbed(block, ended = false) {
             : `\n⏱️ Spawned <t:${spawnTs}:R>`,
     ];
 
-    const minerList = activeMiners.length
-        ? activeMiners.map(m => `<@${m.userId}>`).join(', ')
-        : 'No active miners';
-
-    return new EmbedBuilder()
+    const embed = new EmbedBuilder()
         .setColor(ended ? 0xACA19D : (TIER_COLORS[block.type] ?? 0x5865F2))
         .setTitle(ended
             ? `${tier.emoji} ${tier.label} Block Destroyed`
             : `${tier.emoji} ${tier.label} Block — Active`)
-        .setDescription(lines.join('\n'))
-        .addFields({ name: 'Miners', value: minerList });
+        .setDescription(lines.join('\n'));
+
+    if (ended && payouts && payouts.length > 0) {
+        const payoutLines = payouts.map(p => `<@${p.userId}> — <:boriscoin:1490632869695983617> **${p.share}**`);
+        embed.addFields({ name: '💰 Rewards', value: payoutLines.join('\n') });
+    } else {
+        const minerList = activeMiners.length
+            ? activeMiners.map(m => `<@${m.userId}>`).join(', ')
+            : 'No active miners';
+        embed.addFields({ name: 'Miners', value: minerList });
+    }
+
+    return embed;
 }
 
 function buildBlockRows() {
@@ -53,8 +60,8 @@ function buildBlockRows() {
     ];
 }
 
-async function syncAllMessages(block, client, ended = false) {
-    const embed = buildBlockEmbed(block, ended);
+async function syncAllMessages(block, client, ended = false, payouts = null) {
+    const embed = buildBlockEmbed(block, ended, payouts);
     const components = ended ? [] : buildBlockRows();
     const dead = [];
 

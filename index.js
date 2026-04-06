@@ -115,6 +115,7 @@ client.on('clientReady', async () => {
                 block.endedAt = new Date();
                 await block.save();
 
+                const payouts = [];
                 for (const miner of activeMiners) {
                     const perks = await User.getPerks(miner.userId);
                     const luckPerk = perks.find(p => p.name === 'Luck Perk');
@@ -123,9 +124,10 @@ client.on('clientReady', async () => {
                     const share = Math.floor(baseShare * (1 + 0.1 * luckLevel));
                     await new Transaction(miner.userId, share, 'Block Mining').process();
                     User.findOneAndUpdate({ id: miner.userId }, { $inc: { 'stats.blocksParticipated': 1, 'stats.coinsFromBlocks': share, 'stats.coinsEarned': share } }).catch(() => { });
+                    payouts.push({ userId: miner.userId, share });
                 }
 
-                await syncAllMessages(block, client, true);
+                await syncAllMessages(block, client, true, payouts);
                 // Spawn jitter: ±20% of cooldown
                 client.nextBlockSpawn = Date.now() + config.block_spawn_cooldown * (0.8 + Math.random() * 0.4) * 1000;
                 logger.info(`Block destroyed! Rewarded ${activeMiners.length} miner(s). Next spawn: ${new Date(client.nextBlockSpawn).toISOString()}`);
