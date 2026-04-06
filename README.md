@@ -42,6 +42,7 @@ A Discord bot built with discord.js v14, Node.js v20, and MongoDB (Mongoose v8).
 - [ ] Inventory sorting / keyword filtering
 - [ ] Quests (fish x, mine x, slots x)
 - [ ] Some kind of prestige system
+- [ ] Stats (nr of casino types done, one for slots, one for specialslots, etc, nr of mines, nr of upgrades, nr of blocks mined, basically needs to be tracked in the user)
 
 ## Changelog
 
