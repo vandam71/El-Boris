@@ -15,10 +15,15 @@ module.exports = {
                 { name: 'Gold Key', value: 'Gold Key' }
             )),
     execute: async function (interaction, client) {
-        if (client.chestRecently.has(interaction.user.id))
-            return interaction.reply({ content: 'You have a cooldown of 5 seconds on opening chests.', ephemeral: true });
-        client.chestRecently.add(interaction.user.id);
-        setTimeout(async () => { client.chestRecently.delete(interaction.user.id); }, 5 * 1000);
+        const now = Date.now();
+        const cooldownMs = 5 * 1000;
+        const expires = client.chestRecently.get(interaction.user.id);
+        if (expires && now < expires) {
+            const remaining = Math.ceil((expires - now) / 1000);
+            return interaction.reply({ content: `You have a cooldown on opening chests. Try again in **${remaining}s**.`, ephemeral: true });
+        }
+        client.chestRecently.set(interaction.user.id, now + cooldownMs);
+        setTimeout(() => { client.chestRecently.delete(interaction.user.id); }, cooldownMs);
 
         const key = interaction.options.getString('key');
         let chestMessage = new EmbedBuilder()
@@ -27,13 +32,14 @@ module.exports = {
             .setTitle('Opening Chest');
 
         const user = await User.findOne({ id: interaction.user.id });
+        if (!user) return interaction.reply({ content: 'You have no profile yet! Talk in the server first.', ephemeral: true });
 
         switch (key) {
             case 'Bronze Key': {
                 let keyObj = await user.findItem(key);
                 if (!keyObj) {
                     chestMessage.setTitle('Failed!').setDescription("You don't have this key!");
-                    return interaction.reply({ embeds: [chestMessage] });
+                    return interaction.reply({ embeds: [chestMessage], ephemeral: true });
                 }
                 let coins_roll = Math.floor(Math.random() * 100) + 300;
                 let xp_roll = Math.floor(Math.random() * 100) + 200;
@@ -48,7 +54,7 @@ module.exports = {
                 let keyObj = await user.findItem(key);
                 if (!keyObj) {
                     chestMessage.setTitle('Failed!').setDescription("You don't have this key!");
-                    return interaction.reply({ embeds: [chestMessage] });
+                    return interaction.reply({ embeds: [chestMessage], ephemeral: true });
                 }
                 let coins_roll = Math.floor(Math.random() * 1000) + 2000;
                 let xp_roll = Math.floor(Math.random() * 500) + 500;

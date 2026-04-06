@@ -1,7 +1,6 @@
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const { User } = require('../../models/user');
 const Transaction = require('../../struct/Transaction');
-const flipRecently = new Set();
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -25,7 +24,7 @@ module.exports = {
             bet_value = await User.getBalance(interaction.user.id);
             if (bet_value === 0)
                 return interaction.reply({ embeds: [new EmbedBuilder().setDescription("Can't all in 0.")], ephemeral: true });
-        } else if (!betInput || isNaN(betInput) || parseInt(betInput) === 0) {
+        } else if (!betInput || isNaN(betInput) || parseInt(betInput) < 1) {
             return interaction.reply({ embeds: [new EmbedBuilder().setDescription('The value you inserted is invalid!')], ephemeral: true });
         } else if (await User.getBalance(interaction.user.id) < parseInt(betInput)) {
             return interaction.reply({ embeds: [new EmbedBuilder().setDescription('You dont have enough coins!')], ephemeral: true });
@@ -33,10 +32,15 @@ module.exports = {
             bet_value = parseInt(betInput);
         }
 
-        if (flipRecently.has(interaction.user.id))
-            return interaction.reply({ content: 'Command has a 5 second cooldown.', ephemeral: true });
-        flipRecently.add(interaction.user.id);
-        setTimeout(() => { flipRecently.delete(interaction.user.id); }, 5 * 1000);
+        const now = Date.now();
+        const cooldownMs = 5 * 1000;
+        const expires = client.flipRecently.get(interaction.user.id);
+        if (expires && now < expires) {
+            const remaining = Math.ceil((expires - now) / 1000);
+            return interaction.reply({ content: `Command on cooldown. Try again in **${remaining}s**.`, ephemeral: true });
+        }
+        client.flipRecently.set(interaction.user.id, now + cooldownMs);
+        setTimeout(() => { client.flipRecently.delete(interaction.user.id); }, cooldownMs);
 
         let flipMessage = new EmbedBuilder()
             .setColor(0xD8BFD8)

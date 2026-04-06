@@ -1,6 +1,5 @@
-const { SlashCommandBuilder } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const { User } = require('../../models/user');
-const AsciiTable = require('ascii-table');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -16,26 +15,29 @@ module.exports = {
                 { name: 'Coins', value: 'coins' }
             )),
     execute: async function (interaction, client) {
+        await interaction.deferReply();
         const sort = interaction.options.getString('sort');
         let users = await User.find({}).sort([[sort, 'desc']]).limit(10);
-        let table = new AsciiTable();
-        let rank = 1;
 
+        const labels = { azia: 'Azia', xp: 'XP', coins: 'BorisCoins' };
+        let lines;
         switch (sort) {
             case 'azia':
-                table.setHeading('', 'Name', 'Azia');
-                for (const user of users) table.addRow(rank++, user.name, user.azia);
+                lines = users.map((u, i) => `\`${i + 1}.\` **${u.name}** — ${u.azia} Azia`);
                 break;
             case 'xp':
-                table.setHeading('', 'Name', 'Level', 'XP');
-                for (const user of users) table.addRow(rank++, user.name, user.level, user.xp);
+                lines = users.map((u, i) => `\`${i + 1}.\` **${u.name}** — Lv.${u.level} (${u.xp} XP)`);
                 break;
             case 'coins':
-                table.setHeading('', 'Name', 'BorisCoins');
-                for (const user of users) table.addRow(rank++, user.name, user.coins);
+                lines = users.map((u, i) => `\`${i + 1}.\` **${u.name}** — ${u.coins} <:boriscoin:798017751842291732>`);
                 break;
         }
 
-        return interaction.reply('```\nHighscores\n' + table.toString() + '\n```');
+        const embed = new EmbedBuilder()
+            .setTitle(`Highscores — ${labels[sort]}`)
+            .setColor(0xAF873D)
+            .setDescription(lines.join('\n'));
+
+        return interaction.editReply({ embeds: [embed] });
     },
 };

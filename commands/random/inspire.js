@@ -5,9 +5,10 @@ module.exports = {
         .setName('inspire')
         .setDescription('Get an inspirational quote'),
     execute: async function (interaction, client) {
+        await interaction.deferReply();
         const res = await fetch('https://zenquotes.io/api/random');
         const json = await res.json();
-        await interaction.reply({
+        await interaction.editReply({
             embeds: [new EmbedBuilder()
                 .setAuthor({ name: interaction.user.username, iconURL: interaction.user.avatarURL() })
                 .setTitle(json[0].a)

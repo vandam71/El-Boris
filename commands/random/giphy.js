@@ -6,11 +6,12 @@ module.exports = {
         .setDescription('Find a random GIF')
         .addStringOption(opt => opt.setName('query').setDescription('Search query').setRequired(true)),
     execute: async function (interaction, client) {
+        await interaction.deferReply();
         const q = encodeURIComponent(interaction.options.getString('query'));
         const res = await fetch(`https://api.giphy.com/v1/gifs/search?api_key=${process.env.GIPHY_API}&q=${q}&limit=10`);
         const response = await res.json();
-        if (!response.data?.length) return interaction.reply({ content: 'No results found.', ephemeral: true });
+        if (!response.data?.length) return interaction.editReply({ content: 'No results found.' });
         const gif = response.data[Math.floor(Math.random() * response.data.length)];
-        return interaction.reply({ files: [gif.images.fixed_height.url] });
+        return interaction.editReply({ files: [gif.images.fixed_height.url] });
     },
 };

@@ -4,7 +4,13 @@ module.exports = {
     data: new SlashCommandBuilder()
         .setName('help')
         .setDescription('Show all commands or details on a specific one')
-        .addStringOption(opt => opt.setName('command').setDescription('Command name').setRequired(false)),
+        .addStringOption(opt => opt.setName('command').setDescription('Command name').setRequired(false).setAutocomplete(true)),
+    autocomplete: async function (interaction) {
+        const { slashCommands } = require('../../commands');
+        const focused = interaction.options.getFocused().toLowerCase();
+        const choices = [...slashCommands.keys()].filter(k => k.includes(focused));
+        await interaction.respond(choices.slice(0, 25).map(k => ({ name: k, value: k })));
+    },
     execute: async function (interaction, client) {
         // lazy-require to avoid circular dependency at load time
         const { slashCommands } = require('../../commands');

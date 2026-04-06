@@ -10,6 +10,7 @@ module.exports = {
         const sayMessage = interaction.options.getString('text');
         await Suggestions.create({ name: interaction.user.username, id: interaction.user.id, suggestion: sayMessage });
         return interaction.reply({
+            ephemeral: true,
             embeds: [new EmbedBuilder()
                 .setColor(0xAAFF00)
                 .setAuthor({ name: interaction.user.username, iconURL: interaction.user.avatarURL() })

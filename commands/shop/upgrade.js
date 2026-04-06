@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
+const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require("discord.js");
 const { User } = require("../../models/user");
 const Item = require("../../models/item");
 const { base_upgrade } = require('../../config.json');
@@ -7,7 +7,14 @@ module.exports = {
     data: new SlashCommandBuilder()
         .setName('upgrade')
         .setDescription('Upgrade a perk to the next tier')
-        .addStringOption(opt => opt.setName('item').setDescription('Name of the perk to upgrade').setRequired(true)),
+        .addStringOption(opt => opt.setName('item').setDescription('Name of the perk to upgrade').setRequired(true).setAutocomplete(true)),
+    autocomplete: async function (interaction) {
+        const focused = interaction.options.getFocused().toLowerCase();
+        const { User } = require('../../models/user');
+        const perks = await User.getPerks(interaction.user.id);
+        const choices = perks.map(p => p.name).filter(n => n.toLowerCase().includes(focused));
+        await interaction.respond(choices.slice(0, 25).map(n => ({ name: n, value: n })));
+    },
     execute: async function (interaction, client) {
 
         let materialID = [201, 202, 203, 204, 205];
@@ -53,42 +60,39 @@ module.exports = {
 
         upgradeMessage.setDescription("You are attempting to upgrade <" + perk.emote + "> **" + perk.name + "** to **Tier " + (upgradablePerk.quantity + 1) + "**.\n It will consume **1** <" + reqMaterial.emote + "> **" + material.name + "** and it has a **" + successRate + "%** success rate.\n Continue?");
 
-        const filter = (reaction, user) => ['✔', '❌'].includes(reaction.emoji.name) && user.id === interaction.user.id;
+        const row = new ActionRowBuilder().addComponents(
+            new ButtonBuilder().setCustomId('upgrade_confirm').setLabel('Confirm').setStyle(ButtonStyle.Success),
+            new ButtonBuilder().setCustomId('upgrade_cancel').setLabel('Cancel').setStyle(ButtonStyle.Secondary)
+        );
 
-        const upgrade_message = await interaction.reply({ embeds: [upgradeMessage], fetchReply: true });
-        await upgrade_message.react('✔');
-        await upgrade_message.react('❌');
+        const upgrade_message = await interaction.reply({ embeds: [upgradeMessage], components: [row], fetchReply: true });
 
-        upgrade_message.awaitReactions({ filter, max: 1, time: 30000, errors: ['time'] })
-            .then(async collected => {
-                const reaction = collected.first();
-                if (reaction.emoji.name === '✔') {
-                    const user = await User.findOne({ id: interaction.user.id });
-                    let upgradeRoll = Math.floor(Math.random() * 100);
+        const filter = i => i.user.id === interaction.user.id;
+        try {
+            const collected = await upgrade_message.awaitMessageComponent({ filter, time: 30000 });
+            if (collected.customId === 'upgrade_confirm') {
+                const user = await User.findOne({ id: interaction.user.id });
+                let upgradeRoll = Math.floor(Math.random() * 100);
 
-                    // delete or reduce the quantity of the material by one
-                    await user.removeItem(material.name);
+                // delete or reduce the quantity of the material by one
+                await user.removeItem(material.name);
 
-                    if (upgradeRoll <= successRate) {
-                        // if the roll is lower than the rate, the upgrade is successful
-                        await user.addItem(upgradablePerk.name, upgradablePerk.id);
-                        upgradeMessage.setDescription("You successfully upgraded <" + perk.emote + "> **" + perk.name + "** to **Tier " + (upgradablePerk.quantity + 1).toString() + "**.");
-                        await upgrade_message.edit({ embeds: [upgradeMessage] });
-                    } else {
-                        upgradeMessage.setDescription("You failed to upgrade <" + perk.emote + "> **" + perk.name + "** to **Tier " + (upgradablePerk.quantity + 1).toString() + "**.\n Better luck next time!");
-                        await upgrade_message.edit({ embeds: [upgradeMessage] });
-                    }
-                    await user.save();
+                if (upgradeRoll <= successRate) {
+                    // if the roll is lower than the rate, the upgrade is successful
+                    await user.addItem(upgradablePerk.name, upgradablePerk.id);
+                    upgradeMessage.setDescription("You successfully upgraded <" + perk.emote + "> **" + perk.name + "** to **Tier " + (upgradablePerk.quantity + 1).toString() + "**.");
                 } else {
-                    upgradeMessage.setDescription(`You declined the upgrade.`);
-                    await upgrade_message.edit({ embeds: [upgradeMessage] });
+                    upgradeMessage.setDescription("You failed to upgrade <" + perk.emote + "> **" + perk.name + "** to **Tier " + (upgradablePerk.quantity + 1).toString() + "**.\n Better luck next time!");
                 }
-                return upgrade_message.reactions.removeAll();
-            })
-            .catch(async err => {
-                upgradeMessage.setDescription(`Upgrade time has expired.`);
-                await upgrade_message.edit({ embeds: [upgradeMessage] });
-                return upgrade_message.reactions.removeAll();
-            });
+                await user.save();
+                await collected.update({ embeds: [upgradeMessage], components: [] });
+            } else {
+                upgradeMessage.setDescription(`You declined the upgrade.`);
+                await collected.update({ embeds: [upgradeMessage], components: [] });
+            }
+        } catch {
+            upgradeMessage.setDescription(`Upgrade time has expired.`);
+            await interaction.editReply({ embeds: [upgradeMessage], components: [] });
+        }
     }
 }

@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
+const { SlashCommandBuilder, PermissionFlagsBits, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -19,8 +19,25 @@ module.exports = {
 
         const reason = interaction.options.getString('reason') || 'No reason provided';
 
-        await member.ban({ reason })
-            .then(() => interaction.reply(`${member.user.tag} has been banned by ${interaction.user.tag} because: ${reason}`))
-            .catch(e => interaction.reply({ content: `I couldn't ban because of: ${e}`, ephemeral: true }));
+        const row = new ActionRowBuilder().addComponents(
+            new ButtonBuilder().setCustomId('ban_confirm').setLabel('Confirm Ban').setStyle(ButtonStyle.Danger),
+            new ButtonBuilder().setCustomId('ban_cancel').setLabel('Cancel').setStyle(ButtonStyle.Secondary)
+        );
+
+        await interaction.reply({ content: `Are you sure you want to ban **${member.user.tag}**? Reason: *${reason}*`, components: [row], ephemeral: true });
+
+        const filter = i => i.user.id === interaction.user.id;
+        try {
+            const confirmation = await interaction.fetchReply();
+            const collected = await confirmation.awaitMessageComponent({ filter, time: 15000 });
+            if (collected.customId === 'ban_confirm') {
+                await member.ban({ reason });
+                await collected.update({ content: `**${member.user.tag}** has been banned. Reason: *${reason}*`, components: [] });
+            } else {
+                await collected.update({ content: 'Ban cancelled.', components: [] });
+            }
+        } catch {
+            await interaction.editReply({ content: 'Confirmation timed out. Ban cancelled.', components: [] });
+        }
     }
 };
