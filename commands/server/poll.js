@@ -14,9 +14,13 @@ const LABELS = ['🇦', '🇧', '🇨', '🇩', '🇪'];
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('poll')
-        .setDescription('Create a poll with dynamic options')
+        .setDescription('Create a poll with up to 5 options')
         .addStringOption(opt => opt.setName('question').setDescription('The poll question').setRequired(true))
-        .addStringOption(opt => opt.setName('options').setDescription('Options separated by | e.g. Yes | No | Maybe (2–5 options)').setRequired(true))
+        .addStringOption(opt => opt.setName('option1').setDescription('First option').setRequired(true))
+        .addStringOption(opt => opt.setName('option2').setDescription('Second option').setRequired(true))
+        .addStringOption(opt => opt.setName('option3').setDescription('Third option').setRequired(false))
+        .addStringOption(opt => opt.setName('option4').setDescription('Fourth option').setRequired(false))
+        .addStringOption(opt => opt.setName('option5').setDescription('Fifth option').setRequired(false))
         .addStringOption(opt => opt.setName('duration').setDescription('How long the poll runs (default: 5 minutes)').setRequired(false)
             .addChoices(...DURATION_CHOICES))
         .addStringOption(opt => opt.setName('ping').setDescription('Mention users to notify, space-separated e.g. @user1 @user2').setRequired(false)),
@@ -24,11 +28,13 @@ module.exports = {
         const question = interaction.options.getString('question');
         const durationSec = parseInt(interaction.options.getString('duration') ?? '300');
 
-        const rawOptions = interaction.options.getString('options')
-            .split('|').map(s => s.trim()).filter(Boolean);
-
-        if (rawOptions.length < 2 || rawOptions.length > 5)
-            return interaction.reply({ content: 'Please provide between **2 and 5** options separated by `|`.', flags: MessageFlags.Ephemeral });
+        const rawOptions = [
+            interaction.options.getString('option1'),
+            interaction.options.getString('option2'),
+            interaction.options.getString('option3'),
+            interaction.options.getString('option4'),
+            interaction.options.getString('option5'),
+        ].filter(Boolean);
 
         // Extract all <@id> mentions from the ping string
         const pingRaw = interaction.options.getString('ping') ?? '';
