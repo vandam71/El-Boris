@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle ,
+const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle,
     MessageFlags
 } = require('discord.js');
 const { User } = require('../../models/user');
@@ -7,12 +7,10 @@ const Transaction = require('../../struct/Transaction');
 const COST = 50;
 const SYMBOLS = ['🍒', '🍋', '🍊', '⭐', '💎', '🎰'];
 
-// Returns a grid of 3x3 symbols (9 cells)
 function generateGrid() {
     return Array.from({ length: 9 }, () => SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)]);
 }
 
-// Count occurrences of the most-repeated symbol in the grid
 function evaluateGrid(grid) {
     const counts = {};
     for (const s of grid) counts[s] = (counts[s] || 0) + 1;
@@ -21,7 +19,6 @@ function evaluateGrid(grid) {
     return { max, symbol };
 }
 
-// Payout multiplier on the bet (net gain)
 function payout(max, symbol) {
     if (symbol === '🎰') {
         if (max >= 6) return 20;
@@ -45,6 +42,31 @@ function formatGrid(grid, revealed) {
     ).join('\n');
 }
 
+// Shows the current best match among only the revealed cells
+function matchPreview(grid, revealed) {
+    const visible = grid.filter((_, i) => revealed[i]);
+    if (visible.length === 0) return null;
+    const counts = {};
+    for (const s of visible) counts[s] = (counts[s] || 0) + 1;
+    const max = Math.max(...Object.values(counts));
+    const sym = Object.keys(counts).find(k => counts[k] === max);
+    return max >= 2 ? `${max}x ${sym} so far...` : null;
+}
+
+function buildRows(scratchedRows, allDone) {
+    const rowBtn = (idx) => new ButtonBuilder()
+        .setCustomId(`sc_row_${idx}`)
+        .setLabel(`Scratch Row ${idx + 1}`)
+        .setStyle(ButtonStyle.Primary)
+        .setDisabled(allDone || scratchedRows[idx]);
+    const revealAll = new ButtonBuilder()
+        .setCustomId('sc_reveal_all')
+        .setLabel('Reveal All')
+        .setStyle(ButtonStyle.Secondary)
+        .setDisabled(allDone);
+    return new ActionRowBuilder().addComponents(rowBtn(0), rowBtn(1), rowBtn(2), revealAll);
+}
+
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('scratchcard')
@@ -54,52 +76,52 @@ module.exports = {
         if (balance < COST)
             return interaction.reply({ content: `You need **${COST}** <:boriscoin:1490632869695983617> to buy a scratch card. You only have **${balance}**.`, flags: MessageFlags.Ephemeral });
 
-        // Deduct cost upfront
         await new Transaction(interaction.user.id, -COST, 'Scratchcard').process();
 
         const grid = generateGrid();
         const revealed = Array(9).fill(false);
+        const scratchedRows = [false, false, false];
 
-        const buildRow = (disabled = false) => new ActionRowBuilder().addComponents(
-            new ButtonBuilder().setCustomId('sc_reveal').setLabel('Scratch!').setStyle(ButtonStyle.Primary).setDisabled(disabled),
-            new ButtonBuilder().setCustomId('sc_reveal_all').setLabel('Reveal All').setStyle(ButtonStyle.Secondary).setDisabled(disabled)
-        );
+        const embed = (finished = false) => {
+            const preview = !finished ? matchPreview(grid, revealed) : null;
+            const e = new EmbedBuilder()
+                .setColor(0xF4D03F)
+                .setTitle('🎟️ Scratch Card')
+                .setAuthor({ name: interaction.user.username, iconURL: interaction.user.avatarURL() })
+                .setDescription(formatGrid(grid, revealed))
+                .setFooter({ text: `Cost: ${COST} coins | Scratch each row to reveal!` });
+            if (preview) e.addFields({ name: '👀 Looking good...', value: preview });
+            return e;
+        };
 
-        const embed = () => new EmbedBuilder()
-            .setColor(0xF4D03F)
-            .setTitle('🎟️ Scratch Card')
-            .setAuthor({ name: interaction.user.username, iconURL: interaction.user.avatarURL() })
-            .setDescription(formatGrid(grid, revealed))
-            .setFooter({ text: `Cost: ${COST} coins | Scratch to reveal!` });
-
-        const { resource: scResource } = await interaction.reply({ embeds: [embed()], components: [buildRow()], withResponse: true });
+        const { resource: scResource } = await interaction.reply({
+            embeds: [embed()],
+            components: [buildRows(scratchedRows, false)],
+            withResponse: true
+        });
         const msg = scResource.message;
 
         const filter = i => i.user.id === interaction.user.id;
         const collector = msg.createMessageComponentCollector({ filter, time: 60000 });
 
         collector.on('collect', async i => {
-            if (i.customId === 'sc_reveal') {
-                // Reveal 3 random hidden cells at a time
-                const hidden = revealed.map((r, idx) => r ? null : idx).filter(v => v !== null);
-                const toReveal = hidden.sort(() => Math.random() - 0.5).slice(0, 3);
-                for (const idx of toReveal) revealed[idx] = true;
-            } else {
-                // Reveal all
+            if (i.customId === 'sc_reveal_all') {
                 revealed.fill(true);
+                scratchedRows.fill(true);
+            } else {
+                const rowIdx = parseInt(i.customId.split('_')[2]);
+                for (let col = 0; col < 3; col++) revealed[rowIdx * 3 + col] = true;
+                scratchedRows[rowIdx] = true;
             }
 
             const allRevealed = revealed.every(Boolean);
-            await i.update({ embeds: [embed()], components: [buildRow(allRevealed)] });
+            await i.update({ embeds: [embed()], components: [buildRows(scratchedRows, allRevealed)] });
 
             if (allRevealed) collector.stop('done');
         });
 
         collector.on('end', async (_, reason) => {
-            if (reason !== 'done') {
-                // Timed out — reveal everything
-                revealed.fill(true);
-            }
+            if (reason !== 'done') revealed.fill(true);
 
             const { max, symbol } = evaluateGrid(grid);
             const multiplier = payout(max, symbol);
@@ -121,11 +143,7 @@ module.exports = {
                 .addFields({ name: 'Result', value: resultText })
                 .setFooter({ text: `Cost: ${COST} coins` });
 
-            const disabledRow = new ActionRowBuilder().addComponents(
-                new ButtonBuilder().setCustomId('sc_reveal').setLabel('Scratch!').setStyle(ButtonStyle.Primary).setDisabled(true),
-                new ButtonBuilder().setCustomId('sc_reveal_all').setLabel('Reveal All').setStyle(ButtonStyle.Secondary).setDisabled(true)
-            );
-
+            const disabledRow = buildRows([true, true, true], true);
             await msg.edit({ embeds: [finalEmbed], components: [disabledRow] });
         });
     }

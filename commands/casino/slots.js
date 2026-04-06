@@ -1,8 +1,33 @@
-const { SlashCommandBuilder, EmbedBuilder ,
-    MessageFlags
-} = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder, MessageFlags } = require('discord.js');
 const { User } = require('../../models/user');
 const Transaction = require('../../struct/Transaction');
+
+const SYMBOLS = ['🎰', '🍎', '🍇', '🍋', '🍌', '🍒'];
+const SPIN = '🎡';
+
+function roll() {
+    return SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)];
+}
+
+function evaluate(a, b, c, bet) {
+    if (a === b && b === c) {
+        if (a === '🎰') return { label: '🎰 JACKPOT!', gain: bet * 30, color: 0xFFD700 };
+        return { label: '3 of a Kind!', gain: bet * 10, color: 0x2ECC71 };
+    }
+    const jokers = [a, b, c].filter(s => s === '🎰').length;
+    if (jokers === 2) return { label: '2 Jokers!', gain: bet * 4, color: 0x2ECC71 };
+    if (jokers === 1) return { label: 'Break Even — 1 Joker', gain: 0, color: 0xF4D03F };
+    return { label: 'No Match', gain: -bet, color: 0xE74C3C };
+}
+
+function makeEmbed(author, iconURL, a, b, c, footer, color) {
+    return new EmbedBuilder()
+        .setTitle('🎰 Slot Machine')
+        .setAuthor({ name: author, iconURL })
+        .setDescription(`╔═══════════╗\n║  ${a}   ${b}   ${c}  ║\n╚═══════════╝`)
+        .setFooter({ text: footer })
+        .setColor(color);
+}
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -34,27 +59,35 @@ module.exports = {
         client.slotsRecently.set(interaction.user.id, now + cooldownMs);
         setTimeout(() => { client.slotsRecently.delete(interaction.user.id); }, cooldownMs);
 
-        let items = ['🎰', '🍎', '🍇', '🍋', '🍌', '🍒'];
-        let $ = items[Math.floor(items.length * Math.random())];
-        let $$ = items[Math.floor(items.length * Math.random())];
-        let $$$ = items[Math.floor(items.length * Math.random())];
+        const a = roll(), b = roll(), c = roll();
+        const author = interaction.user.username;
+        const iconURL = interaction.user.avatarURL();
 
-        if ($ === $$ && $ === $$$) {
-            if ($ === '🎰') {
-                await new Transaction(interaction.user.id, bet_value * 30, 'Slots').process();
-                return interaction.reply({ embeds: [new EmbedBuilder().setTitle('Slot Machine').setAuthor({ name: interaction.user.username, iconURL: interaction.user.avatarURL() }).setDescription(`• ${$}  ${$$}  ${$$$} •`).addFields({ name: 'Jackpot!', value: 'Big win! You won ' + bet_value * 30 + ' <:boriscoin:1490632869695983617>.' }).setColor(0xAF873D)] });
-            } else {
-                await new Transaction(interaction.user.id, bet_value * 10, 'Slots').process();
-                return interaction.reply({ embeds: [new EmbedBuilder().setTitle('Slot Machine').setAuthor({ name: interaction.user.username, iconURL: interaction.user.avatarURL() }).setDescription(`• ${$}  ${$$}  ${$$$} •`).addFields({ name: '3 of a kind!', value: 'You won ' + bet_value * 10 + ' <:boriscoin:1490632869695983617>.' }).setColor(0xAF873D)] });
-            }
-        } else if (($ === $$ || $ === $$$) && ($ === '🎰') || (($$ === $$$) && ($$ === '🎰'))) {
-            await new Transaction(interaction.user.id, bet_value * 4, 'Slots').process();
-            return interaction.reply({ embeds: [new EmbedBuilder().setTitle('Slot Machine').setAuthor({ name: interaction.user.username, iconURL: interaction.user.avatarURL() }).setDescription(`• ${$}  ${$$}  ${$$$} •`).addFields({ name: '2 Jokers!', value: 'You won ' + bet_value * 4 + ' <:boriscoin:1490632869695983617>.' }).setColor(0xAF873D)] });
-        } else if ($ === '🎰' || $$ === '🎰' || $$$ === '🎰') {
-            return interaction.reply({ embeds: [new EmbedBuilder().setTitle('Slot Machine').setAuthor({ name: interaction.user.username, iconURL: interaction.user.avatarURL() }).setDescription(`• ${$}  ${$$}  ${$$$} •`).addFields({ name: '1 Joker!', value: 'You break even!' }).setColor(0xAF873D)] });
-        } else {
-            await new Transaction(interaction.user.id, -bet_value, 'Slots').process();
-            return interaction.reply({ embeds: [new EmbedBuilder().setTitle('Slot Machine').setAuthor({ name: interaction.user.username, iconURL: interaction.user.avatarURL() }).setDescription(`• ${$}  ${$$}  ${$$$} •`).addFields({ name: 'Lost...', value: 'Better luck next time.' }).setColor(0xAF873D)] });
-        }
+        const { resource: slotsResource } = await interaction.reply({
+            embeds: [makeEmbed(author, iconURL, SPIN, SPIN, SPIN, 'Spinning...', 0xF4D03F)],
+            withResponse: true
+        });
+        const spinner = slotsResource.message;
+
+        setTimeout(() => {
+            spinner.edit({ embeds: [makeEmbed(author, iconURL, a, SPIN, SPIN, 'Reel 1 locked in...', 0xF4D03F)] });
+        }, 600);
+        setTimeout(() => {
+            spinner.edit({ embeds: [makeEmbed(author, iconURL, a, b, SPIN, 'Reel 2 locked in...', 0xF4D03F)] });
+        }, 1200);
+        setTimeout(async () => {
+            const { label, gain, color } = evaluate(a, b, c, bet_value);
+            if (gain !== 0) await new Transaction(interaction.user.id, gain, 'Slots').process();
+
+            const resultText = gain > 0
+                ? `You won **${gain}** <:boriscoin:1490632869695983617>!`
+                : gain === 0
+                    ? 'You break even.'
+                    : `You lost **${Math.abs(gain)}** <:boriscoin:1490632869695983617>.`;
+
+            const finalEmbed = makeEmbed(author, iconURL, a, b, c, `Bet: ${bet_value} coins`, color);
+            finalEmbed.addFields({ name: label, value: resultText });
+            await spinner.edit({ embeds: [finalEmbed] });
+        }, 1800);
     }
 };

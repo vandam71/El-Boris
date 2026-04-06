@@ -1,8 +1,37 @@
-const { SlashCommandBuilder, EmbedBuilder ,
-    MessageFlags
-} = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder, MessageFlags } = require('discord.js');
 const { User } = require('../../models/user');
 const Transaction = require('../../struct/Transaction');
+
+const SYMBOLS = ['🎰', '💎', '🍒', '🍊', '🍌', '🍋'];
+const SPIN = '🎡';
+
+function roll() {
+    return SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)];
+}
+
+function reelComment(r1, r2) {
+    if (!r2) {
+        if (r1 === '🎰') return '🔥 A Jackpot symbol! Can you land two more?';
+        if (r1 === '💎') return '💎 A Diamond — keep it going...';
+        if (r1 === '🍒') return '🍒 Cherry on reel 1!';
+        return `${r1} First reel down!`;
+    }
+    if (r1 === r2) {
+        if (r1 === '🎰') return '🔥🔥 TWO JACKPOTS — one more for the mega win!';
+        if (r1 === '💎') return '💎💎 Two Diamonds! One more could be massive!';
+        if (r1 === '🍒') return '🍒🍒 Two Cherries! Land one more!';
+        return `${r1}${r2} Two matching — one more...`;
+    }
+    return `${r1}  ${r2} — No match yet...`;
+}
+
+function makeEmbed(author, iconURL, a, b, c, comment, color) {
+    return new EmbedBuilder()
+        .setTitle('✨ Special Slot Machine')
+        .setAuthor({ name: author, iconURL })
+        .setDescription(`╔══════════════╗\n║  ${a}   ${b}   ${c}  ║\n╚══════════════╝\n\n*${comment}*`)
+        .setColor(color);
+}
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -34,56 +63,60 @@ module.exports = {
         client.specialSlotsRecently.set(interaction.user.id, now + cooldownMs);
         setTimeout(() => { client.specialSlotsRecently.delete(interaction.user.id); }, cooldownMs);
 
-        let items = ['🎰', '💎', '🍒', '🍊', '🍌', '🍋'];
-        let $ = items[Math.floor(Math.random() * items.length)];
-        let $$ = items[Math.floor(Math.random() * items.length)];
-        let $$$ = items[Math.floor(Math.random() * items.length)];
+        const $ = roll(), $$ = roll(), $$$ = roll();
+        const author = interaction.user.username;
+        const iconURL = interaction.user.avatarURL();
 
         const { resource: slotsResource } = await interaction.reply({
-            embeds: [new EmbedBuilder().setTitle('Special Slot Machine').setAuthor({ name: interaction.user.username, iconURL: interaction.user.avatarURL() }).setDescription(`••••••••••••••••••••••••\n•••••• ❌ ❌ ❌ ••••••\n••••••••••••••••••••••••`).setColor(0xAF873D)],
+            embeds: [makeEmbed(author, iconURL, SPIN, SPIN, SPIN, 'The reels are spinning...', 0xF4D03F)],
             withResponse: true
         });
         const spinner = slotsResource.message;
 
         setTimeout(() => {
-            spinner.edit({ embeds: [new EmbedBuilder().setTitle('Special Slot Machine').setAuthor({ name: interaction.user.username, iconURL: interaction.user.avatarURL() }).setDescription(`••••••••••••••••••••••••\n•••••• ${$} ❌ ❌ ••••••\n••••••••••••••••••••••••`).setColor(0xAF873D)] });
+            spinner.edit({ embeds: [makeEmbed(author, iconURL, $, SPIN, SPIN, reelComment($), 0xF4D03F)] });
         }, 600);
         setTimeout(() => {
-            spinner.edit({ embeds: [new EmbedBuilder().setTitle('Special Slot Machine').setAuthor({ name: interaction.user.username, iconURL: interaction.user.avatarURL() }).setDescription(`••••••••••••••••••••••••\n•••••• ${$} ${$$} ❌ ••••••\n••••••••••••••••••••••••`).setColor(0xAF873D)] });
+            spinner.edit({ embeds: [makeEmbed(author, iconURL, $, $$, SPIN, reelComment($, $$), 0xF4D03F)] });
         }, 1200);
 
         setTimeout(async () => {
-            let win_screen = new EmbedBuilder()
-                .setTitle('Special Slot Machine')
-                .setAuthor({ name: interaction.user.username, iconURL: interaction.user.avatarURL() })
-                .setDescription(`••••••••••••••••••••••••\n•••••• ${$} ${$$} ${$$$} ••••••\n••••••••••••••••••••••••`)
-                .setColor(0xAF873D);
+            let color = 0xE74C3C;
+            let fieldName = 'No Match';
+            let fieldValue = `Better luck next time. You lost **${bet_value}** <:boriscoin:1490632869695983617>.`;
 
             if ($ === $$ && $ === $$$) {
                 if ($ === '🎰') {
                     await new Transaction(interaction.user.id, bet_value * 60, 'Slots').process();
-                    win_screen.addFields({ name: 'Jackpot!', value: 'Big win! You won ' + bet_value * 60 + ' <:boriscoin:1490632869695983617>.' });
+                    color = 0xFFD700; fieldName = '🎰 JACKPOT!';
+                    fieldValue = `Big win! You won **${bet_value * 60}** <:boriscoin:1490632869695983617>.`;
                 } else if ($ === '💎') {
                     await new Transaction(interaction.user.id, bet_value * 40, 'Slots').process();
-                    win_screen.addFields({ name: '3 Diamonds', value: 'You won ' + bet_value * 40 + ' <:boriscoin:1490632869695983617>.' });
+                    color = 0x00BFFF; fieldName = '💎 Three Diamonds!';
+                    fieldValue = `You won **${bet_value * 40}** <:boriscoin:1490632869695983617>.`;
                 } else if ($ === '🍒') {
                     await new Transaction(interaction.user.id, bet_value * 20, 'Slots').process();
-                    win_screen.addFields({ name: '3 Cherries', value: 'You won ' + bet_value * 20 + ' <:boriscoin:1490632869695983617>.' });
+                    color = 0x2ECC71; fieldName = '🍒 Three Cherries!';
+                    fieldValue = `You won **${bet_value * 20}** <:boriscoin:1490632869695983617>.`;
                 } else {
                     await new Transaction(interaction.user.id, bet_value * 10, 'Slots').process();
-                    win_screen.addFields({ name: '3 Of A Kind', value: 'You won ' + bet_value * 10 + ' <:boriscoin:1490632869695983617>.' });
+                    color = 0x2ECC71; fieldName = '3 of a Kind!';
+                    fieldValue = `You won **${bet_value * 10}** <:boriscoin:1490632869695983617>.`;
                 }
-            } else if (($ === $$ || $ === $$$) && ($ === '🍒') || (($$ === $$$) && ($$ === '🍒'))) {
+            } else if (($ === $$ || $ === $$$) && $ === '🍒' || ($$ === $$$ && $$ === '🍒')) {
                 await new Transaction(interaction.user.id, bet_value * 3, 'Slots').process();
-                win_screen.addFields({ name: '2 Cherries', value: 'You won ' + bet_value * 3 + ' <:boriscoin:1490632869695983617>.' });
+                color = 0x2ECC71; fieldName = '🍒🍒 Two Cherries!';
+                fieldValue = `You won **${bet_value * 3}** <:boriscoin:1490632869695983617>.`;
             } else if ($ === '🍒' || $$ === '🍒' || $$$ === '🍒') {
-                win_screen.addFields({ name: '1 Cherry', value: 'You break even.' });
+                color = 0xF4D03F; fieldName = '🍒 One Cherry';
+                fieldValue = 'You break even.';
             } else {
                 await new Transaction(interaction.user.id, -bet_value, 'Slots').process();
-                win_screen.addFields({ name: 'Lost...', value: 'Better luck next time.' });
             }
 
-            await spinner.edit({ embeds: [win_screen] });
+            const finalEmbed = makeEmbed(author, iconURL, $, $$, $$$, '', color);
+            finalEmbed.addFields({ name: fieldName, value: fieldValue });
+            await spinner.edit({ embeds: [finalEmbed] });
         }, 1800);
     }
 };
