@@ -35,10 +35,10 @@ module.exports = {
 
         // votes: Map<optionIndex, Set<userId>>
         const votes = new Map(rawOptions.map((_, i) => [i, new Set()]));
+        const endsAt = Math.floor((Date.now() + durationSec * 1000) / 1000);
 
         function buildEmbed(ended = false) {
             const totalVotes = [...votes.values()].reduce((sum, s) => sum + s.size, 0);
-            const endsAt = Math.floor((Date.now() + durationSec * 1000) / 1000);
 
             const description = rawOptions.map((opt, i) => {
                 const count = votes.get(i).size;
