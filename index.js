@@ -6,7 +6,7 @@ const config = require('./config.json');
 const ElBoris = require("./struct/Client");
 const client = new ElBoris();
 const { commandHandler, slashCommands } = require("./commands");
-const { newMessageUser } = require('./models/user');
+const { newMessageUser, syncGuildMembers } = require('./models/user');
 const Guild = require('./models/guild');
 const logger = require('./logger');
 
@@ -16,6 +16,8 @@ client.on('clientReady', async () => {
     // Sync all guilds the bot is already in (handles DB resets)
     for (const guild of client.guilds.cache.values()) {
         await Guild.syncGuild(guild);
+        const created = await syncGuildMembers(guild);
+        logger.info(`Synced members for ${guild.name}: ${created} new user(s) created`);
     }
     logger.info('Guild sync complete');
 
@@ -57,6 +59,8 @@ client.on('clientReady', async () => {
 client.on('guildCreate', async guild => {
     logger.info(`New guild joined: ${guild.name} (id: ${guild.id}). This guild has ${guild.memberCount} members!`)
     await Guild.syncGuild(guild);
+    const created = await syncGuildMembers(guild);
+    logger.info(`Created ${created} new user(s) for guild ${guild.name}`);
     const rest = new REST().setToken(process.env.DISCORD_API);
     const slashBody = [...slashCommands.values()].map(cmd => cmd.data.toJSON());
     try {
@@ -101,7 +105,13 @@ client.on('messageCreate', async message => {
 
 //new member added
 client.on('guildMemberAdd', async member => {
+    if (member.user.bot) return;
     logger.info(`New User ${member.user.username} has joined ${member.guild.name}`);
+    await User.findOneAndUpdate(
+        { id: member.user.id },
+        { name: member.user.username },
+        { upsert: true, setDefaultsOnInsert: true }
+    );
     const welcomeChannel = member.guild.channels.cache.find(c => c.name === 'welcome');
     if (welcomeChannel) await welcomeChannel.send(`${member.user.username} has joined this server`);
 });

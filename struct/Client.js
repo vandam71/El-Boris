@@ -9,6 +9,7 @@ module.exports = class extends Client {
                 GatewayIntentBits.GuildEmojisAndStickers,
                 GatewayIntentBits.GuildInvites,
                 GatewayIntentBits.GuildVoiceStates,
+                GatewayIntentBits.GuildMembers,
                 GatewayIntentBits.GuildMessages,
                 GatewayIntentBits.GuildMessageReactions,
                 GatewayIntentBits.MessageContent,

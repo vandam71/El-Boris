@@ -128,6 +128,26 @@ userSchema.methods.addExperience = async function (xp) {
 
 const User = mongoose.model('User', userSchema);
 
+async function syncGuildMembers(guild) {
+    let members;
+    try {
+        members = await guild.members.fetch();
+    } catch {
+        members = guild.members.cache;
+    }
+    let created = 0;
+    for (const [, member] of members) {
+        if (member.user.bot) continue;
+        const existing = await User.findOneAndUpdate(
+            { id: member.user.id },
+            { name: member.user.username },
+            { upsert: true, setDefaultsOnInsert: true, new: false }
+        );
+        if (!existing) created++;
+    }
+    return created;
+}
+
 async function newMessageUser(message) {
     await User.findOne({ id: message.author.id }).then(async user => {
 
@@ -143,4 +163,4 @@ async function newMessageUser(message) {
     });
 }
 
-module.exports = { User, newMessageUser };
+module.exports = { User, newMessageUser, syncGuildMembers };
