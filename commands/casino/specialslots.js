@@ -27,7 +27,7 @@ function reelComment(r1, r2) {
 
 function makeEmbed(author, iconURL, a, b, c, comment, color) {
     const ind = s => s !== SPIN ? '✅' : '⏳';
-    const desc = `${a}  ${b}  ${c}\n${ind(a)}  ${ind(b)}  ${ind(c)}${comment ? `\n\n*${comment}*` : ''}`;
+    const desc = `${a}  ${b}  ${c}\n${ind(a)}  ${ind(b)}  ${ind(c)}\n${comment || '\u200b'}`;
     return new EmbedBuilder()
         .setTitle('✨ Special Slot Machine')
         .setAuthor({ name: author, iconURL })

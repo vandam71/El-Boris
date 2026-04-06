@@ -22,7 +22,7 @@ function evaluate(a, b, c, bet) {
 
 function makeEmbed(author, iconURL, a, b, c, status, color) {
     const ind = s => s !== SPIN ? '✅' : '⏳';
-    const desc = `${a}  ${b}  ${c}\n${ind(a)}  ${ind(b)}  ${ind(c)}${status ? `\n\n*${status}*` : ''}`;
+    const desc = `${a}  ${b}  ${c}\n${ind(a)}  ${ind(b)}  ${ind(c)}\n${status || '\u200b'}`;
     return new EmbedBuilder()
         .setTitle('🎰 Slot Machine')
         .setAuthor({ name: author, iconURL })
