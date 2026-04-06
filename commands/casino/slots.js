@@ -9,10 +9,6 @@ function roll() {
     return SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)];
 }
 
-function spinRow() {
-    return [0, 1, 2].map(() => SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)]).join('   ');
-}
-
 function evaluate(a, b, c, bet) {
     if (a === b && b === c) {
         if (a === '🎰') return { label: '🎰 JACKPOT!', gain: bet * 30, color: 0xFFD700 };
@@ -74,17 +70,17 @@ module.exports = {
         const iconURL = interaction.user.avatarURL();
 
         const { resource: slotsResource } = await interaction.reply({
-            embeds: [makeEmbed(author, iconURL, SPIN, SPIN, SPIN, 'Spinning...', 0xF4D03F, true)],
+            embeds: [makeEmbed(author, iconURL, SPIN, SPIN, SPIN, 'Spinning...', 0xF4D03F)],
             withResponse: true
         });
         const spinner = slotsResource.message;
 
         setTimeout(() => {
-            spinner.edit({ embeds: [makeEmbed(author, iconURL, a, SPIN, SPIN, 'Reel 1 locked in...', 0xF4D03F, true)] });
-        }, 600);
+            spinner.edit({ embeds: [makeEmbed(author, iconURL, a, SPIN, SPIN, 'Reel 1 locked!', 0xF4D03F)] });
+        }, 400);
         setTimeout(() => {
-            spinner.edit({ embeds: [makeEmbed(author, iconURL, a, b, SPIN, 'Reel 2 locked in...', 0xF4D03F, true)] });
-        }, 1200);
+            spinner.edit({ embeds: [makeEmbed(author, iconURL, a, b, SPIN, 'Reel 2 locked!', 0xF4D03F)] });
+        }, 800);
         setTimeout(async () => {
             const { label, gain, color } = evaluate(a, b, c, bet_value);
             if (gain !== 0) await new Transaction(interaction.user.id, gain, 'Slots').process();
@@ -98,6 +94,6 @@ module.exports = {
             const finalEmbed = makeEmbed(author, iconURL, a, b, c, `Bet: ${bet_value} coins`, color);
             finalEmbed.addFields({ name: label, value: resultText });
             await spinner.edit({ embeds: [finalEmbed] });
-        }, 1800);
+        }, 1200);
     }
 };

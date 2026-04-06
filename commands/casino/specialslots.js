@@ -9,10 +9,6 @@ function roll() {
     return SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)];
 }
 
-function spinRow() {
-    return [0, 1, 2].map(() => SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)]).join('   ');
-}
-
 function reelComment(r1, r2) {
     if (!r2) {
         if (r1 === '🎰') return '🔥 A Jackpot symbol! Can you land two more?';
@@ -29,17 +25,18 @@ function reelComment(r1, r2) {
     return `${r1}  ${r2} — No match yet...`;
 }
 
-function makeEmbed(author, iconURL, a, b, c, comment, color, spinning = false) {
-    const mid = `${a}   ${b}   ${c}`;
-    const desc = spinning
-        ? `${spinRow()}\n**${mid}**\n${spinRow()}`
-        : `\n**${mid}**\n`;
+function makeEmbed(author, iconURL, a, b, c, comment, color) {
+    const locked = s => s !== SPIN;
     const e = new EmbedBuilder()
         .setTitle('✨ Special Slot Machine')
         .setAuthor({ name: author, iconURL })
-        .setDescription(desc)
+        .addFields(
+            { name: locked(a) ? '✅ Reel 1' : '⏳ Reel 1', value: a, inline: true },
+            { name: locked(b) ? '✅ Reel 2' : '⏳ Reel 2', value: b, inline: true },
+            { name: locked(c) ? '✅ Reel 3' : '⏳ Reel 3', value: c, inline: true },
+        )
         .setColor(color);
-    if (comment) e.setFooter({ text: comment });
+    if (comment) e.setDescription(`*${comment}*`);
     return e;
 }
 
@@ -78,17 +75,17 @@ module.exports = {
         const iconURL = interaction.user.avatarURL();
 
         const { resource: slotsResource } = await interaction.reply({
-            embeds: [makeEmbed(author, iconURL, SPIN, SPIN, SPIN, 'The reels are spinning...', 0xF4D03F, true)],
+            embeds: [makeEmbed(author, iconURL, SPIN, SPIN, SPIN, 'The reels are spinning...', 0xF4D03F)],
             withResponse: true
         });
         const spinner = slotsResource.message;
 
         setTimeout(() => {
-            spinner.edit({ embeds: [makeEmbed(author, iconURL, $, SPIN, SPIN, reelComment($), 0xF4D03F, true)] });
-        }, 600);
+            spinner.edit({ embeds: [makeEmbed(author, iconURL, $, SPIN, SPIN, reelComment($), 0xF4D03F)] });
+        }, 400);
         setTimeout(() => {
-            spinner.edit({ embeds: [makeEmbed(author, iconURL, $, $$, SPIN, reelComment($, $$), 0xF4D03F, true)] });
-        }, 1200);
+            spinner.edit({ embeds: [makeEmbed(author, iconURL, $, $$, SPIN, reelComment($, $$), 0xF4D03F)] });
+        }, 800);
 
         setTimeout(async () => {
             let color = 0xE74C3C;
@@ -127,6 +124,6 @@ module.exports = {
             const finalEmbed = makeEmbed(author, iconURL, $, $$, $$$, '', color);
             finalEmbed.addFields({ name: fieldName, value: fieldValue });
             await spinner.edit({ embeds: [finalEmbed] });
-        }, 1800);
+        }, 1200);
     }
 };
