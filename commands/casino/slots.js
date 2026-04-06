@@ -21,17 +21,13 @@ function evaluate(a, b, c, bet) {
 }
 
 function makeEmbed(author, iconURL, a, b, c, status, color) {
-    const e = new EmbedBuilder()
+    const ind = s => s !== SPIN ? '✅' : '⏳';
+    const desc = `${a}  ${b}  ${c}\n${ind(a)}  ${ind(b)}  ${ind(c)}${status ? `\n\n*${status}*` : ''}`;
+    return new EmbedBuilder()
         .setTitle('🎰 Slot Machine')
         .setAuthor({ name: author, iconURL })
-        .addFields(
-            { name: a !== SPIN ? '✅ Reel 1' : '⏳ Reel 1', value: a, inline: true },
-            { name: b !== SPIN ? '✅ Reel 2' : '⏳ Reel 2', value: b, inline: true },
-            { name: c !== SPIN ? '✅ Reel 3' : '⏳ Reel 3', value: c, inline: true },
-        )
+        .setDescription(desc)
         .setColor(color);
-    if (status) e.setDescription(`*${status}*`);
-    return e;
 }
 
 module.exports = {

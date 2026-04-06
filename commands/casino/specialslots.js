@@ -26,18 +26,13 @@ function reelComment(r1, r2) {
 }
 
 function makeEmbed(author, iconURL, a, b, c, comment, color) {
-    const locked = s => s !== SPIN;
-    const e = new EmbedBuilder()
+    const ind = s => s !== SPIN ? '✅' : '⏳';
+    const desc = `${a}  ${b}  ${c}\n${ind(a)}  ${ind(b)}  ${ind(c)}${comment ? `\n\n*${comment}*` : ''}`;
+    return new EmbedBuilder()
         .setTitle('✨ Special Slot Machine')
         .setAuthor({ name: author, iconURL })
-        .addFields(
-            { name: locked(a) ? '✅ Reel 1' : '⏳ Reel 1', value: a, inline: true },
-            { name: locked(b) ? '✅ Reel 2' : '⏳ Reel 2', value: b, inline: true },
-            { name: locked(c) ? '✅ Reel 3' : '⏳ Reel 3', value: c, inline: true },
-        )
+        .setDescription(desc)
         .setColor(color);
-    if (comment) e.setDescription(`*${comment}*`);
-    return e;
 }
 
 module.exports = {
