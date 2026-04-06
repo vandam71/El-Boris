@@ -1,6 +1,6 @@
 const { User } = require('../../models/user');
 const Team = require('../../models/team');
-const { SlashCommandBuilder, EmbedBuilder ,
+const { SlashCommandBuilder, EmbedBuilder,
     MessageFlags
 } = require('discord.js');
 const Item = require('../../models/item');
