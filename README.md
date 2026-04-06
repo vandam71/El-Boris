@@ -1,4 +1,4 @@
-# El Boris — v3.3.0
+# El Boris — v3.4.0
 
 A Discord bot built with discord.js v14, Node.js v20, and MongoDB (Mongoose v8).
 
@@ -35,7 +35,7 @@ A Discord bot built with discord.js v14, Node.js v20, and MongoDB (Mongoose v8).
 - [x] Migrate all commands to slash commands
 - [ ] Vote kick from voice channel
 - [x] Poll system
-- [ ] Teams (create, join, delete, stats)
+- [x] Teams (create, join, delete, stats)
 - [x] Mining blocks with bonus drops
 - [ ] Fishing command + sell fish
 - [x] Scratch Card
@@ -45,6 +45,11 @@ A Discord bot built with discord.js v14, Node.js v20, and MongoDB (Mongoose v8).
 - [ ] Stats (nr of casino types done, one for slots, one for specialslots, etc, nr of mines, nr of upgrades, nr of blocks mined, basically needs to be tracked in the user)
 
 ## Changelog
+
+**v3.4.0**
+- Added `/team` with 6 subcommands: `create` (costs 2000 coins), `invite` (in-channel button flow, 5 min expiry), `kick`, `leave`, `disband`, `info` (total level + total networth)
+- Team tag `[TAG]` shown in `/profile` title
+- Teams are stored in MongoDB; invite Accept/Decline buttons are restart-resilient (handled globally)
 
 **v3.3.0**
 - Added `/mine block` — global cooperative mining blocks; 4 tiers (Stone/Iron/Gold/Diamond) with scaling HP and reward pools; every player gets their own live embed with HP bar and miner list; ⛏️ Join / 🏃 Leave buttons update all messages across all servers in real time; damage per tick scales with Speed Perk; Luck Perk boosts your share of the reward; must be mining at the end to receive a payout; new block spawns automatically after cooldown
