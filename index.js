@@ -332,7 +332,7 @@ client.on('interactionCreate', async interaction => {
                 if (!user) return;
                 await user.addExperience(5);
                 await user.save();
-            }).catch(() => {});
+            }).catch(() => { });
         }
     } catch (e) {
         logger.error(e.message);

@@ -3,7 +3,7 @@ const { SlashCommandBuilder, EmbedBuilder,
 } = require('discord.js');
 const { User } = require('../../models/user');
 const Item = require('../../models/item');
-const Block = require('../../models/block');
+const { Block } = require('../../models/block');
 const Guild = require('../../models/guild');
 const { syncAllMessages, spawnAnnounceEmbed } = require('../../struct/BlockUtils');
 const config = require('../../config.json');
@@ -51,9 +51,9 @@ module.exports = {
                 .setDescription('Block type (omit for random)')
                 .setRequired(false)
                 .addChoices(
-                    { name: 'stone',   value: 'stone'   },
-                    { name: 'iron',    value: 'iron'    },
-                    { name: 'gold',    value: 'gold'    },
+                    { name: 'stone', value: 'stone' },
+                    { name: 'iron', value: 'iron' },
+                    { name: 'gold', value: 'gold' },
                     { name: 'diamond', value: 'diamond' }
                 )))
         .addSubcommand(sub => sub

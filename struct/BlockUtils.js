@@ -2,9 +2,9 @@ const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('
 const { TIERS } = require('../models/block');
 
 const TIER_COLORS = {
-    stone:   0x888888,
-    iron:    0xC0C0C0,
-    gold:    0xFFD700,
+    stone: 0x888888,
+    iron: 0xC0C0C0,
+    gold: 0xFFD700,
     diamond: 0x00BFFF,
 };
 

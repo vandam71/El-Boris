@@ -5,6 +5,6 @@
   "base_upgrade": 40,
   "server_id": "1490628799455563839",
   "dev_id": "90535285909118976",
-  "block_tick_interval": 5,
-  "block_spawn_cooldown": 3600
+  "block_tick_interval": 10,
+  "block_spawn_cooldown": 1200
 }
