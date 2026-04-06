@@ -1,4 +1,4 @@
-# El Boris — v3.4.0
+# El Boris — v3.6.0
 
 A Discord bot built with discord.js v14, Node.js v20, and MongoDB (Mongoose v8).
 
