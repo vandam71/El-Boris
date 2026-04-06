@@ -20,14 +20,11 @@ function evaluate(a, b, c, bet) {
     return { label: 'No Match', gain: -bet, color: 0xE74C3C };
 }
 
-function makeEmbed(author, iconURL, a, b, c, status, color) {
-    const ind = s => s !== SPIN ? '✅' : '⏳';
-    const gap = '\u2003\u2003';
-    const desc = `${a}${gap}${b}${gap}${c}\n${ind(a)}${gap}${ind(b)}${gap}${ind(c)}\n${status || '\u200b'}`;
+function makeEmbed(author, iconURL, a, b, c, color) {
     return new EmbedBuilder()
         .setTitle('🎰 Slot Machine')
         .setAuthor({ name: author, iconURL })
-        .setDescription(desc)
+        .setDescription(`[ ${a} ]  [ ${b} ]  [ ${c} ]`)
         .setColor(color);
 }
 
@@ -66,22 +63,22 @@ module.exports = {
         const iconURL = interaction.user.avatarURL();
 
         const { resource: slotsResource } = await interaction.reply({
-            embeds: [makeEmbed(author, iconURL, SPIN, SPIN, SPIN, 'Spinning...', 0xF4D03F)],
+            embeds: [makeEmbed(author, iconURL, SPIN, SPIN, SPIN, 0xF4D03F)],
             withResponse: true
         });
         const msg = slotsResource.message;
 
         const STEP = 700;
         const frames = [
-            [roll(), SPIN,   SPIN,   ''],
-            [a,      SPIN,   SPIN,   '✅ Reel 1 locked!'],
-            [a,      roll(), SPIN,   ''],
-            [a,      b,      SPIN,   '✅ Reel 2 locked!'],
-            [a,      b,      roll(), ''],
-            [a,      b,      c,      '✅ Reel 3 locked!'],
+            [roll(), SPIN,   SPIN  ],
+            [a,      SPIN,   SPIN  ],
+            [a,      roll(), SPIN  ],
+            [a,      b,      SPIN  ],
+            [a,      b,      roll()],
+            [a,      b,      c     ],
         ];
-        frames.forEach(([r1, r2, r3, status], i) => {
-            setTimeout(() => msg.edit({ embeds: [makeEmbed(author, iconURL, r1, r2, r3, status, 0xF4D03F)] }), STEP * (i + 1));
+        frames.forEach(([r1, r2, r3], i) => {
+            setTimeout(() => msg.edit({ embeds: [makeEmbed(author, iconURL, r1, r2, r3, 0xF4D03F)] }), STEP * (i + 1));
         });
 
         setTimeout(async () => {
@@ -94,7 +91,7 @@ module.exports = {
                     ? 'You break even.'
                     : `You lost **${Math.abs(gain)}** <:boriscoin:1490632869695983617>.`;
 
-            const finalEmbed = makeEmbed(author, iconURL, a, b, c, '', color);
+            const finalEmbed = makeEmbed(author, iconURL, a, b, c, color);
             finalEmbed.addFields({ name: label, value: resultText });
             await msg.edit({ embeds: [finalEmbed] });
         }, STEP * 7);
