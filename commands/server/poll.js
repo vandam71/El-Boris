@@ -9,31 +9,35 @@ const DURATION_CHOICES = [
     { name: '30 minutes', value: '1800' },
 ];
 
+const LABELS = ['🇦', '🇧', '🇨', '🇩', '🇪'];
+
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('poll')
-        .setDescription('Create a poll with up to 4 options')
+        .setDescription('Create a poll with dynamic options')
         .addStringOption(opt => opt.setName('question').setDescription('The poll question').setRequired(true))
-        .addStringOption(opt => opt.setName('option1').setDescription('First option').setRequired(true))
-        .addStringOption(opt => opt.setName('option2').setDescription('Second option').setRequired(true))
-        .addStringOption(opt => opt.setName('option3').setDescription('Third option').setRequired(false))
-        .addStringOption(opt => opt.setName('option4').setDescription('Fourth option').setRequired(false))
+        .addStringOption(opt => opt.setName('options').setDescription('Options separated by | e.g. Yes | No | Maybe (2–5 options)').setRequired(true))
         .addStringOption(opt => opt.setName('duration').setDescription('How long the poll runs (default: 5 minutes)').setRequired(false)
-            .addChoices(...DURATION_CHOICES)),
+            .addChoices(...DURATION_CHOICES))
+        .addUserOption(opt => opt.setName('ping1').setDescription('Tag a user to notify').setRequired(false))
+        .addUserOption(opt => opt.setName('ping2').setDescription('Tag a second user').setRequired(false))
+        .addUserOption(opt => opt.setName('ping3').setDescription('Tag a third user').setRequired(false)),
     execute: async function (interaction, client) {
         const question = interaction.options.getString('question');
         const durationSec = parseInt(interaction.options.getString('duration') ?? '300');
 
-        const rawOptions = [
-            interaction.options.getString('option1'),
-            interaction.options.getString('option2'),
-            interaction.options.getString('option3'),
-            interaction.options.getString('option4'),
+        const rawOptions = interaction.options.getString('options')
+            .split('|').map(s => s.trim()).filter(Boolean);
+
+        if (rawOptions.length < 2 || rawOptions.length > 5)
+            return interaction.reply({ content: 'Please provide between **2 and 5** options separated by `|`.', flags: MessageFlags.Ephemeral });
+
+        const pingUsers = [
+            interaction.options.getUser('ping1'),
+            interaction.options.getUser('ping2'),
+            interaction.options.getUser('ping3'),
         ].filter(Boolean);
 
-        const LABELS = ['🇦', '🇧', '🇨', '🇩'];
-
-        // votes: Map<optionIndex, Set<userId>>
         const votes = new Map(rawOptions.map((_, i) => [i, new Set()]));
         const endsAt = Math.floor((Date.now() + durationSec * 1000) / 1000);
 
@@ -47,14 +51,12 @@ module.exports = {
                 return `${LABELS[i]} **${opt}**\n\`${bar}\` ${count} vote${count !== 1 ? 's' : ''} (${pct}%)`;
             }).join('\n\n');
 
-            const embed = new EmbedBuilder()
+            return new EmbedBuilder()
                 .setColor(ended ? 0xACA19D : 0x5865F2)
                 .setAuthor({ name: `Poll by ${interaction.user.username}`, iconURL: interaction.user.avatarURL() })
                 .setTitle(question)
                 .setDescription(description + (ended ? '' : `\n\n⏱️ Ends <t:${endsAt}:R>`))
                 .setFooter({ text: ended ? `Poll ended — ${totalVotes} total vote${totalVotes !== 1 ? 's' : ''}` : `${totalVotes} vote${totalVotes !== 1 ? 's' : ''} cast` });
-
-            return embed;
         }
 
         function buildRow(disabled = false) {
@@ -62,7 +64,7 @@ module.exports = {
                 rawOptions.map((opt, i) =>
                     new ButtonBuilder()
                         .setCustomId(`poll_${i}`)
-                        .setLabel(`${LABELS[i]} ${opt}`)
+                        .setLabel(`${LABELS[i]} ${opt}`.slice(0, 80))
                         .setStyle(ButtonStyle.Primary)
                         .setDisabled(disabled)
                 )
@@ -70,6 +72,7 @@ module.exports = {
         }
 
         const { resource: pollResource } = await interaction.reply({
+            content: pingUsers.length > 0 ? pingUsers.map(u => `<@${u.id}>`).join(' ') : undefined,
             embeds: [buildEmbed()],
             components: [buildRow()],
             withResponse: true
@@ -81,13 +84,11 @@ module.exports = {
         collector.on('collect', async i => {
             const optIdx = parseInt(i.customId.split('_')[1]);
 
-            // Remove user from any previous vote
             for (const [idx, voters] of votes) {
                 if (idx !== optIdx) voters.delete(i.user.id);
             }
 
             if (votes.get(optIdx).has(i.user.id)) {
-                // Toggle off if clicking same option again
                 votes.get(optIdx).delete(i.user.id);
                 await i.reply({ content: 'Your vote has been removed.', flags: MessageFlags.Ephemeral });
             } else {
