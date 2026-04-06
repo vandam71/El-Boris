@@ -31,7 +31,8 @@ module.exports = {
         if (interaction.user.id !== config.dev_id)
             return interaction.reply({ content: 'You are not a developer.', flags: MessageFlags.Ephemeral });
 
-        const sub = interaction.options.getSubcommand();
+        const sub = interaction.options.getSubcommand(false);
+        if (!sub) return interaction.reply({ content: 'Please specify a subcommand.', flags: MessageFlags.Ephemeral });
 
         if (sub === 'mode') {
             const state = interaction.options.getString('state');

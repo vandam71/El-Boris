@@ -22,6 +22,15 @@ client.on('clientReady', async () => {
     // Register guild-scoped slash commands for every guild the bot is in (instant propagation)
     const rest = new REST().setToken(process.env.DISCORD_API);
     const slashBody = [...slashCommands.values()].map(cmd => cmd.data.toJSON());
+
+    // Clear any stale global commands (they can shadow guild commands with outdated definitions)
+    try {
+        await rest.put(Routes.applicationCommands(client.user.id), { body: [] });
+        logger.info('Cleared global application commands');
+    } catch (e) {
+        logger.error(`Failed to clear global commands: ${e.message}`);
+    }
+
     logger.info(`Registering ${slashBody.length} slash commands across ${client.guilds.cache.size} guild(s)`);
     for (const guild of client.guilds.cache.values()) {
         try {
