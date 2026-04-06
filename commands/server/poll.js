@@ -6,13 +6,13 @@ const {
 } = require('discord.js');
 
 const DURATION_CHOICES = [
-    { name: '1 minute',   value: '60'   },
-    { name: '5 minutes',  value: '300'  },
-    { name: '10 minutes', value: '600'  },
+    { name: '1 minute', value: '60' },
+    { name: '5 minutes', value: '300' },
+    { name: '10 minutes', value: '600' },
     { name: '30 minutes', value: '1800' },
 ];
 
-const LABELS = ['🇦','🇧','🇨','🇩','🇪','🇫','🇬','🇭','🇮'];
+const LABELS = ['🇦', '🇧', '🇨', '🇩', '🇪', '🇫', '🇬', '🇭', '🇮'];
 
 function buildVoteRows(options, disabled = false) {
     const buttons = options.map((opt, i) =>
@@ -42,19 +42,21 @@ function buildEmbed(creator, question, options, votes, endsAt, ended = false) {
         .setAuthor({ name: `Poll by ${creator.username}`, iconURL: creator.avatarURL() })
         .setTitle(question)
         .setDescription(description + (ended ? '' : `\n\n⏱️ Ends <t:${endsAt}:R>`))
-        .setFooter({ text: ended
-            ? `Poll ended — ${totalVotes} total vote${totalVotes !== 1 ? 's' : ''}`
-            : `${totalVotes} vote${totalVotes !== 1 ? 's' : ''} cast` });
+        .setFooter({
+            text: ended
+                ? `Poll ended — ${totalVotes} total vote${totalVotes !== 1 ? 's' : ''}`
+                : `${totalVotes} vote${totalVotes !== 1 ? 's' : ''} cast`
+        });
 }
 
 async function launchPoll(channel, creator, { question, options, durationSec, pingContent }) {
-    const votes  = new Map(options.map((_, i) => [i, new Set()]));
+    const votes = new Map(options.map((_, i) => [i, new Set()]));
     const endsAt = Math.floor((Date.now() + durationSec * 1000) / 1000);
-    const embed  = () => buildEmbed(creator, question, options, votes, endsAt);
+    const embed = () => buildEmbed(creator, question, options, votes, endsAt);
 
     const msg = await channel.send({
-        content:    pingContent,
-        embeds:     [embed()],
+        content: pingContent,
+        embeds: [embed()],
         components: buildVoteRows(options),
     });
 
@@ -75,13 +77,13 @@ async function launchPoll(channel, creator, { question, options, durationSec, pi
     });
 
     collector.on('end', async () => {
-        const total     = [...votes.values()].reduce((s, v) => s + v.size, 0);
+        const total = [...votes.values()].reduce((s, v) => s + v.size, 0);
         const winnerIdx = [...votes.entries()].reduce((b, c) => c[1].size > b[1].size ? c : b)[0];
-        const result    = total === 0
+        const result = total === 0
             ? 'No votes cast.'
             : `Winner: ${LABELS[winnerIdx]} **${options[winnerIdx]}**`;
         await msg.edit({
-            embeds:     [buildEmbed(creator, question, options, votes, endsAt, true).addFields({ name: 'Result', value: result })],
+            embeds: [buildEmbed(creator, question, options, votes, endsAt, true).addFields({ name: 'Result', value: result })],
             components: [],
         });
     });
@@ -130,12 +132,12 @@ module.exports = {
         try {
             submitted = await interaction.awaitModalSubmit({
                 filter: i => i.customId === 'poll_modal' && i.user.id === interaction.user.id,
-                time:   5 * 60 * 1000,
+                time: 5 * 60 * 1000,
             });
         } catch { return; }
 
         const question = submitted.fields.getTextInputValue('question');
-        const options  = submitted.fields.getTextInputValue('options')
+        const options = submitted.fields.getTextInputValue('options')
             .split('\n')
             .map(s => s.trim())
             .filter(Boolean)
