@@ -3,6 +3,9 @@ const { SlashCommandBuilder, EmbedBuilder,
 } = require('discord.js');
 const { User } = require('../../models/user');
 const Item = require('../../models/item');
+const Block = require('../../models/block');
+const Guild = require('../../models/guild');
+const { syncAllMessages, spawnAnnounceEmbed } = require('../../struct/BlockUtils');
 const config = require('../../config.json');
 
 module.exports = {
@@ -39,7 +42,28 @@ module.exports = {
         .addSubcommand(sub => sub
             .setName('removeitem')
             .setDescription('Remove an item from the shop by ID')
-            .addIntegerOption(opt => opt.setName('id').setDescription('Item ID to remove').setRequired(true))),
+            .addIntegerOption(opt => opt.setName('id').setDescription('Item ID to remove').setRequired(true)))
+        .addSubcommand(sub => sub
+            .setName('spawnblock')
+            .setDescription('Force spawn a block (fails if one is already active)')
+            .addStringOption(opt => opt
+                .setName('type')
+                .setDescription('Block type (omit for random)')
+                .setRequired(false)
+                .addChoices(
+                    { name: 'stone',   value: 'stone'   },
+                    { name: 'iron',    value: 'iron'    },
+                    { name: 'gold',    value: 'gold'    },
+                    { name: 'diamond', value: 'diamond' }
+                )))
+        .addSubcommand(sub => sub
+            .setName('settick')
+            .setDescription('Override block tick interval at runtime (resets on restart)')
+            .addIntegerOption(opt => opt
+                .setName('seconds')
+                .setDescription('Tick interval in seconds')
+                .setRequired(true)
+                .setMinValue(1))),
     execute: async function (interaction, client) {
         if (interaction.user.id !== config.dev_id)
             return interaction.reply({ content: 'You are not a developer.', flags: MessageFlags.Ephemeral });
@@ -97,6 +121,35 @@ module.exports = {
             const item = await Item.findOneAndDelete({ id });
             if (!item) return interaction.reply({ content: `No item with ID \`${id}\` found.`, flags: MessageFlags.Ephemeral });
             return interaction.reply({ content: `Deleted item **${item.name}** (ID: \`${id}\`).`, flags: MessageFlags.Ephemeral });
+        }
+
+        if (sub === 'spawnblock') {
+            const existing = await Block.getActive();
+            if (existing)
+                return interaction.reply({ content: `A **${existing.type}** block is already active!`, flags: MessageFlags.Ephemeral });
+
+            const type = interaction.options.getString('type') ?? null;
+            const block = await Block.spawnRandom(type);
+            client.nextBlockSpawn = Infinity;
+
+            // Announce to every configured guild channel
+            const announceEmbed = spawnAnnounceEmbed(block);
+            const guildDocs = await Guild.getMiningChannels();
+            for (const doc of guildDocs) {
+                try {
+                    const ch = client.channels.cache.get(doc.miningChannelId)
+                        || await client.channels.fetch(doc.miningChannelId);
+                    await ch.send({ embeds: [announceEmbed] });
+                } catch { /* channel gone or no perms */ }
+            }
+
+            return interaction.reply({ content: `Force-spawned a **${block.type}** block (HP: ${block.maxHp}, Reward: ${block.rewardPool}).`, flags: MessageFlags.Ephemeral });
+        }
+
+        if (sub === 'settick') {
+            const seconds = interaction.options.getInteger('seconds');
+            client.blockTickInterval = seconds;
+            return interaction.reply({ content: `Block tick interval set to **${seconds}s** (runtime only, resets on restart).`, flags: MessageFlags.Ephemeral });
         }
     }
 };
