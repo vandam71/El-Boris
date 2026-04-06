@@ -1,4 +1,4 @@
-# El Boris — v3.2.1
+# El Boris — v3.2.2
 
 A Discord bot built with discord.js v14, Node.js v20, and MongoDB (Mongoose v8).
 
@@ -34,7 +34,7 @@ A Discord bot built with discord.js v14, Node.js v20, and MongoDB (Mongoose v8).
 
 - [x] Migrate all commands to slash commands
 - [ ] Vote kick from voice channel
-- [ ] Poll system
+- [x] Poll system
 - [ ] Teams (create, join, delete, stats)
 - [ ] Mining blocks with bonus drops
 - [ ] Fishing command + sell fish
@@ -44,6 +44,9 @@ A Discord bot built with discord.js v14, Node.js v20, and MongoDB (Mongoose v8).
 - [ ] Some kind of prestige system
 
 ## Changelog
+
+**v3.2.2**
+- Added `/poll` — modal-based poll creator; type question and options (one per line, 2–9); live vote bar with percentages; toggle/switch votes; auto-closes with winner announced
 
 **v3.2.1**
 - Fixed item emotes being double-wrapped (`<<:name:id>>`) — emote field is now stored as the full `<:name:id>` string and rendered directly
