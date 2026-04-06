@@ -3,7 +3,7 @@ const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('boriscoin')
-        .setDescription('What is BorisCoin'),
+        .setDescription('Learn about BorisCoin and how to earn, spend, and gamble it'),
     execute: async function (interaction, client) {
         const embed = new EmbedBuilder()
             .setColor(0xAF873D)

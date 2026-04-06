@@ -3,7 +3,7 @@ const { SlashCommandBuilder } = require('discord.js');
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('cat')
-        .setDescription('Random Cat Picture'),
+        .setDescription('Get a random cat picture'),
     execute: async function (interaction, client) {
         await interaction.deferReply();
         const res = await fetch('https://aws.random.cat/meow');

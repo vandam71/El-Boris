@@ -22,7 +22,7 @@ module.exports = {
             { $inc: { coins: -give_value } }
         );
         if (!sender)
-            return interaction.reply({ embeds: [new EmbedBuilder().setDescription('You dont have enough coins to give')], flags: MessageFlags.Ephemeral });
+            return interaction.reply({ embeds: [new EmbedBuilder().setDescription("You don't have enough coins to give")], flags: MessageFlags.Ephemeral });
 
         await User.findOneAndUpdate({ id: member.id }, { $inc: { coins: give_value } });
 

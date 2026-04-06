@@ -10,9 +10,6 @@ module.exports = {
         .addUserOption(opt => opt.setName('user').setDescription('The user to ban').setRequired(true))
         .addStringOption(opt => opt.setName('reason').setDescription('Reason for ban').setRequired(false)),
     execute: async function (interaction, client) {
-        if (!interaction.member.permissions.has(PermissionFlagsBits.BanMembers))
-            return interaction.reply({ content: "You don't have permissions to use this!", flags: MessageFlags.Ephemeral });
-
         const member = interaction.options.getMember('user');
         if (!member)
             return interaction.reply({ content: 'Please mention a valid member of this server.', flags: MessageFlags.Ephemeral });

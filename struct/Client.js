@@ -19,7 +19,7 @@ module.exports = class extends Client {
 
         // project wise variables
         this.activeDice = new Set();
-        this.pokedRecently = new Set();
+        this.pokedRecently = new Map();
         // cooldown Maps: id -> expireTimestamp (ms)
         this.minedRecently = new Map();
 

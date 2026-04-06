@@ -11,9 +11,12 @@ module.exports = {
         if (!member_tag)
             return interaction.reply({ content: 'Please mention a valid member of this server.', flags: MessageFlags.Ephemeral });
 
-        if (client.pokedRecently.has(member_tag.id))
-            return interaction.reply({ content: 'This user was poked in the last minute.', flags: MessageFlags.Ephemeral });
-        client.pokedRecently.add(member_tag.id);
+        if (client.pokedRecently.has(member_tag.id)) {
+            const remaining = Math.ceil((client.pokedRecently.get(member_tag.id) - Date.now()) / 1000);
+            return interaction.reply({ content: `This user was already poked recently. Try again in **${remaining}s**.`, flags: MessageFlags.Ephemeral });
+        }
+        const expiry = Date.now() + poke_cooldown * 1000;
+        client.pokedRecently.set(member_tag.id, expiry);
         setTimeout(() => { client.pokedRecently.delete(member_tag.id); }, poke_cooldown * 1000);
 
         const call_messages = ['is calling you!', 'needs your attention...', 'requests your presence.', 'demands you to join him!'];

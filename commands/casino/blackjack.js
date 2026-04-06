@@ -67,7 +67,7 @@ module.exports = {
         } else if (!betInput || isNaN(betInput) || parseInt(betInput) < 1) {
             return interaction.reply({ embeds: [new EmbedBuilder().setDescription('The value you inserted is invalid!')], flags: MessageFlags.Ephemeral });
         } else if (await User.getBalance(interaction.user.id) < parseInt(betInput)) {
-            return interaction.reply({ embeds: [new EmbedBuilder().setDescription('You dont have enough coins!')], flags: MessageFlags.Ephemeral });
+            return interaction.reply({ embeds: [new EmbedBuilder().setDescription("You don't have enough coins!")], flags: MessageFlags.Ephemeral });
         } else {
             bet_value = parseInt(betInput);
         }

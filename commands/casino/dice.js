@@ -24,7 +24,7 @@ module.exports = {
         } else if (!betInput || isNaN(betInput) || parseInt(betInput) < 1) {
             return interaction.reply({ embeds: [new EmbedBuilder().setDescription('The value you inserted is invalid!')], flags: MessageFlags.Ephemeral });
         } else if (await User.getBalance(interaction.user.id) < parseInt(betInput)) {
-            return interaction.reply({ embeds: [new EmbedBuilder().setDescription('You dont have enough coins!')], flags: MessageFlags.Ephemeral });
+            return interaction.reply({ embeds: [new EmbedBuilder().setDescription("You don't have enough coins!")], flags: MessageFlags.Ephemeral });
         } else {
             bet_value = parseInt(betInput);
         }
@@ -67,7 +67,7 @@ module.exports = {
                 }
                 if (await User.getBalance(member.id) < bet_value) {
                     await User.findOneAndUpdate({ id: interaction.user.id }, { $inc: { coins: bet_value } });
-                    await collected.update({ embeds: [new EmbedBuilder().setColor(0xAF873D).setTitle('Dice Challenge').setDescription('You dont have enough coins to accept this challenge. Cancelled!')], components: [] });
+                    await collected.update({ embeds: [new EmbedBuilder().setColor(0xAF873D).setTitle('Dice Challenge').setDescription("You don't have enough coins to accept this challenge. Cancelled!")], components: [] });
                     client.activeDice.delete(interaction.user.id);
                     client.activeDice.delete(member.id);
                     return;
