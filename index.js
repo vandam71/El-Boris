@@ -56,7 +56,7 @@ client.on('messageCreate', async message => {
     try {
         if (message.author.bot) return;
 
-        if (client.devMode && message.author.id !== '90535285909118976') return;
+        if (client.devMode && message.author.id !== config.dev_id) return;
 
         // if (message.author.id === '398231924151418880' || message.author.id === '755848086823239700') return message.reply('"fdp"');
 
