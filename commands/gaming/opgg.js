@@ -14,7 +14,8 @@ module.exports = {
             .setAuthor({ name: interaction.user.username, iconURL: interaction.user.avatarURL() })
             .setTitle(`Retrieving OP.GG Stats for ${summoner}`);
 
-        const sent_message = await interaction.reply({ embeds: [Discord_message], fetchReply: true });
+        const { resource: opggResource } = await interaction.reply({ embeds: [Discord_message], withResponse: true });
+        const sent_message = opggResource.message;
 
         get_profile_stats(summoner).then((stats) => {
             if (stats.summoner === null) return sent_message.edit({

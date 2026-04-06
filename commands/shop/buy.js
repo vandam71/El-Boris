@@ -1,7 +1,9 @@
 const Item = require('../../models/item');
 const { User, check_balance } = require('../../models/user');
 const Transaction = require("../../struct/Transaction");
-const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
+const { SlashCommandBuilder, EmbedBuilder,
+    MessageFlags
+} = require('discord.js');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -25,31 +27,31 @@ module.exports = {
         let item = await Item.findOne({ name: itemString });
         if (!item) {
             buyMessage.setDescription('Not a valid Item');
-            return interaction.reply({ embeds: [buyMessage], ephemeral: true });
+            return interaction.reply({ embeds: [buyMessage], flags: MessageFlags.Ephemeral });
         }
 
         if (await User.getBalance(interaction.user.id) < item.price) {
             buyMessage.setDescription('Not enough money!');
-            return interaction.reply({ embeds: [buyMessage], ephemeral: true });
+            return interaction.reply({ embeds: [buyMessage], flags: MessageFlags.Ephemeral });
         }
 
         if (item.category === 'untradeable') {
             buyMessage.setDescription(`**Untradeable drop**`);
-            return interaction.reply({ embeds: [buyMessage], ephemeral: true });
+            return interaction.reply({ embeds: [buyMessage], flags: MessageFlags.Ephemeral });
         }
 
         // this check needs to be made before the add, because the addItem doesn't check if it's a perk
         // the addItem is made to be global, so it just adds of updates the item
         if (item.category === 'perk' && (await User.checkInventory(interaction.user.id, item.id))) {
             buyMessage.setDescription(`You already have this perk, try upgrading it with **/upgrade ${item.name}**`);
-            return interaction.reply({ embeds: [buyMessage], ephemeral: true });
+            return interaction.reply({ embeds: [buyMessage], flags: MessageFlags.Ephemeral });
         }
 
         await new Transaction(interaction.user.id, -item.price, 'Buy').process();
         const user = await User.findOne({ id: interaction.user.id });
         await user.addItem(item.name, item.id);
         await user.save();
-        buyMessage.setDescription("You bought <" + item.emote + "> " + item.name + " for <:boriscoin:798017751842291732> " + item.price + ".");
+        buyMessage.setDescription("You bought " + item.emote + " " + item.name + " for <:boriscoin:1490632869695983617> " + item.price + ".");
         return interaction.reply({ embeds: [buyMessage] });
     }
 };

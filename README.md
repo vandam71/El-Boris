@@ -1,4 +1,4 @@
-# El Boris — v3.1.0
+# El Boris — v3.4.0
 
 A Discord bot built with discord.js v14, Node.js v20, and MongoDB (Mongoose v8).
 
@@ -20,7 +20,7 @@ A Discord bot built with discord.js v14, Node.js v20, and MongoDB (Mongoose v8).
 | Category | Commands |
 |---|---|
 | BorisCoins | boriscoin, chest, give, mine |
-| Casino | blackjack, coinflip, dice, slots, specialslots |
+| Casino | blackjack, coinflip, dice, scratchcard, slots, specialslots |
 | Dev | dev, help, release |
 | Gaming | opgg |
 | Random | azia, borischill, casinha, cat, die, discord, fistbump, giphy, highscores, inspire, levelup, nsfw, ping, private, say, suggestion |
@@ -28,22 +28,57 @@ A Discord bot built with discord.js v14, Node.js v20, and MongoDB (Mongoose v8).
 | Server | ban, kick, poke, poll, prefix, purge, votekick |
 | Shop | buy, info, shop, upgrade |
 | Team | team |
-| User | inventory, peek, profile |
+| User | inventory, peek, profile, stats |
 
 ## Roadmap — 3.x
 
 - [x] Migrate all commands to slash commands
 - [ ] Vote kick from voice channel
-- [ ] Poll system
-- [ ] Teams (create, join, delete, stats)
-- [ ] Mining blocks with bonus drops
+- [x] Poll system
+- [x] Teams (create, join, delete, stats)
+- [x] Mining blocks with bonus drops
 - [ ] Fishing command + sell fish
-- [ ] Scratch Card
+- [x] Scratch Card
 - [ ] Inventory sorting / keyword filtering
 - [ ] Quests (fish x, mine x, slots x)
 - [ ] Some kind of prestige system
+- [x] Stats (nr of casino types done, one for slots, one for specialslots, etc, nr of mines, nr of upgrades, nr of blocks mined, basically needs to be tracked in the user)
 
 ## Changelog
+**v3.6.0**
+- Added `/stats [user]` — categorised embed showing win rates, lifetime coins earned, mining totals, chest and upgrade counts; respects `private` flag
+- Tracks stats across all games and actions: slots, special slots, blackjack, coinflip, dice, scratchcard, mine solo, block mining, chests, perk upgrades
+- Stats stored as a `stats` subdocument on each User; all counters default to 0 so existing users are unaffected
+- Tracking uses atomic `$inc` at each outcome point (fire-and-forget, never blocks gameplay)
+**v3.4.0**
+- Added `/team` with 6 subcommands: `create` (costs 2000 coins), `invite` (in-channel button flow, 5 min expiry), `kick`, `leave`, `disband`, `info` (total level + total networth)
+- Team tag `[TAG]` shown in `/profile` title
+- Teams are stored in MongoDB; invite Accept/Decline buttons are restart-resilient (handled globally)
+
+**v3.3.0**
+- Added `/mine block` — global cooperative mining blocks; 4 tiers (Stone/Iron/Gold/Diamond) with scaling HP and reward pools; every player gets their own live embed with HP bar and miner list; ⛏️ Join / 🏃 Leave buttons update all messages across all servers in real time; damage per tick scales with Speed Perk; Luck Perk boosts your share of the reward; must be mining at the end to receive a payout; new block spawns automatically after cooldown
+- Added member sync on startup — all existing server members are created in the DB when the bot starts, when it joins a new guild, or when a new member joins
+
+**v3.2.2**
+- Added `/poll` — modal-based poll creator; type question and options (one per line, 2–9); live vote bar with percentages; toggle/switch votes; auto-closes with winner announced
+
+**v3.2.1**
+- Fixed item emotes being double-wrapped (`<<:name:id>>`) — emote field is now stored as the full `<:name:id>` string and rendered directly
+- Added `additem` and `removeitem` subcommands to `/dev` for managing shop items without code changes
+
+**v3.2.0**
+- Added `/scratchcard` — 3×3 grid scratch card, costs 50 coins; scratch one row at a time or reveal all; match symbols to win up to 20× bet
+- Added `/blackjack` — full blackjack vs dealer with Hit/Stand buttons, 60s timeout, handles naturals, bust and push
+- Restored `/dev` as a proper slash command with subcommands: `mode`, `emojis`, `give`, `setlevel`
+- Fixed global slash commands being left stale on restart — now cleared and re-registered per guild on startup
+- Fixed per-guild command registration running on `guildCreate` so new guilds get commands immediately
+- Fixed `/dev` crashing when invoked without a subcommand (`getSubcommand(false)` + null guard)
+- Fixed `inventory.id` unique index causing E11000 duplicate key errors — removed `unique: true` from itemSchema and dropped the live index
+- Replaced all deprecated `ephemeral: true` with `flags: MessageFlags.Ephemeral` across all commands
+- Replaced all deprecated `fetchReply: true` with `withResponse: true` across all commands
+- Updated all custom emoji IDs to match new server emojis (boriscoin, xp, keys, gems, perks)
+- Improved `/slots` and `/specialslots`: reveal reels one at a time with `[ emoji ]` slot-window format
+- Improved `/scratchcard`: per-row scratch buttons, live match preview while scratching
 
 **v3.1.0**
 - Fixed `clientReady` → `ready` (correct discord.js v14 event name — startup was silently broken)

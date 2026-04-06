@@ -1,5 +1,7 @@
 const Item = require('../../models/item');
-const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder,
+    MessageFlags
+} = require('discord.js');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -30,7 +32,7 @@ module.exports = {
         }
 
         if (!categories.includes(categoryArg))
-            return interaction.reply({ content: `Unknown category \`${categoryArg}\`. Use /shop to see available categories.`, ephemeral: true });
+            return interaction.reply({ content: `Unknown category \`${categoryArg}\`. Use /shop to see available categories.`, flags: MessageFlags.Ephemeral });
 
         let items = await Item.find({ category: categoryArg });
 
@@ -44,7 +46,7 @@ module.exports = {
         let messageConcat = '';
 
         for (const item of items) {
-            messageConcat += '<' + (item.emote).toString() + '> **' + (item.name).toString() + '** - <:boriscoin:798017751842291732>' + (item.price).toString() + ' — **/buy** `' + (item.name).toString() + '`\n';
+            messageConcat += (item.emote).toString() + ' **' + (item.name).toString() + '** - <:boriscoin:1490632869695983617>' + (item.price).toString() + ' — **/buy** `' + (item.name).toString() + '`\n';
         }
 
         embedMessage.setDescription(messageConcat);

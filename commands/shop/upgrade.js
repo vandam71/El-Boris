@@ -1,4 +1,6 @@
-const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require("discord.js");
+const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle,
+    MessageFlags
+} = require('discord.js');
 const { User } = require("../../models/user");
 const Item = require("../../models/item");
 const { base_upgrade } = require('../../config.json');
@@ -38,34 +40,35 @@ module.exports = {
 
         if (!upgradablePerk) {
             upgradeMessage.setDescription(`You don't have this perk!`);
-            return interaction.reply({ embeds: [upgradeMessage], ephemeral: true });
+            return interaction.reply({ embeds: [upgradeMessage], flags: MessageFlags.Ephemeral });
         }
 
         if (upgradablePerk.quantity >= 6) {
             upgradeMessage.setDescription(`This perk is already max level!`);
-            return interaction.reply({ embeds: [upgradeMessage], ephemeral: true });
+            return interaction.reply({ embeds: [upgradeMessage], flags: MessageFlags.Ephemeral });
         }
 
         let material = await User.checkInventory(interaction.user.id, materialID[(upgradablePerk.quantity - 1)]);
         let reqMaterial = await Item.findById(materialID[(upgradablePerk.quantity - 1)]);
 
         if (!material) {
-            upgradeMessage.setDescription("You don't have the required material to upgrade this Perk\n You need 1 <" + reqMaterial.emote + "> **" + reqMaterial.name + "**.");
-            return interaction.reply({ embeds: [upgradeMessage], ephemeral: true });
+            upgradeMessage.setDescription("You don't have the required material to upgrade this Perk\n You need 1 " + reqMaterial.emote + " **" + reqMaterial.name + "**.");
+            return interaction.reply({ embeds: [upgradeMessage], flags: MessageFlags.Ephemeral });
         }
 
         let successRate = base_upgrade - (upgradablePerk.quantity * 5);
 
         let perk = await Item.findById(upgradablePerk.id);
 
-        upgradeMessage.setDescription("You are attempting to upgrade <" + perk.emote + "> **" + perk.name + "** to **Tier " + (upgradablePerk.quantity + 1) + "**.\n It will consume **1** <" + reqMaterial.emote + "> **" + material.name + "** and it has a **" + successRate + "%** success rate.\n Continue?");
+        upgradeMessage.setDescription("You are attempting to upgrade " + perk.emote + " **" + perk.name + "** to **Tier " + (upgradablePerk.quantity + 1) + "**.\n It will consume **1** " + reqMaterial.emote + " **" + material.name + "** and it has a **" + successRate + "%** success rate.\n Continue?");
 
         const row = new ActionRowBuilder().addComponents(
             new ButtonBuilder().setCustomId('upgrade_confirm').setLabel('Confirm').setStyle(ButtonStyle.Success),
             new ButtonBuilder().setCustomId('upgrade_cancel').setLabel('Cancel').setStyle(ButtonStyle.Secondary)
         );
 
-        const upgrade_message = await interaction.reply({ embeds: [upgradeMessage], components: [row], fetchReply: true });
+        const { resource: upgradeResource } = await interaction.reply({ embeds: [upgradeMessage], components: [row], withResponse: true });
+        const upgrade_message = upgradeResource.message;
 
         const filter = i => i.user.id === interaction.user.id;
         try {
@@ -80,9 +83,11 @@ module.exports = {
                 if (upgradeRoll <= successRate) {
                     // if the roll is lower than the rate, the upgrade is successful
                     await user.addItem(upgradablePerk.name, upgradablePerk.id);
-                    upgradeMessage.setDescription("You successfully upgraded <" + perk.emote + "> **" + perk.name + "** to **Tier " + (upgradablePerk.quantity + 1).toString() + "**.");
+                    User.findOneAndUpdate({ id: interaction.user.id }, { $inc: { 'stats.upgradesAttempted': 1, 'stats.upgradesSucceeded': 1 } }).catch(() => { });
+                    upgradeMessage.setDescription("You successfully upgraded " + perk.emote + " **" + perk.name + "** to **Tier " + (upgradablePerk.quantity + 1).toString() + "**.");
                 } else {
-                    upgradeMessage.setDescription("You failed to upgrade <" + perk.emote + "> **" + perk.name + "** to **Tier " + (upgradablePerk.quantity + 1).toString() + "**.\n Better luck next time!");
+                    User.findOneAndUpdate({ id: interaction.user.id }, { $inc: { 'stats.upgradesAttempted': 1, 'stats.upgradesFailed': 1 } }).catch(() => { });
+                    upgradeMessage.setDescription("You failed to upgrade " + perk.emote + " **" + perk.name + "** to **Tier " + (upgradablePerk.quantity + 1).toString() + "**.\n Better luck next time!");
                 }
                 await user.save();
                 await collected.update({ embeds: [upgradeMessage], components: [] });

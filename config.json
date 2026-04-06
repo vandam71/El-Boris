@@ -3,6 +3,8 @@
   "casinha": "https://discord.gg/b3S8gxe6hj",
   "mining_cooldown": 60,
   "base_upgrade": 40,
-  "server_id": "773626087934001192",
-  "dev_id": "90535285909118976"
+  "server_id": "1490628799455563839",
+  "dev_id": "90535285909118976",
+  "block_tick_interval": 10,
+  "block_spawn_cooldown": 1200
 }

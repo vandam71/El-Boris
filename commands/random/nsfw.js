@@ -1,4 +1,6 @@
-const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder ,
+    MessageFlags
+} = require('discord.js');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -6,7 +8,7 @@ module.exports = {
         .setDescription('Returns an NSFW image (NSFW channels only)'),
     execute: async function (interaction, client) {
         if (!interaction.channel.nsfw)
-            return interaction.reply({ content: 'This command can only be used in a NSFW channel!', ephemeral: true });
+            return interaction.reply({ content: 'This command can only be used in a NSFW channel!', flags: MessageFlags.Ephemeral });
 
         const lo = new EmbedBuilder().setDescription('Loading...').setTimestamp();
         await interaction.reply({ embeds: [lo] });

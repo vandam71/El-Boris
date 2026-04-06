@@ -1,5 +1,7 @@
 const Item = require("../../models/item");
-const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
+const { SlashCommandBuilder, EmbedBuilder,
+    MessageFlags
+} = require('discord.js');
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('info')
@@ -16,13 +18,13 @@ module.exports = {
 
         const itemString = interaction.options.getString('item');
         let item = await Item.findOne({ name: itemString });
-        if (!item) return interaction.reply({ content: 'Not a valid Item.', ephemeral: true });
+        if (!item) return interaction.reply({ content: 'Not a valid Item.', flags: MessageFlags.Ephemeral });
 
         return interaction.reply({
             embeds: [new EmbedBuilder()
                 .setColor(0xFFFE00)
                 .setAuthor({ name: 'Info on: ' + item.name })
-                .setDescription(` <${item.emote}>\n **Description**: ${item.description}\n **Price**: ${item.price}\n **Category**: ${item.category}`)]
+                .setDescription(` ${item.emote}\n **Description**: ${item.description}\n **Price**: ${item.price}\n **Category**: ${item.category}`)]
         });
 
     }

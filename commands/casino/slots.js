@@ -1,6 +1,32 @@
-const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder, MessageFlags } = require('discord.js');
 const { User } = require('../../models/user');
 const Transaction = require('../../struct/Transaction');
+
+const SYMBOLS = ['🎰', '🍎', '🍇', '🍋', '🍌', '🍒'];
+const SPIN = '🎡';
+
+function roll() {
+    return SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)];
+}
+
+function evaluate(a, b, c, bet) {
+    if (a === b && b === c) {
+        if (a === '🎰') return { label: '🎰 JACKPOT!', gain: bet * 30, color: 0xFFD700 };
+        return { label: '3 of a Kind!', gain: bet * 10, color: 0x2ECC71 };
+    }
+    const jokers = [a, b, c].filter(s => s === '🎰').length;
+    if (jokers === 2) return { label: '2 Jokers!', gain: bet * 4, color: 0x2ECC71 };
+    if (jokers === 1) return { label: 'Break Even — 1 Joker', gain: 0, color: 0xF4D03F };
+    return { label: 'No Match', gain: -bet, color: 0xE74C3C };
+}
+
+function makeEmbed(author, iconURL, a, b, c, color) {
+    return new EmbedBuilder()
+        .setTitle('🎰 Slot Machine')
+        .setAuthor({ name: author, iconURL })
+        .setDescription(`[ ${a} ]  [ ${b} ]  [ ${c} ]`)
+        .setColor(color);
+}
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -13,11 +39,11 @@ module.exports = {
         if (betInput === 'allin') {
             bet_value = await User.getBalance(interaction.user.id);
             if (bet_value === 0)
-                return interaction.reply({ embeds: [new EmbedBuilder().setDescription("Can't all in 0.")], ephemeral: true });
+                return interaction.reply({ embeds: [new EmbedBuilder().setDescription("Can't all in 0.")], flags: MessageFlags.Ephemeral });
         } else if (!betInput || isNaN(betInput) || parseInt(betInput) < 1) {
-            return interaction.reply({ embeds: [new EmbedBuilder().setDescription('The value you inserted is invalid!')], ephemeral: true });
+            return interaction.reply({ embeds: [new EmbedBuilder().setDescription('The value you inserted is invalid!')], flags: MessageFlags.Ephemeral });
         } else if (await User.getBalance(interaction.user.id) < parseInt(betInput)) {
-            return interaction.reply({ embeds: [new EmbedBuilder().setDescription('You dont have enough coins!')], ephemeral: true });
+            return interaction.reply({ embeds: [new EmbedBuilder().setDescription('You dont have enough coins!')], flags: MessageFlags.Ephemeral });
         } else {
             bet_value = parseInt(betInput);
         }
@@ -27,32 +53,43 @@ module.exports = {
         const expires = client.slotsRecently.get(interaction.user.id);
         if (expires && now < expires) {
             const remaining = Math.ceil((expires - now) / 1000);
-            return interaction.reply({ content: `Command on cooldown. Try again in **${remaining}s**.`, ephemeral: true });
+            return interaction.reply({ content: `Command on cooldown. Try again in **${remaining}s**.`, flags: MessageFlags.Ephemeral });
         }
         client.slotsRecently.set(interaction.user.id, now + cooldownMs);
         setTimeout(() => { client.slotsRecently.delete(interaction.user.id); }, cooldownMs);
 
-        let items = ['🎰', '🍎', '🍇', '🍋', '🍌', '🍒'];
-        let $ = items[Math.floor(items.length * Math.random())];
-        let $$ = items[Math.floor(items.length * Math.random())];
-        let $$$ = items[Math.floor(items.length * Math.random())];
+        const a = roll(), b = roll(), c = roll();
+        const author = interaction.user.username;
+        const iconURL = interaction.user.avatarURL();
 
-        if ($ === $$ && $ === $$$) {
-            if ($ === '🎰') {
-                await new Transaction(interaction.user.id, bet_value * 30, 'Slots').process();
-                return interaction.reply({ embeds: [new EmbedBuilder().setTitle('Slot Machine').setAuthor({ name: interaction.user.username, iconURL: interaction.user.avatarURL() }).setDescription(`• ${$}  ${$$}  ${$$$} •`).addFields({ name: 'Jackpot!', value: 'Big win! You won ' + bet_value * 30 + ' <:boriscoin:798017751842291732>.' }).setColor(0xAF873D)] });
-            } else {
-                await new Transaction(interaction.user.id, bet_value * 10, 'Slots').process();
-                return interaction.reply({ embeds: [new EmbedBuilder().setTitle('Slot Machine').setAuthor({ name: interaction.user.username, iconURL: interaction.user.avatarURL() }).setDescription(`• ${$}  ${$$}  ${$$$} •`).addFields({ name: '3 of a kind!', value: 'You won ' + bet_value * 10 + ' <:boriscoin:798017751842291732>.' }).setColor(0xAF873D)] });
-            }
-        } else if (($ === $$ || $ === $$$) && ($ === '🎰') || (($$ === $$$) && ($$ === '🎰'))) {
-            await new Transaction(interaction.user.id, bet_value * 4, 'Slots').process();
-            return interaction.reply({ embeds: [new EmbedBuilder().setTitle('Slot Machine').setAuthor({ name: interaction.user.username, iconURL: interaction.user.avatarURL() }).setDescription(`• ${$}  ${$$}  ${$$$} •`).addFields({ name: '2 Jokers!', value: 'You won ' + bet_value * 4 + ' <:boriscoin:798017751842291732>.' }).setColor(0xAF873D)] });
-        } else if ($ === '🎰' || $$ === '🎰' || $$$ === '🎰') {
-            return interaction.reply({ embeds: [new EmbedBuilder().setTitle('Slot Machine').setAuthor({ name: interaction.user.username, iconURL: interaction.user.avatarURL() }).setDescription(`• ${$}  ${$$}  ${$$$} •`).addFields({ name: '1 Joker!', value: 'You break even!' }).setColor(0xAF873D)] });
-        } else {
-            await new Transaction(interaction.user.id, -bet_value, 'Slots').process();
-            return interaction.reply({ embeds: [new EmbedBuilder().setTitle('Slot Machine').setAuthor({ name: interaction.user.username, iconURL: interaction.user.avatarURL() }).setDescription(`• ${$}  ${$$}  ${$$$} •`).addFields({ name: 'Lost...', value: 'Better luck next time.' }).setColor(0xAF873D)] });
-        }
+        const { resource: slotsResource } = await interaction.reply({
+            embeds: [makeEmbed(author, iconURL, SPIN, SPIN, SPIN, 0xF4D03F)],
+            withResponse: true
+        });
+        const msg = slotsResource.message;
+
+        setTimeout(() => msg.edit({ embeds: [makeEmbed(author, iconURL, a, SPIN, SPIN, 0xF4D03F)] }), 700);
+        setTimeout(() => msg.edit({ embeds: [makeEmbed(author, iconURL, a, b, SPIN, 0xF4D03F)] }), 1400);
+
+        setTimeout(async () => {
+            const { label, gain, color } = evaluate(a, b, c, bet_value);
+            if (gain !== 0) await new Transaction(interaction.user.id, gain, 'Slots').process();
+
+            // Stats tracking
+            const statsInc = { 'stats.slotsPlayed': 1 };
+            if (gain > 0) { statsInc['stats.slotsWon'] = 1; statsInc['stats.coinsEarned'] = gain; }
+            else if (gain < 0) statsInc['stats.slotsLost'] = 1;
+            User.findOneAndUpdate({ id: interaction.user.id }, { $inc: statsInc }).catch(() => { });
+
+            const resultText = gain > 0
+                ? `You won **${gain}** <:boriscoin:1490632869695983617>!`
+                : gain === 0
+                    ? 'You break even.'
+                    : `You lost **${Math.abs(gain)}** <:boriscoin:1490632869695983617>.`;
+
+            const finalEmbed = makeEmbed(author, iconURL, a, b, c, color);
+            finalEmbed.addFields({ name: label, value: resultText });
+            await msg.edit({ embeds: [finalEmbed] });
+        }, 2100);
     }
 };
