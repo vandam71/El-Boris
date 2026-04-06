@@ -1,5 +1,5 @@
 require('dotenv').config();
-const { ActivityType, REST, Routes ,
+const { ActivityType, REST, Routes,
     MessageFlags
 } = require('discord.js');
 const config = require('./config.json');
@@ -19,18 +19,20 @@ client.on('clientReady', async () => {
     }
     logger.info('Guild sync complete');
 
-    // Register guild-scoped slash commands (instant propagation)
+    // Register guild-scoped slash commands for every guild the bot is in (instant propagation)
     const rest = new REST().setToken(process.env.DISCORD_API);
     const slashBody = [...slashCommands.values()].map(cmd => cmd.data.toJSON());
-    logger.info(`Registering ${slashBody.length} slash commands for app ${client.user.id} in guild ${config.server_id}`);
-    try {
-        await rest.put(
-            Routes.applicationGuildCommands(client.user.id, config.server_id),
-            { body: slashBody }
-        );
-        logger.info(`Registered ${slashBody.length} slash commands`);
-    } catch (e) {
-        logger.error(`Failed to register slash commands for guild ${config.server_id}: ${e.message}`);
+    logger.info(`Registering ${slashBody.length} slash commands across ${client.guilds.cache.size} guild(s)`);
+    for (const guild of client.guilds.cache.values()) {
+        try {
+            await rest.put(
+                Routes.applicationGuildCommands(client.user.id, guild.id),
+                { body: slashBody }
+            );
+            logger.info(`Registered slash commands for guild ${guild.name} (${guild.id})`);
+        } catch (e) {
+            logger.error(`Failed to register slash commands for guild ${guild.name} (${guild.id}): ${e.message}`);
+        }
     }
 
     await client.user.setPresence({
@@ -46,6 +48,14 @@ client.on('clientReady', async () => {
 client.on('guildCreate', async guild => {
     logger.info(`New guild joined: ${guild.name} (id: ${guild.id}). This guild has ${guild.memberCount} members!`)
     await Guild.syncGuild(guild);
+    const rest = new REST().setToken(process.env.DISCORD_API);
+    const slashBody = [...slashCommands.values()].map(cmd => cmd.data.toJSON());
+    try {
+        await rest.put(Routes.applicationGuildCommands(client.user.id, guild.id), { body: slashBody });
+        logger.info(`Registered slash commands for new guild ${guild.name} (${guild.id})`);
+    } catch (e) {
+        logger.error(`Failed to register slash commands for new guild ${guild.name} (${guild.id}): ${e.message}`);
+    }
 });
 
 //When the bot is removed from a server
