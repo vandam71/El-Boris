@@ -60,9 +60,15 @@ module.exports = {
         const STEP = 700;
         const frames = [
             [roll(), SPIN,   SPIN  ],
+            [roll(), SPIN,   SPIN  ],
+            [roll(), SPIN,   SPIN  ],
             [$,      SPIN,   SPIN  ],
             [$,      roll(), SPIN  ],
+            [$,      roll(), SPIN  ],
+            [$,      roll(), SPIN  ],
             [$,      $$,     SPIN  ],
+            [$,      $$,     roll()],
+            [$,      $$,     roll()],
             [$,      $$,     roll()],
             [$,      $$,     $$$   ],
         ];
@@ -107,6 +113,6 @@ module.exports = {
             const finalEmbed = makeEmbed(author, iconURL, $, $$, $$$, color);
             finalEmbed.addFields({ name: fieldName, value: fieldValue });
             await msg.edit({ embeds: [finalEmbed] });
-        }, STEP * 7);
+        }, STEP * 13);
     }
 };
