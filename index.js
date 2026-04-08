@@ -327,6 +327,7 @@ client.on('interactionCreate', async interaction => {
         return;
     }
     try {
+        logger.info(`/${interaction.commandName} — ${interaction.user.username} (${interaction.user.id}) in guild ${interaction.guildId}`);
         await command.execute(interaction, client);
 
         // Grant XP for every slash command (except dev)
