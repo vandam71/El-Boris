@@ -10,6 +10,7 @@ const { newMessageUser, syncGuildMembers, User } = require('./models/user');
 const { Block } = require('./models/block');
 const { syncAllMessages, spawnAnnounceEmbed } = require('./struct/BlockUtils');
 const Transaction = require('./struct/Transaction');
+const Item = require('./models/item');
 const Team = require('./models/team');
 const Guild = require('./models/guild');
 const logger = require('./logger');
@@ -116,6 +117,8 @@ client.on('clientReady', async () => {
                 await block.save();
 
                 const payouts = [];
+                const bronzeItem = await Item.findOne({ id: 801 });
+                const goldItem = await Item.findOne({ id: 802 });
                 for (const miner of activeMiners) {
                     const perks = await User.getPerks(miner.userId);
                     const luckPerk = perks.find(p => p.name === 'Luck Perk');
@@ -124,7 +127,23 @@ client.on('clientReady', async () => {
                     const share = Math.floor(baseShare * (1 + 0.1 * luckLevel));
                     await new Transaction(miner.userId, share, 'Block Mining').process();
                     User.findOneAndUpdate({ id: miner.userId }, { $inc: { 'stats.blocksParticipated': 1, 'stats.coinsFromBlocks': share, 'stats.coinsEarned': share } }).catch(() => { });
-                    payouts.push({ userId: miner.userId, share });
+
+                    // Key drops — Luck Perk increases chance
+                    const keyDrops = [];
+                    const bronzeChance = 0.03 + luckLevel * 0.01;
+                    const goldChance = 0.005 + luckLevel * 0.001;
+                    if (bronzeItem && Math.random() < bronzeChance) {
+                        const user = await User.findOne({ id: miner.userId });
+                        if (user) { await user.addItem(bronzeItem.name, bronzeItem.id); await user.save(); }
+                        keyDrops.push({ name: bronzeItem.name, emote: bronzeItem.emote });
+                    }
+                    if (goldItem && Math.random() < goldChance) {
+                        const user = await User.findOne({ id: miner.userId });
+                        if (user) { await user.addItem(goldItem.name, goldItem.id); await user.save(); }
+                        keyDrops.push({ name: goldItem.name, emote: goldItem.emote });
+                    }
+
+                    payouts.push({ userId: miner.userId, share, keyDrops });
                 }
 
                 await syncAllMessages(block, client, true, payouts);

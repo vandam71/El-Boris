@@ -33,7 +33,12 @@ function buildBlockEmbed(block, ended = false, payouts = null) {
         .setDescription(lines.join('\n'));
 
     if (ended && payouts && payouts.length > 0) {
-        const payoutLines = payouts.map(p => `<@${p.userId}> — <:boriscoin:1490632869695983617> **${p.share}**`);
+        const payoutLines = payouts.map(p => {
+            let line = `<@${p.userId}> — <:boriscoin:1490632869695983617> **${p.share}**`;
+            if (p.keyDrops && p.keyDrops.length > 0)
+                line += ' | ' + p.keyDrops.map(k => `${k.emote} ${k.name}`).join(', ');
+            return line;
+        });
         embed.addFields({ name: '💰 Rewards', value: payoutLines.join('\n') });
     } else {
         const minerList = activeMiners.length
