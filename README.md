@@ -1,4 +1,4 @@
-# El Boris — v3.8.0
+# El Boris — v3.8.1
 
 A Discord bot built with discord.js v14, Node.js v20, and MongoDB (Mongoose v8).
 
@@ -44,6 +44,14 @@ A Discord bot built with discord.js v14, Node.js v20, and MongoDB (Mongoose v8).
 - [x] Stats (nr of casino types done, one for slots, one for specialslots, etc, nr of mines, nr of upgrades, nr of blocks mined, basically needs to be tracked in the user)
 
 ## Changelog
+**v3.8.1**
+- Fixed smart apostrophes across casino and economy commands (`don’t` was stored as a plain ASCII apostrophe)
+- Removed redundant `permissions.has()` guards from `/ban` and `/kick` (discord.js `defaultMemberPermissions` already enforces this)
+- `/giphy` — added try/catch around the API call; improved description
+- `/say` — removed unused offensive-message guard
+- `/azia` and `/poke` cooldowns now use `Map` instead of `Set`, so remaining cooldown time is shown to the user
+- Improved slash command descriptions for `/boriscoin`, `/azia`, `/borischill`, `/die`, `/cat`
+
 **v3.8.0**
 - Added `/fish cast` — cast your line and wait for a bite; a timed Reel button appears when something bites (5s window); 20% escape chance; Nothing/Common/Uncommon/Rare/Epic/Legendary tiers weighted 50/25/12/8/4/1
 - Added `/fish sell` — sell all fish in inventory; each fish rolls a random value within its tier range
