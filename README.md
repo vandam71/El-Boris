@@ -1,4 +1,4 @@
-# El Boris — v3.9.0
+# El Boris — v3.9.1
 
 A Discord bot built with discord.js v14, Node.js v20, and MongoDB (Mongoose v8).
 
@@ -39,13 +39,17 @@ A Discord bot built with discord.js v14, Node.js v20, and MongoDB (Mongoose v8).
 - [x] Fishing command + sell fish
 - [x] Scratch Card
 - [x] Add key drops to block mines with increase chance (also show if a player gets it at the end along with the coins)
-- [ ] Inventory sorting / keyword filtering
+- [x] Inventory sorting / keyword filtering
 - [ ] Quests (fish x, mine x, slots x)
 - [ ] Per skill xp (mining, gambling, fishing)
 - [ ] Some kind of prestige system
 - [x] Stats (nr of casino types done, one for slots, one for specialslots, etc, nr of mines, nr of upgrades, nr of blocks mined, basically needs to be tracked in the user)
 
 ## Changelog
+**v3.9.1**
+- `/inventory` now supports `filter` (keyword search by name or category) and `sort` (Category, Name A→Z/Z→A, Quantity ↑/↓)
+- Default sort groups items by category with bold headers
+
 **v3.9.0**
 - Block mines now drop keys on block destruction — Bronze Key: 3% base + 1% per Luck Perk level; Gold Key: 0.5% base + 0.1% per Luck Perk level
 - Key drops shown in the end-of-block Rewards embed alongside coin payouts (`@user — 🪙 150 | 🗝️ Bronze Key`)
