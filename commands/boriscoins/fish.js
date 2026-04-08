@@ -7,12 +7,12 @@ const logger = require('../../logger');
 
 // Fish item IDs — must exist in the Item collection (see /dev additem)
 const FISH = [
-    { id: 901, name: 'Fish',          emote: '🐟', tier: 'Common',    weight: 50, min: 2,  max: 4   },
-    { id: 902, name: 'Tropical Fish', emote: '🐠', tier: 'Uncommon',  weight: 25, min: 5,  max: 9   },
-    { id: 903, name: 'Pufferfish',    emote: '🐡', tier: 'Rare',      weight: 12, min: 10, max: 18  },
-    { id: 904, name: 'Shark',         emote: '🦈', tier: 'Epic',      weight: 8,  min: 25, max: 40  },
-    { id: 905, name: 'Octopus',       emote: '🐙', tier: 'Legendary', weight: 4,  min: 60, max: 100 },
-    { id: null, name: null,           emote: '💨', tier: 'Nothing',   weight: 1,  min: 0,  max: 0   },
+    { id: null, name: null,           emote: '💨', tier: 'Nothing',   weight: 50, min: 0,  max: 0   },
+    { id: 901, name: 'Fish',          emote: '🐟', tier: 'Common',    weight: 25, min: 2,  max: 4   },
+    { id: 902, name: 'Tropical Fish', emote: '🐠', tier: 'Uncommon',  weight: 12, min: 5,  max: 9   },
+    { id: 903, name: 'Pufferfish',    emote: '🐡', tier: 'Rare',      weight: 8,  min: 10, max: 18  },
+    { id: 904, name: 'Shark',         emote: '🦈', tier: 'Epic',      weight: 4,  min: 25, max: 40  },
+    { id: 905, name: 'Octopus',       emote: '🐙', tier: 'Legendary', weight: 1,  min: 60, max: 100 },
 ];
 
 const FISH_IDS = new Set(FISH.filter(f => f.id).map(f => f.id));
@@ -21,9 +21,12 @@ const BITE_WINDOW_MS = 5000; // 5s to reel after bite
 
 // Weighted random pick — Luck Perk shifts table toward higher tiers
 function rollFish(luckBonus = 0) {
+    // Luck reduces Nothing weight and shifts toward higher fish tiers
     const table = FISH.map((f, i) => ({
         ...f,
-        weight: f.id ? Math.max(1, f.weight + i * luckBonus * 2) : Math.max(1, f.weight - luckBonus * 4)
+        weight: !f.id
+            ? Math.max(1, f.weight - luckBonus * 4)          // reduce Nothing chance
+            : Math.max(1, f.weight + (i - 1) * luckBonus * 2) // boost rarer fish more
     }));
     const total = table.reduce((sum, f) => sum + f.weight, 0);
     let roll = Math.floor(Math.random() * total);
