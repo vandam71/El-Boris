@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, EmbedBuilder, MessageFlags } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, MessageFlags } = require('discord.js');
 const { User } = require('../../models/user');
 const Item = require('../../models/item');
 const Transaction = require('../../struct/Transaction');
@@ -7,19 +7,20 @@ const logger = require('../../logger');
 
 // Fish item IDs — must exist in the Item collection (see /dev additem)
 const FISH = [
-    { id: 901, name: 'Fish',         emote: '🐟', tier: 'Common',    weight: 50, min: 8,   max: 15  },
-    { id: 902, name: 'Tropical Fish', emote: '🐠', tier: 'Uncommon',  weight: 25, min: 20,  max: 35  },
-    { id: 903, name: 'Pufferfish',   emote: '🐡', tier: 'Rare',      weight: 12, min: 45,  max: 70  },
-    { id: 904, name: 'Shark',        emote: '🦈', tier: 'Epic',      weight: 8,  min: 90,  max: 140 },
-    { id: 905, name: 'Octopus',      emote: '🐙', tier: 'Legendary', weight: 4,  min: 200, max: 350 },
-    { id: null, name: null,          emote: '💨', tier: 'Nothing',   weight: 1,  min: 0,   max: 0   },
+    { id: 901, name: 'Fish',          emote: '🐟', tier: 'Common',    weight: 50, min: 2,  max: 4   },
+    { id: 902, name: 'Tropical Fish', emote: '🐠', tier: 'Uncommon',  weight: 25, min: 5,  max: 9   },
+    { id: 903, name: 'Pufferfish',    emote: '🐡', tier: 'Rare',      weight: 12, min: 10, max: 18  },
+    { id: 904, name: 'Shark',         emote: '🦈', tier: 'Epic',      weight: 8,  min: 25, max: 40  },
+    { id: 905, name: 'Octopus',       emote: '🐙', tier: 'Legendary', weight: 4,  min: 60, max: 100 },
+    { id: null, name: null,           emote: '💨', tier: 'Nothing',   weight: 1,  min: 0,  max: 0   },
 ];
 
 const FISH_IDS = new Set(FISH.filter(f => f.id).map(f => f.id));
+const ESCAPE_CHANCE = 0.2;  // 20% chance the fish wriggles free on reel
+const BITE_WINDOW_MS = 5000; // 5s to reel after bite
 
-// Weighted random pick
+// Weighted random pick — Luck Perk shifts table toward higher tiers
 function rollFish(luckBonus = 0) {
-    // Shift weight toward higher tiers by increasing their weight by 2 per luck level
     const table = FISH.map((f, i) => ({
         ...f,
         weight: f.id ? Math.max(1, f.weight + i * luckBonus * 2) : Math.max(1, f.weight - luckBonus * 4)
@@ -35,6 +36,16 @@ function rollFish(luckBonus = 0) {
 
 function rollValue(fish) {
     return Math.floor(Math.random() * (fish.max - fish.min + 1)) + fish.min;
+}
+
+function reelRow(disabled = false) {
+    return new ActionRowBuilder().addComponents(
+        new ButtonBuilder()
+            .setCustomId('fish_reel')
+            .setLabel('🎣 Reel!')
+            .setStyle(ButtonStyle.Primary)
+            .setDisabled(disabled)
+    );
 }
 
 // Cast subcommand — go fishing
@@ -59,42 +70,96 @@ async function executeCast(interaction, client) {
         .setColor(0x3498DB)
         .setAuthor({ name: interaction.user.username, iconURL: interaction.user.avatarURL() })
         .setTitle('🎣 Casting...')
-        .setDescription(`You cast your line into the water. Wait for a bite...${luckBonus > 0 ? `\n*Luck Perk is active — better chances!*` : ''}`);
+        .setDescription(`You cast your line into the water. Wait for a bite...${luckBonus > 0 ? `\n*Luck Perk is active!*` : ''}`);
 
-    await interaction.reply({ embeds: [castEmbed] });
+    const { resource: fishResource } = await interaction.reply({
+        embeds: [castEmbed],
+        components: [reelRow()],
+        withResponse: true
+    });
+    const msg = fishResource.message;
 
-    // 2–4s jitter so it feels live
-    const waitMs = 2000 + Math.floor(Math.random() * 2000);
-    setTimeout(async () => {
-        try {
-            const catch_ = rollFish(luckBonus);
+    // 2–4s jitter before something (or nothing) bites
+    const biteMs = 2000 + Math.floor(Math.random() * 2000);
+    let biteActive = false;
+    let caughtFish = null;
 
-            if (!catch_.id) {
-                castEmbed
-                    .setColor(0x95A5A6)
-                    .setTitle('🎣 Nothing...')
-                    .setDescription('The water was still. Nothing bit. Try again soon.');
-                return interaction.editReply({ embeds: [castEmbed] });
-            }
+    const filter = i => i.user.id === userId && i.customId === 'fish_reel';
+    const collector = msg.createMessageComponentCollector({ filter, time: biteMs + BITE_WINDOW_MS, max: 1 });
 
-            const user = await User.findOne({ id: userId });
-            if (!user) return;
+    const biteTimer = setTimeout(async () => {
+        caughtFish = rollFish(luckBonus);
+        if (!caughtFish.id) return; // Nothing bit — biteActive stays false
+        biteActive = true;
+        const biteEmbed = new EmbedBuilder()
+            .setColor(0xE74C3C)
+            .setAuthor({ name: interaction.user.username, iconURL: interaction.user.avatarURL() })
+            .setTitle('🐟 Something bit! REEL IT IN!')
+            .setDescription('You feel a tug on the line! Hit Reel before it escapes!');
+        try { await msg.edit({ embeds: [biteEmbed], components: [reelRow()] }); } catch { /* deleted */ }
+    }, biteMs);
 
-            await user.addItem(catch_.name, catch_.id);
-            await user.save();
-            User.findOneAndUpdate({ id: userId }, { $inc: { 'stats.fishCaught': 1 } }).catch(() => { });
+    collector.on('collect', async i => {
+        clearTimeout(biteTimer);
 
-            castEmbed
-                .setColor(0x2ECC71)
-                .setTitle(`🎣 You caught something!`)
-                .setDescription(`${catch_.emote} **${catch_.name}** *(${catch_.tier})*\n\nUse \`/fish sell\` to sell your catch.`);
-
-            await interaction.editReply({ embeds: [castEmbed] });
-        } catch (err) {
-            client.fishedRecently.delete(userId);
-            logger.error(`fish cast setTimeout error for ${userId}: ${err}`);
+        if (!biteActive) {
+            // Reeled before anything was on the hook
+            const earlyEmbed = new EmbedBuilder()
+                .setColor(0x95A5A6)
+                .setAuthor({ name: interaction.user.username, iconURL: interaction.user.avatarURL() })
+                .setTitle('🎣 Too early!')
+                .setDescription("Nothing's on the hook yet. You spooked the fish.");
+            return i.update({ embeds: [earlyEmbed], components: [reelRow(true)] });
         }
-    }, waitMs);
+
+        // Fish is on the hook — roll escape
+        if (Math.random() < ESCAPE_CHANCE) {
+            const escapedEmbed = new EmbedBuilder()
+                .setColor(0xE67E22)
+                .setAuthor({ name: interaction.user.username, iconURL: interaction.user.avatarURL() })
+                .setTitle('🎣 It got away!')
+                .setDescription(`${caughtFish.emote} The **${caughtFish.name}** wriggled free just before you reeled it in!`);
+            return i.update({ embeds: [escapedEmbed], components: [reelRow(true)] });
+        }
+
+        // Caught!
+        try {
+            const user = await User.findOne({ id: userId });
+            if (user) {
+                await user.addItem(caughtFish.name, caughtFish.id);
+                await user.save();
+                User.findOneAndUpdate({ id: userId }, { $inc: { 'stats.fishCaught': 1 } }).catch(() => { });
+            }
+        } catch (err) {
+            logger.error(`fish reel DB error for ${userId}: ${err}`);
+        }
+
+        const caughtEmbed = new EmbedBuilder()
+            .setColor(0x2ECC71)
+            .setAuthor({ name: interaction.user.username, iconURL: interaction.user.avatarURL() })
+            .setTitle('🎣 Caught!')
+            .setDescription(`${caughtFish.emote} **${caughtFish.name}** *(${caughtFish.tier})*\n\nUse \`/fish sell\` to sell your catch.`);
+        return i.update({ embeds: [caughtEmbed], components: [reelRow(true)] });
+    });
+
+    collector.on('end', async (_, reason) => {
+        if (reason === 'limit') return; // already handled in collect
+        clearTimeout(biteTimer);
+        const finalEmbed = new EmbedBuilder()
+            .setAuthor({ name: interaction.user.username, iconURL: interaction.user.avatarURL() });
+        if (biteActive) {
+            finalEmbed
+                .setColor(0xE67E22)
+                .setTitle('🎣 It got away!')
+                .setDescription(`${caughtFish.emote} The **${caughtFish.name}** slipped off the hook — you were too slow!`);
+        } else {
+            finalEmbed
+                .setColor(0x95A5A6)
+                .setTitle('🎣 Nothing...')
+                .setDescription('The water was still. Nothing bit this time.');
+        }
+        try { await msg.edit({ embeds: [finalEmbed], components: [reelRow(true)] }); } catch { /* deleted */ }
+    });
 }
 
 // Sell subcommand — sell all fish in inventory
