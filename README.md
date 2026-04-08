@@ -1,4 +1,4 @@
-# El Boris — v3.7.0
+# El Boris — v3.8.0
 
 A Discord bot built with discord.js v14, Node.js v20, and MongoDB (Mongoose v8).
 
@@ -44,6 +44,14 @@ A Discord bot built with discord.js v14, Node.js v20, and MongoDB (Mongoose v8).
 - [x] Stats (nr of casino types done, one for slots, one for specialslots, etc, nr of mines, nr of upgrades, nr of blocks mined, basically needs to be tracked in the user)
 
 ## Changelog
+**v3.8.0**
+- Added `/fish cast` — cast your line and wait for a bite; a timed Reel button appears when something bites (5s window); 20% escape chance; Nothing/Common/Uncommon/Rare/Epic/Legendary tiers weighted 50/25/12/8/4/1
+- Added `/fish sell` — sell all fish in inventory; each fish rolls a random value within its tier range
+- Luck Perk reduces Nothing chance and boosts higher fish tiers
+- Fish category excluded from `/shop` listing and `/buy` autocomplete
+- Fish catch count, sell count, and coins from fishing tracked in `/stats`
+- Added `fishing_cooldown` (30s default) to `config.json`
+
 **v3.7.0**
 - Block destroyed embed now shows per-miner coin payouts ("💰 Rewards" field replaces miner list on block end)
 - `/boriscoin` redesigned as an info embed with Earn / Spend / View fields
