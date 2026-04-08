@@ -1,40 +1,60 @@
 const { get_profile_stats } = require('./../../struct/Scrapper');
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 
+const REGIONS = ['euw', 'na', 'kr', 'eune', 'br', 'jp', 'oce', 'tr', 'ru'];
+
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('opgg')
         .setDescription('Check OP.GG ranked stats for a summoner')
-        .addStringOption(opt => opt.setName('summoner').setDescription('Summoner name').setRequired(true)),
+        .addStringOption(opt => opt.setName('summoner').setDescription('Summoner name or Riot ID (Name#Tag)').setRequired(true))
+        .addStringOption(opt => opt
+            .setName('region')
+            .setDescription('Server region (default: euw)')
+            .setRequired(false)
+            .addChoices(...REGIONS.map(r => ({ name: r.toUpperCase(), value: r })))
+        ),
     execute: async function (interaction, client) {
         const summoner = interaction.options.getString('summoner');
+        const region = interaction.options.getString('region') ?? 'euw';
 
-        let Discord_message = new EmbedBuilder()
+        const loadingEmbed = new EmbedBuilder()
             .setColor(0xfaa5a8)
             .setAuthor({ name: interaction.user.username, iconURL: interaction.user.avatarURL() })
-            .setTitle(`Retrieving OP.GG Stats for ${summoner}`);
+            .setTitle(`Retrieving OP.GG stats for ${summoner}...`);
 
-        const { resource: opggResource } = await interaction.reply({ embeds: [Discord_message], withResponse: true });
-        const sent_message = opggResource.message;
+        const { resource } = await interaction.reply({ embeds: [loadingEmbed], withResponse: true });
+        const msg = resource.message;
 
-        get_profile_stats(summoner).then((stats) => {
-            if (stats.summoner === null) return sent_message.edit({
-                embeds: [Discord_message.setTitle('This user does not exist in OP.GG.')]
-            });
+        try {
+            const stats = await get_profile_stats(summoner, region);
 
-            Discord_message.setTitle(`OP.GG for ${stats.summoner}`);
-
-            if (stats.ranked_solo !== null) {
-                Discord_message.addFields({ name: `Solo Rank: ${stats.ranked_solo} - ${stats.solo_lp} LP`, value: `${stats.solo_wins}W/${stats.solo_losses}L - ${stats.solo_win_rate}%WR` });
+            if (!stats || !stats.summoner) {
+                return msg.edit({ embeds: [new EmbedBuilder().setColor(0xfaa5a8).setTitle(`Summoner "${summoner}" not found on OP.GG.`)] });
             }
-            if (stats.ranked_flex !== null) {
-                Discord_message.addFields({ name: `Flex Rank: ${stats.ranked_flex} - ${stats.flex_lp} LP`, value: `${stats.flex_wins}W/${stats.flex_losses}L - ${stats.flex_win_rate}%WR` });
-            }
-            Discord_message.addFields({ name: 'Most Played Champions', value: stats.most_played_champions.join(' ') });
 
-            sent_message.edit({ embeds: [Discord_message] });
-        }).catch(() => {
-            sent_message.edit({ embeds: [Discord_message.setTitle('Failed to retrieve OP.GG stats. Try again later.')] });
-        });
+            const embed = new EmbedBuilder()
+                .setColor(0xfaa5a8)
+                .setAuthor({ name: interaction.user.username, iconURL: interaction.user.avatarURL() })
+                .setTitle(`OP.GG — ${stats.summoner}`)
+                .setURL(stats.profileUrl);
+
+            if (stats.rank) {
+                const rankLine = stats.lp != null ? `${stats.rank} — ${stats.lp} LP` : stats.rank;
+                const recordLine = stats.wins != null
+                    ? `${stats.wins}W / ${stats.losses}L — ${stats.winRate}% WR`
+                    : 'No ranked games';
+                embed.addFields({ name: 'Solo/Duo', value: `${rankLine}\n${recordLine}` });
+            }
+
+            if (stats.champions?.length) {
+                embed.addFields({ name: 'Most Played', value: stats.champions.join(', ') });
+            }
+
+            return msg.edit({ embeds: [embed] });
+        } catch {
+            return msg.edit({ embeds: [new EmbedBuilder().setColor(0xfaa5a8).setTitle('Failed to retrieve OP.GG stats. Try again later.')] });
+        }
     }
 };
+

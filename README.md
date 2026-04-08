@@ -1,4 +1,4 @@
-# El Boris — v3.8.3
+# El Boris — v3.8.4
 
 A Discord bot built with discord.js v14, Node.js v20, and MongoDB (Mongoose v8).
 
@@ -44,6 +44,12 @@ A Discord bot built with discord.js v14, Node.js v20, and MongoDB (Mongoose v8).
 - [x] Stats (nr of casino types done, one for slots, one for specialslots, etc, nr of mines, nr of upgrades, nr of blocks mined, basically needs to be tracked in the user)
 
 ## Changelog
+**v3.8.4**
+- `/opgg` rewritten — scrapes OP.GG meta tag instead of CSS selectors (fixes 404 after OP.GG migrated to Next.js)
+- Now uses search URL (`/summoners/search?q=...`) which follows redirect to the correct Riot ID profile
+- Added optional `region` option with choices (EUW, NA, KR, EUNE, BR, JP, OCE, TR, RU)
+- Embed now links directly to the summoner profile
+
 **v3.8.3**
 - Removed `/borischill`, `/die`, `/fistbump` — Imgur images no longer available
 

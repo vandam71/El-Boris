@@ -1,65 +1,55 @@
-const axios = require('axios')
-const cheerio = require('cheerio')
-const url = "https://euw.op.gg/summoners/euw/"
+const axios = require('axios');
+const cheerio = require('cheerio');
 
-const get_profile_stats = async (summoner) => {
-    const profile_stats = {};
-    await axios(url + summoner)
-        .then(response => {
+const HEADERS = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36'
+};
 
-            const html = response.data
-            const $ = cheerio.load(html)
+// Scrapes the OP.GG meta description tag which contains rank, LP, W/L and top champions.
+// Format: "Name#Tag / Tier Division LP / WWin LLose Win rate WR% / Champ - ..."
+const get_profile_stats = async (summoner, region = 'euw') => {
+    const searchUrl = `https://op.gg/lol/summoners/search?q=${encodeURIComponent(summoner)}&region=${region}`;
+    const response = await axios.get(searchUrl, { headers: HEADERS, maxRedirects: 5, timeout: 10000 });
 
-            const name = $('div.css-nvyacf.e1y28yym3', html).children('.profile').children('.info').children('.name').text();
-            name ? profile_stats['summoner'] = name : profile_stats['summoner'] = null;
+    const $ = cheerio.load(response.data);
+    const description = $('meta[name="description"]').attr('content') || '';
+    const profileUrl = response.request.res?.responseUrl || searchUrl;
 
-            const info_solo = $('div.css-13uv2u8.e135kpg1', html).children('.wrapper').children('.info');
+    // Not a summoner page if description doesn't contain " / "
+    const parts = description.split(' / ');
+    if (parts.length < 2) return { summoner: null, profileUrl };
 
-            //Rank Solo Duo
-            const text = info_solo.children('.tier-rank').text();
-            let solo_duo = text.match(/(\w)(\w+\s\d)/);
-            solo_duo ? profile_stats['ranked_solo'] = solo_duo[1].toUpperCase() + solo_duo[2] : profile_stats['ranked_solo'] = null;
+    const stats = { summoner: parts[0] || null, profileUrl };
 
-            //LP
-            profile_stats['solo_lp'] = info_solo.children('.tier-info').children('.lp').text().replace(/(\d+).*/, "$1");
+    // Rank: "Platinum 1 1 67LP", "Master 500LP", "Unranked"
+    if (parts[1]) {
+        const tierMatch = parts[1].match(/^(Iron|Bronze|Silver|Gold|Platinum|Emerald|Diamond|Master|Grandmaster|Challenger)(?:\s+(\d+))?/i);
+        const lpMatch = parts[1].match(/(\d+)LP/);
+        if (tierMatch) {
+            stats.rank = tierMatch[2] ? `${tierMatch[1]} ${tierMatch[2]}` : tierMatch[1];
+            stats.lp = lpMatch ? lpMatch[1] : null;
+        } else {
+            stats.rank = parts[1].trim();
+            stats.lp = null;
+        }
+    }
 
-            //w/l w/r
-            const text_2 = info_solo.children('.tier-info').children('.win-lose').text();
-            let w_l = text_2.match(/(\d+)W\s(\d+)L.*\s(\d+)%/);
-            if (w_l) {
-                profile_stats['solo_wins'] = w_l[1];
-                profile_stats['solo_losses'] = w_l[2];
-                profile_stats['solo_win_rate'] = w_l[3];
-            }
+    // W/L/WR: "57Win 64Lose Win rate 47%"
+    if (parts[2]) {
+        const wlMatch = parts[2].match(/(\d+)Win\s+(\d+)Lose\s+Win rate\s+(\d+)%/);
+        if (wlMatch) {
+            stats.wins = wlMatch[1];
+            stats.losses = wlMatch[2];
+            stats.winRate = wlMatch[3];
+        }
+    }
 
-            //Rank Flex
-            const info_flex = $('div.css-rxctzc.e135kpg1', html).children('.wrapper').children('.info');
+    // Top champions: "Senna - 15Win 11Lose Win rate 58%, Mel - ..."
+    if (parts[3]) {
+        stats.champions = parts[3].split(', ').map(c => c.split(' - ')[0]).slice(0, 5);
+    }
 
-            const text_3 = info_flex.children('.tier-rank').text();
-            let flex = text_3.match(/(\w)(\w+\s\d)/);
-            flex ? profile_stats['ranked_flex'] = flex[1].toUpperCase() + flex[2] : profile_stats['ranked_flex'] = null;
+    return stats;
+};
 
-            //LP
-            profile_stats['flex_lp'] = info_flex.children('.tier-info').children('.lp').text().replace(/(\d+).*/, "$1");
-
-            //w/r w/l
-            const text_4 = info_flex.children('.tier-info').children('.win-lose').text();
-            let w_l_flex = text_4.match(/(\d+)W\s(\d+)L.*\s(\d+)%/);
-            if (w_l_flex) {
-                profile_stats['flex_wins'] = w_l_flex[1];
-                profile_stats['flex_losses'] = w_l_flex[2];
-                profile_stats['flex_win_rate'] = w_l_flex[3];
-            }
-
-            const top_8_champs = [];
-            $('div.champion-box').children('.info').children().children('a').each((i, elem) => {
-                top_8_champs.push($(elem).text());
-            })
-            profile_stats['most_played_champions'] = top_8_champs;
-
-        }).catch(err => console.log(err));
-
-    return profile_stats;
-}
-
-module.exports = {get_profile_stats}
+module.exports = { get_profile_stats };
