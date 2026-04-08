@@ -1,4 +1,4 @@
-# El Boris — v3.8.2
+# El Boris — v3.8.3
 
 A Discord bot built with discord.js v14, Node.js v20, and MongoDB (Mongoose v8).
 
@@ -23,7 +23,7 @@ A Discord bot built with discord.js v14, Node.js v20, and MongoDB (Mongoose v8).
 | Casino | blackjack, coinflip, dice, scratchcard, slots, specialslots |
 | Dev | dev, help, release |
 | Gaming | opgg |
-| Random | azia, borischill, casinha, cat, die, discord, fistbump, giphy, highscores, inspire, levelup, nsfw, ping, private, say, suggestion |
+| Random | azia, casinha, cat, discord, giphy, highscores, inspire, levelup, nsfw, ping, private, say, suggestion |
 | Roles | role |
 | Server | ban, kick, poke, poll, prefix, purge, votekick |
 | Shop | buy, info, shop, upgrade |
@@ -44,6 +44,9 @@ A Discord bot built with discord.js v14, Node.js v20, and MongoDB (Mongoose v8).
 - [x] Stats (nr of casino types done, one for slots, one for specialslots, etc, nr of mines, nr of upgrades, nr of blocks mined, basically needs to be tracked in the user)
 
 ## Changelog
+**v3.8.3**
+- Removed `/borischill`, `/die`, `/fistbump` — Imgur images no longer available
+
 **v3.8.2**
 - `/cat` — switched to thecatapi.com API
 
