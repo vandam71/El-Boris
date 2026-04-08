@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, EmbedBuilder ,
+const { SlashCommandBuilder, EmbedBuilder,
     MessageFlags
 } = require('discord.js');
 const { User } = require('../../models/user');

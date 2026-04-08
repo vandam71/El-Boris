@@ -31,6 +31,7 @@ module.exports = class extends Client {
         this.flipRecently = new Map();
         this.slotsRecently = new Map();
         this.specialSlotsRecently = new Map();
+        this.fishedRecently = new Map();
 
         // dev mode global flag
         this.devMode = false;

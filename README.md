@@ -33,11 +33,10 @@ A Discord bot built with discord.js v14, Node.js v20, and MongoDB (Mongoose v8).
 ## Roadmap — 3.x
 
 - [x] Migrate all commands to slash commands
-- [ ] Vote kick from voice channel
 - [x] Poll system
 - [x] Teams (create, join, delete, stats)
 - [x] Mining blocks with bonus drops
-- [ ] Fishing command + sell fish
+- [x] Fishing command + sell fish
 - [x] Scratch Card
 - [ ] Inventory sorting / keyword filtering
 - [ ] Quests (fish x, mine x, slots x)

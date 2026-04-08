@@ -80,6 +80,9 @@ const userSchema = mongoose.Schema({
         upgradesSucceeded: { type: Number, default: 0 },
         upgradesFailed: { type: Number, default: 0 },
         coinsEarned: { type: Number, default: 0 },
+        fishCaught: { type: Number, default: 0 },
+        fishSold: { type: Number, default: 0 },
+        coinsFromFishing: { type: Number, default: 0 },
     }
 });
 

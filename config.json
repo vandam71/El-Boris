@@ -2,6 +2,7 @@
   "invite": "https://discord.gg/5REY8NQbcC",
   "casinha": "https://discord.gg/b3S8gxe6hj",
   "mining_cooldown": 60,
+  "fishing_cooldown": 30,
   "slots_cooldown": 15,
   "special_slots_cooldown": 300,
   "scratchcard_cooldown": 15,

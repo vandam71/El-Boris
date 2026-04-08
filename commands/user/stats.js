@@ -59,6 +59,13 @@ module.exports = {
                     ].join('\n'),
                 },
                 {
+                    name: '🎣 Fishing',
+                    value: [
+                        `**Fish caught** — ${fmt(s.fishCaught)}`,
+                        `**Fish sold** — ${fmt(s.fishSold)} | Coins earned: <:boriscoin:1490632869695983617> ${fmt(s.coinsFromFishing)}`,
+                    ].join('\n'),
+                },
+                {
                     name: '💰 Lifetime Coins Earned',
                     value: `<:boriscoin:1490632869695983617> **${fmt(s.coinsEarned)}**`,
                     inline: true,

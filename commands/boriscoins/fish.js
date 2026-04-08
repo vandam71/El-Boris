@@ -1,0 +1,157 @@
+const { SlashCommandBuilder, EmbedBuilder, MessageFlags } = require('discord.js');
+const { User } = require('../../models/user');
+const Item = require('../../models/item');
+const Transaction = require('../../struct/Transaction');
+const { fishing_cooldown } = require('../../config.json');
+const logger = require('../../logger');
+
+// Fish item IDs — must exist in the Item collection (see /dev additem)
+const FISH = [
+    { id: 901, name: 'Fish',         emote: '🐟', tier: 'Common',    weight: 50, min: 8,   max: 15  },
+    { id: 902, name: 'Tropical Fish', emote: '🐠', tier: 'Uncommon',  weight: 25, min: 20,  max: 35  },
+    { id: 903, name: 'Pufferfish',   emote: '🐡', tier: 'Rare',      weight: 12, min: 45,  max: 70  },
+    { id: 904, name: 'Shark',        emote: '🦈', tier: 'Epic',      weight: 8,  min: 90,  max: 140 },
+    { id: 905, name: 'Octopus',      emote: '🐙', tier: 'Legendary', weight: 4,  min: 200, max: 350 },
+    { id: null, name: null,          emote: '💨', tier: 'Nothing',   weight: 1,  min: 0,   max: 0   },
+];
+
+const FISH_IDS = new Set(FISH.filter(f => f.id).map(f => f.id));
+
+// Weighted random pick
+function rollFish(luckBonus = 0) {
+    // Shift weight toward higher tiers by increasing their weight by 2 per luck level
+    const table = FISH.map((f, i) => ({
+        ...f,
+        weight: f.id ? Math.max(1, f.weight + i * luckBonus * 2) : Math.max(1, f.weight - luckBonus * 4)
+    }));
+    const total = table.reduce((sum, f) => sum + f.weight, 0);
+    let roll = Math.floor(Math.random() * total);
+    for (const f of table) {
+        roll -= f.weight;
+        if (roll < 0) return f;
+    }
+    return table[table.length - 1];
+}
+
+function rollValue(fish) {
+    return Math.floor(Math.random() * (fish.max - fish.min + 1)) + fish.min;
+}
+
+// Cast subcommand — go fishing
+async function executeCast(interaction, client) {
+    const userId = interaction.user.id;
+    const now = Date.now();
+    const expires = client.fishedRecently.get(userId);
+    if (expires && now < expires) {
+        const remaining = Math.ceil((expires - now) / 1000);
+        return interaction.reply({ content: `Your line is still in the water! Try again in **${remaining}s**.`, flags: MessageFlags.Ephemeral });
+    }
+
+    const cooldownMs = fishing_cooldown * 1000;
+    client.fishedRecently.set(userId, now + cooldownMs);
+    setTimeout(() => client.fishedRecently.delete(userId), cooldownMs);
+
+    const perks = await User.getPerks(userId);
+    const luckPerk = perks.find(p => p.name === 'Luck Perk');
+    const luckBonus = luckPerk ? luckPerk.quantity : 0;
+
+    const castEmbed = new EmbedBuilder()
+        .setColor(0x3498DB)
+        .setAuthor({ name: interaction.user.username, iconURL: interaction.user.avatarURL() })
+        .setTitle('🎣 Casting...')
+        .setDescription(`You cast your line into the water. Wait for a bite...${luckBonus > 0 ? `\n*Luck Perk is active — better chances!*` : ''}`);
+
+    await interaction.reply({ embeds: [castEmbed] });
+
+    // 2–4s jitter so it feels live
+    const waitMs = 2000 + Math.floor(Math.random() * 2000);
+    setTimeout(async () => {
+        try {
+            const catch_ = rollFish(luckBonus);
+
+            if (!catch_.id) {
+                castEmbed
+                    .setColor(0x95A5A6)
+                    .setTitle('🎣 Nothing...')
+                    .setDescription('The water was still. Nothing bit. Try again soon.');
+                return interaction.editReply({ embeds: [castEmbed] });
+            }
+
+            const user = await User.findOne({ id: userId });
+            if (!user) return;
+
+            await user.addItem(catch_.name, catch_.id);
+            await user.save();
+            User.findOneAndUpdate({ id: userId }, { $inc: { 'stats.fishCaught': 1 } }).catch(() => { });
+
+            castEmbed
+                .setColor(0x2ECC71)
+                .setTitle(`🎣 You caught something!`)
+                .setDescription(`${catch_.emote} **${catch_.name}** *(${catch_.tier})*\n\nUse \`/fish sell\` to sell your catch.`);
+
+            await interaction.editReply({ embeds: [castEmbed] });
+        } catch (err) {
+            client.fishedRecently.delete(userId);
+            logger.error(`fish cast setTimeout error for ${userId}: ${err}`);
+        }
+    }, waitMs);
+}
+
+// Sell subcommand — sell all fish in inventory
+async function executeSell(interaction, client) {
+    const userId = interaction.user.id;
+    const user = await User.findOne({ id: userId });
+    if (!user) return interaction.reply({ content: 'You have no profile yet! Talk in the server first.', flags: MessageFlags.Ephemeral });
+
+    const fishInInventory = user.inventory.filter(item => FISH_IDS.has(item.id));
+    if (!fishInInventory.length)
+        return interaction.reply({ content: "You don't have any fish to sell.", flags: MessageFlags.Ephemeral });
+
+    // Roll sell value per fish × quantity, collect summary
+    const lines = [];
+    let totalCoins = 0;
+    let totalFishCount = 0;
+
+    for (const invItem of fishInInventory) {
+        const fishDef = FISH.find(f => f.id === invItem.id);
+        let subtotal = 0;
+        for (let i = 0; i < invItem.quantity; i++) subtotal += rollValue(fishDef);
+        totalCoins += subtotal;
+        totalFishCount += invItem.quantity;
+        lines.push(`${fishDef.emote} **${invItem.name}** ×${invItem.quantity} — <:boriscoin:1490632869695983617> ${subtotal}`);
+        await user.removeItem(invItem.name);
+    }
+
+    await user.save();
+    await new Transaction(userId, totalCoins, 'Fishing').process();
+    User.findOneAndUpdate(
+        { id: userId },
+        { $inc: { 'stats.fishSold': totalFishCount, 'stats.coinsFromFishing': totalCoins, 'stats.coinsEarned': totalCoins } }
+    ).catch(() => { });
+
+    const embed = new EmbedBuilder()
+        .setColor(0xAF873D)
+        .setAuthor({ name: interaction.user.username, iconURL: interaction.user.avatarURL() })
+        .setTitle('🐟 Fish Sold!')
+        .setDescription(lines.join('\n'))
+        .addFields({ name: 'Total', value: `<:boriscoin:1490632869695983617> **${totalCoins}**`, inline: true });
+
+    return interaction.reply({ embeds: [embed] });
+}
+
+module.exports = {
+    data: new SlashCommandBuilder()
+        .setName('fish')
+        .setDescription('Go fishing and sell your catch for BorisCoins')
+        .addSubcommand(sub => sub
+            .setName('cast')
+            .setDescription('Cast your line and wait for a catch'))
+        .addSubcommand(sub => sub
+            .setName('sell')
+            .setDescription('Sell all fish in your inventory')),
+    execute: async function (interaction, client) {
+        const sub = interaction.options.getSubcommand();
+        if (sub === 'cast') return executeCast(interaction, client);
+        if (sub === 'sell') return executeSell(interaction, client);
+    }
+};
