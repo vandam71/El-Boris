@@ -1,4 +1,4 @@
-# El Boris — v3.8.1
+# El Boris — v3.8.2
 
 A Discord bot built with discord.js v14, Node.js v20, and MongoDB (Mongoose v8).
 
@@ -44,6 +44,9 @@ A Discord bot built with discord.js v14, Node.js v20, and MongoDB (Mongoose v8).
 - [x] Stats (nr of casino types done, one for slots, one for specialslots, etc, nr of mines, nr of upgrades, nr of blocks mined, basically needs to be tracked in the user)
 
 ## Changelog
+**v3.8.2**
+- `/cat` — switched to thecatapi.com API
+
 **v3.8.1**
 - Fixed smart apostrophes across casino and economy commands (`don’t` was stored as a plain ASCII apostrophe)
 - Removed redundant `permissions.has()` guards from `/ban` and `/kick` (discord.js `defaultMemberPermissions` already enforces this)
