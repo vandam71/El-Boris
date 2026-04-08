@@ -10,7 +10,7 @@ module.exports = {
         .addStringOption(opt => opt.setName('category').setDescription('Specific shop category to browse').setRequired(false)),
     execute: async function (interaction, client) {
 
-        let itemCategories = await Item.find();
+        let itemCategories = await Item.find({ category: { $nin: ['untradeable', 'fish'] } });
         const categories = [...new Set(itemCategories.map(item => item.category))];
         const categoryArg = interaction.options.getString('category');
 

@@ -12,7 +12,7 @@ module.exports = {
         .addStringOption(opt => opt.setName('item').setDescription('Name of the item to buy').setRequired(true).setAutocomplete(true)),
     autocomplete: async function (interaction) {
         const focused = interaction.options.getFocused().toLowerCase();
-        const items = await Item.find({ category: { $ne: 'untradeable' } }, 'name').limit(25);
+        const items = await Item.find({ category: { $nin: ['untradeable', 'fish'] } }, 'name').limit(25);
         const choices = items.map(i => i.name).filter(n => n.toLowerCase().includes(focused));
         await interaction.respond(choices.slice(0, 25).map(n => ({ name: n, value: n })));
     },
@@ -35,8 +35,8 @@ module.exports = {
             return interaction.reply({ embeds: [buyMessage], flags: MessageFlags.Ephemeral });
         }
 
-        if (item.category === 'untradeable') {
-            buyMessage.setDescription(`**Untradeable drop**`);
+        if (item.category === 'untradeable' || item.category === 'fish') {
+            buyMessage.setDescription(`This item cannot be purchased from the shop.`);
             return interaction.reply({ embeds: [buyMessage], flags: MessageFlags.Ephemeral });
         }
 
